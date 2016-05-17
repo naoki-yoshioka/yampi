@@ -74,11 +74,11 @@ namespace yampi
       auto mpi_rank = int();
 #   endif
 
-      auto const error_code = MPI_Comm_size(mpi_comm_, &mpi_rank);
+      auto const error_code = MPI_Comm_rank(mpi_comm_, &mpi_rank);
 # else
       int mpi_rank;
 
-      int const error_code = MPI_Comm_size(mpi_comm_, &mpi_rank);
+      int const error_code = MPI_Comm_rank(mpi_comm_, &mpi_rank);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
