@@ -13,8 +13,8 @@
 
 namespace yampi
 {
-  class mpi_tag_upper_bound_t { };
-  class any_tag_t { };
+  struct mpi_tag_upper_bound_t { };
+  struct any_tag_t { };
 
   class tag
   {
@@ -35,7 +35,7 @@ namespace yampi
     { }
 
     tag(::yampi::mpi_tag_upper_bound_t const, ::yampi::environment& env)
-      : mpi_tag_{upper_bound(env)}
+      : mpi_tag_{inquire_upper_bound(env)}
     { }
 # else
     BOOST_CONSTEXPR tag() BOOST_NOEXCEPT_OR_NOTHROW
@@ -51,7 +51,7 @@ namespace yampi
     { }
 
     tag(::yampi::mpi_tag_upper_bound_t const, ::yampi::environment& env)
-      : mpi_tag_(upper_bound(env))
+      : mpi_tag_(inquire_upper_bound(env))
     { }
 # endif
 
@@ -80,7 +80,7 @@ namespace yampi
     int mpi_tag() const { return mpi_tag_; }
 
    private:
-    int upper_bound(::yampi::environment&) const
+    int inquire_upper_bound(::yampi::environment&) const
     {
       // don't check flag because users cannnot delete the attribute MPI_TAG_UB
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -109,10 +109,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::tag::upper_bound"};
+        throw ::yampi::error{error_code, "yampi::tag::inquire_upper_bound"};
 # else
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::tag::upper_bound");
+        throw ::yampi::error(error_code, "yampi::tag::inquire_upper_bound");
 # endif
 
       return result;

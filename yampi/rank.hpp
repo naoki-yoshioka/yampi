@@ -8,8 +8,10 @@
 
 namespace yampi
 {
-  class any_source_t { };
-  class null_process_t { };
+  struct host_process_t { };
+  struct io_process_t { };
+  struct any_source_t { };
+  struct null_process_t { };
 
   class rank
   {
@@ -32,6 +34,14 @@ namespace yampi
     explicit BOOST_CONSTEXPR rank(::yampi::null_process_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_rank_{MPI_PROC_NULL}
     { }
+
+    rank(::yampi::host_process_t const, ::yampi::environment& env)
+      : mpi_rank_{inquire_environment(MPI_HOST, env)}
+    { }
+
+    rank(::yampi::io_process_t const, ::yampi::environment& env)
+      : mpi_rank_{inquire_environment(MPI_IO, env)}
+    { }
 # else
     BOOST_CONSTEXPR rank() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_rank_(0)
@@ -47,6 +57,14 @@ namespace yampi
 
     explicit BOOST_CONSTEXPR rank(::yampi::null_process_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_rank_(MPI_PROC_NULL)
+    { }
+
+    rank(::yampi::host_process_t const, ::yampi::environment& env)
+      : mpi_rank_(inquire_environment(MPI_HOST, env))
+    { }
+
+    rank(::yampi::io_process_t const, ::yampi::environment& env)
+      : mpi_rank_(inquire_environment(MPI_IO, env))
     { }
 # endif
 
@@ -73,6 +91,45 @@ namespace yampi
     bool operator<(rank const ohter) const { return mpi_rank_ < other.mpi_rank_; }
 
     int mpi_rank() const { return mpi_rank_; }
+
+   private:
+    int inquire_environment(int const key_value, ::yampi::environment&) const
+    {
+      // don't check flag because users cannnot delete the attribute MPI_HOST
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_AUTO_MULTIDECLARATIONS
+#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      auto result = int{}, flag = int{};
+#     else
+      auto result = int(), flag = int();
+#     endif
+#   else
+#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      auto result = int{};
+      auto flag = int{};
+#     else
+      auto result = int();
+      auto flag = int();
+#     endif
+#   endif
+
+      auto const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
+# else
+      int result, flag;
+
+      int const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
+# endif
+
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error{error_code, "yampi::rank::inquire_environment"};
+# else
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::rank::inquire_environment");
+# endif
+
+      return result;
+    }
   };
 
   inline bool operator!=(::yampi::rank const lhs, ::yampi::rank const rhs)
@@ -116,6 +173,82 @@ namespace yampi
   ::yampi::rank const null_process(::yampi::null_process_t());
 #   endif
 # endif
+
+  inline bool exists_host_process(::yampi::environment& env)
+  {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    auto const host = ::yampi::tag{::yampi::host_process_t{}, env};
+#   else
+    auto const host = ::yampi::tag(::yampi::host_process_t(), env);
+#   endif
+# else
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    ::yampi::tag const host ::yampi::host_process_t{}, env};
+#   else
+    ::yampi::tag const host ::yampi::host_process_t(), env);
+#   endif
+# endif
+
+    return host != ::yampi::null_process;
+  }
+
+  inline bool is_host_process(::yampi::rank self, ::yampi::environment& env)
+  {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    auto const host = ::yampi::tag{::yampi::host_process_t{}, env};
+#   else
+    auto const host = ::yampi::tag(::yampi::host_process_t(), env);
+#   endif
+# else
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    ::yampi::tag const host ::yampi::host_process_t{}, env};
+#   else
+    ::yampi::tag const host ::yampi::host_process_t(), env);
+#   endif
+# endif
+
+    return self == host;
+  }
+
+  inline bool exists_io_process(::yampi::environment& env)
+  {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    auto const io = ::yampi::tag{::yampi::io_process_t{}, env};
+#   else
+    auto const io = ::yampi::tag(::yampi::io_process_t(), env);
+#   endif
+# else
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    ::yampi::tag const io ::yampi::io_process_t{}, env};
+#   else
+    ::yampi::tag const io ::yampi::io_process_t(), env);
+#   endif
+# endif
+
+    return io != ::yampi::null_process;
+  }
+
+  inline bool is_io_process(::yampi::rank self, ::yampi::environment& env)
+  {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    auto const io = ::yampi::tag{::yampi::io_process_t{}, env};
+#   else
+    auto const io = ::yampi::tag(::yampi::io_process_t(), env);
+#   endif
+# else
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    ::yampi::tag const io ::yampi::io_process_t{}, env};
+#   else
+    ::yampi::tag const io ::yampi::io_process_t(), env);
+#   endif
+# endif
+
+    return io == ::yampi::any_source or self == io;
+  }
 }
 
 
