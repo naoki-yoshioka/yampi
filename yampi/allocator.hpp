@@ -1,0 +1,157 @@
+#ifndef YAMPI_ALLOCATOR_HPP
+# define YAMPI_ALLOCATOR_HPP
+
+# include <boost/config.hpp>
+
+# include <cstddef>
+# include <limits>
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+# else
+#   include <boost/type_traits/integral_constant.hpp>
+# endif
+
+# include <mpi.h>
+
+# include <yampi/error.hpp>
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_ture_type std::true_type
+# else
+#   define YAMPI_ture_type boost::true_type
+# endif
+
+# ifndef BOOST_NO_CXX11_NULLPTR
+#   define YAMPI_nullptr nullptr
+# else
+#   define YAMPI_nullptr NULL
+# endif
+
+
+namespace yampi
+{
+  template <typename T>
+  class allocator
+  {
+   public:
+    typedef T* pointer;
+    typedef T const* const_pointer;
+    typedef void* void_pointer;
+    typedef void const* const_void_pointer;
+    typedef T& reference;
+    typedef T const& const_reference;
+    typedef T value_type;
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+    typedef YAMPI_true_type propagate_on_container_move_assignment;
+    typedef YAMPI_true_type is_always_equal;
+
+    template <typename U>
+    struct rebind
+    { typedef allocator<U> other; };
+
+    BOOST_DEFAULTED_FUNCTION(BOOST_CONSTEXPR allocator(), BOOST_NOEXCEPT_OR_NOTHROW { })
+
+    allocator(allocator const& other) BOOST_NOEXCEPT_OR_NOTHROW
+    { }
+
+    template <typename U>
+    allocator(allocator<U> const& other) BOOST_NOEXCEPT_OR_NOTHROW
+    { }
+
+    pointer address(reference x) const { return &x; }
+    const_pointer address(const_reference x) const { return &x; }
+
+    pointer allocate(std::size_t const n, const_void_pointer = YAMPI_nullptr)
+    {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      auto result = pointer{};
+#   else
+      auto result = pointer();
+#   endif
+
+      auto const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, result);
+# else
+      pointer result;
+
+      int const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, result);
+# endif
+
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error{error_code, "yampi::allocator::allocate"};
+# else
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::allocator::allocate");
+# endif
+
+      return result;
+    }
+
+    void deallocate(pointer ptr, std::size_t const)
+    {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+      auto const error_code = MPI_Free_mem(ptr);
+# else
+      int const error_code = MPI_Free_mem(ptr);
+# endif
+
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error{error_code, "yampi::allocator::deallocate"};
+# else
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::allocator::deallocate");
+# endif
+    }
+
+    size_type max_size() const BOOST_NOEXCEPT_OR_NOTHROW
+    { return std::numeric_limits<std::size_t>::max() / sizeof(T); }
+
+# if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+    template <typename U, typename... Arguments>
+    void construct(U* ptr, Arguments&&... arguments)
+    { ::new((void *)ptr) U(std::forward<Arguments>(arguments)...); }
+# else
+    void construct(pointer ptr, const_reference value)
+    { new((void *)ptr) T(value); }
+# endif
+
+    void destroy(pointer ptr) { ((T*)ptr)->~T(); }
+    template <typename U>
+    void destroy(U* ptr) { ptr->~U(); }
+  };
+
+  template <>
+  class allocator<void>
+  {
+   public:
+    typedef void* pointer;
+    typedef void const* const_pointer;
+    typedef void* void_pointer;
+    typedef void const* const_void_pointer;
+    typedef void value_type;
+
+    template <typename U>
+    struct rebind
+    { typedef allocator<U> other; };
+  };
+
+
+  template <typename T, typename U>
+  inline BOOST_CONSTEXPR bool operator==(::yampi::allocator<T> const&, ::yampi::allocator<U> const&) BOOST_NOEXCEPT_OR_NOTHROW
+  { return true; }
+
+  template <typename T, typename U>
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::allocator<T> const&, ::yampi::allocator<U> const&) BOOST_NOEXCEPT_OR_NOTHROW
+  { return false; }
+}
+
+
+# undef YAMPI_true_type
+# undef YAMPI_nullptr
+
+#endif
+
