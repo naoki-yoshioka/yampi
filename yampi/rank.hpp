@@ -35,12 +35,12 @@ namespace yampi
       : mpi_rank_{MPI_PROC_NULL}
     { }
 
-    rank(::yampi::host_process_t const, ::yampi::environment& env)
-      : mpi_rank_{inquire_environment(MPI_HOST, env)}
+    explicit rank(::yampi::host_process_t const)
+      : mpi_rank_{inquire_environment(MPI_HOST)}
     { }
 
-    rank(::yampi::io_process_t const, ::yampi::environment& env)
-      : mpi_rank_{inquire_environment(MPI_IO, env)}
+    explicit rank(::yampi::io_process_t const)
+      : mpi_rank_{inquire_environment(MPI_IO)}
     { }
 # else
     BOOST_CONSTEXPR rank() BOOST_NOEXCEPT_OR_NOTHROW
@@ -59,12 +59,12 @@ namespace yampi
       : mpi_rank_(MPI_PROC_NULL)
     { }
 
-    rank(::yampi::host_process_t const, ::yampi::environment& env)
-      : mpi_rank_(inquire_environment(MPI_HOST, env))
+    explicit rank(::yampi::host_process_t const)
+      : mpi_rank_(inquire_environment(MPI_HOST))
     { }
 
-    rank(::yampi::io_process_t const, ::yampi::environment& env)
-      : mpi_rank_(inquire_environment(MPI_IO, env))
+    explicit rank(::yampi::io_process_t const)
+      : mpi_rank_(inquire_environment(MPI_IO))
     { }
 # endif
 
@@ -87,13 +87,13 @@ namespace yampi
     rank& operator*=(rank const other) { mpi_rank_ *= other.mpi_rank_; return *this; }
     rank& operator/=(rank const other) { mpi_rank_ /= other.mpi_rank_; return *this; }
 
-    bool operator==(rank const ohter) const { return mpi_rank_ == other.mpi_rank_; }
-    bool operator<(rank const ohter) const { return mpi_rank_ < other.mpi_rank_; }
+    bool operator==(rank const other) const { return mpi_rank_ == other.mpi_rank_; }
+    bool operator<(rank const other) const { return mpi_rank_ < other.mpi_rank_; }
 
     int mpi_rank() const { return mpi_rank_; }
 
    private:
-    int inquire_environment(int const key_value, ::yampi::environment&) const
+    int inquire_environment(int const key_value) const
     {
       // don't check flag because users cannnot delete the attribute MPI_HOST
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -174,76 +174,76 @@ namespace yampi
 #   endif
 # endif
 
-  inline bool exists_host_process(::yampi::environment& env)
+  inline bool exists_host_process()
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    auto const host = ::yampi::tag{::yampi::host_process_t{}, env};
+    auto const host = ::yampi::rank{::yampi::host_process_t{}};
 #   else
-    auto const host = ::yampi::tag(::yampi::host_process_t(), env);
+    auto const host = ::yampi::rank(::yampi::host_process_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::tag const host ::yampi::host_process_t{}, env};
+    ::yampi::rank const host{::yampi::host_process_t{}};
 #   else
-    ::yampi::tag const host ::yampi::host_process_t(), env);
+    ::yampi::rank const host(::yampi::host_process_t());
 #   endif
 # endif
 
     return host != ::yampi::null_process;
   }
 
-  inline bool is_host_process(::yampi::rank self, ::yampi::environment& env)
+  inline bool is_host_process(::yampi::rank self)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    auto const host = ::yampi::tag{::yampi::host_process_t{}, env};
+    auto const host = ::yampi::rank{::yampi::host_process_t{}};
 #   else
-    auto const host = ::yampi::tag(::yampi::host_process_t(), env);
+    auto const host = ::yampi::rank(::yampi::host_process_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::tag const host ::yampi::host_process_t{}, env};
+    ::yampi::rank const host{::yampi::host_process_t{}};
 #   else
-    ::yampi::tag const host ::yampi::host_process_t(), env);
+    ::yampi::rank const host(::yampi::host_process_t());
 #   endif
 # endif
 
     return self == host;
   }
 
-  inline bool exists_io_process(::yampi::environment& env)
+  inline bool exists_io_process()
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    auto const io = ::yampi::tag{::yampi::io_process_t{}, env};
+    auto const io = ::yampi::rank{::yampi::io_process_t{}};
 #   else
-    auto const io = ::yampi::tag(::yampi::io_process_t(), env);
+    auto const io = ::yampi::rank(::yampi::io_process_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::tag const io ::yampi::io_process_t{}, env};
+    ::yampi::rank const io{::yampi::io_process_t{}};
 #   else
-    ::yampi::tag const io ::yampi::io_process_t(), env);
+    ::yampi::rank const io(::yampi::io_process_t());
 #   endif
 # endif
 
     return io != ::yampi::null_process;
   }
 
-  inline bool is_io_process(::yampi::rank self, ::yampi::environment& env)
+  inline bool is_io_process(::yampi::rank self)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    auto const io = ::yampi::tag{::yampi::io_process_t{}, env};
+    auto const io = ::yampi::rank{::yampi::io_process_t{}};
 #   else
-    auto const io = ::yampi::tag(::yampi::io_process_t(), env);
+    auto const io = ::yampi::rank(::yampi::io_process_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::tag const io ::yampi::io_process_t{}, env};
+    ::yampi::rank const io{::yampi::io_process_t{}};
 #   else
-    ::yampi::tag const io ::yampi::io_process_t(), env);
+    ::yampi::rank const io(::yampi::io_process_t());
 #   endif
 # endif
 

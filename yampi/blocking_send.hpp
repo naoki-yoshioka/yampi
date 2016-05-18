@@ -21,7 +21,6 @@
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
 # include <yampi/mpi_data_type_of.hpp>
-# include <yampi/environment.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -39,7 +38,7 @@ namespace yampi
   template <typename Value>
   inline
   typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
-  blocking_send(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment&)
+  blocking_send(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
     auto const error_code
@@ -64,7 +63,7 @@ namespace yampi
     ::yampi::is_contiguous_iterator<ContiguousIterator>::value
       and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
     void>::type
-  blocking_send(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment&)
+  blocking_send(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
     typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 
@@ -91,10 +90,10 @@ namespace yampi
     ::yampi::is_contiguous_iterator<ContiguousIterator>::value
       and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
     void>::type
-  blocking_send(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment& env)
+  blocking_send(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
     assert(last >= first);
-    ::yampi::blocking_send(first, last-first, destination, tag, communicator, env);
+    ::yampi::blocking_send(first, last-first, destination, tag, communicator);
   }
 
   template <typename ContiguousRange>
@@ -103,8 +102,8 @@ namespace yampi
     ::yampi::is_contiguous_range<ContiguousRange>::value
       and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
     void>::type
-  blocking_send(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment& env)
-  { ::yampi::blocking_send(boost::begin(values), boost::end(values), destination, tag, communicator, env); }
+  blocking_send(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
+  { ::yampi::blocking_send(boost::begin(values), boost::end(values), destination, tag, communicator); }
 }
 
 

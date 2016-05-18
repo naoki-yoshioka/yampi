@@ -21,7 +21,6 @@
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
 # include <yampi/mpi_data_type_of.hpp>
-# include <yampi/environment.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -39,41 +38,19 @@ namespace yampi
 {
   class broadcast
   {
-    ::yampi::rank root_;
     ::yampi::communicator comm_;
+    ::yampi::rank root_;
 
    public:
+    BOOST_DELETED_FUNCTION(broadcast())
+
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    BOOST_CONSTEXPR broadcast() BOOST_NOEXCEPT_OR_NOTHROW
-      : root_{0}, comm_{::yampi::world}
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::rank const root) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_{root}, comm_{::yampi::world}
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::communicator const comm) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_{0}, comm_{comm}
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::rank const root, ::yampi::communicator const comm) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_{root}, comm_{comm}
+    explicit BOOST_CONSTEXPR broadcast(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank{0}) BOOST_NOEXCEPT_OR_NOTHROW
+      : comm_{comm}, root_{root}
     { }
 # else
-    BOOST_CONSTEXPR broadcast() BOOST_NOEXCEPT_OR_NOTHROW
-      : root_(0), comm_(::yampi::world)
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::rank const root) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_(root), comm_(::yampi::world)
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::communicator const comm) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_(0), comm_(comm)
-    { }
-
-    BOOST_CONSTEXPR broadcast(::yampi::rank const root, ::yampi::communicator const comm) BOOST_NOEXCEPT_OR_NOTHROW
-      : root_(root), comm_(comm)
+    explicit BOOST_CONSTEXPR broadcast(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank{0}) BOOST_NOEXCEPT_OR_NOTHROW
+      : comm_(comm), root_(root)
     { }
 # endif
 
@@ -92,7 +69,7 @@ namespace yampi
     typename YAMPI_enable_if<
       ::yampi::has_corresponding_mpi_data_type<Value>::value,
       void>::type
-    call(Value& value, ::yampi::environment&) const
+    call(Value& value) const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
@@ -116,7 +93,7 @@ namespace yampi
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    call(ContiguousIterator const first, int const length, ::yampi::environment&) const
+    call(ContiguousIterator const first, int const length) const
     {
       typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 
@@ -142,10 +119,10 @@ namespace yampi
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    call(ContiguousIterator const first, ContiguousIterator const last, ::yampi::environment& env) const
+    call(ContiguousIterator const first, ContiguousIterator const last) const
     {
       assert(last >= first);
-      call(first, last-first, env);
+      call(first, last-first);
     }
 
     template <typename ContiguousRange>
@@ -153,8 +130,8 @@ namespace yampi
       ::yampi::is_contiguous_range<ContiguousRange>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::range_value<ContiguousRange>::type>::value,
       void>::type
-    call(ContiguousRange& values, ::yampi::environment& env) const
-    { call(boost::begin(values), boost::end(values), env); }
+    call(ContiguousRange& values) const
+    { call(boost::begin(values), boost::end(values)); }
   };
 }
 

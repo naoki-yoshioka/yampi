@@ -22,7 +22,6 @@
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
 # include <yampi/mpi_data_type_of.hpp>
-# include <yampi/environment.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -43,7 +42,7 @@ namespace yampi
   typename YAMPI_enable_if<
     ::yampi::has_corresponding_mpi_data_type<Value>::value,
     ::yampi::request<Value> >::type
-  nonblocking_receive(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment&)
+  nonblocking_receive(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -79,7 +78,7 @@ namespace yampi
   typename YAMPI_enable_if<
     ::yampi::has_corresponding_mpi_data_type<Value>::value,
     std::pair<Value, ::yampi::request<Value> > >::type
-  nonblocking_receive(::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment&)
+  nonblocking_receive(::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -119,7 +118,7 @@ namespace yampi
     ::yampi::is_contiguous_iterator<ContiguousIterator>::value
       and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
     ::yampi::request<Value> >::type
-  nonblocking_receive(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment&)
+  nonblocking_receive(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
     typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 
@@ -158,10 +157,10 @@ namespace yampi
     ::yampi::is_contiguous_iterator<ContiguousIterator>::value
       and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
     ::yampi::request<Value> >::type
-  nonblocking_receive(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment& env)
+  nonblocking_receive(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   {
     assert(last >= first);
-    return ::yampi::nonblocking_receive(first, last-first, source, tag, communicator, env);
+    return ::yampi::nonblocking_receive(first, last-first, source, tag, communicator);
   }
 
   template <typename ContiguousRange>
@@ -170,8 +169,8 @@ namespace yampi
     ::yampi::is_contiguous_range<ContiguousRange>::value
       and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
     ::yampi::request<Value> >::type
-  nonblocking_receive(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::environment& env)
-  { return ::yampi::nonblocking_receive(boost::begin(values), boost::end(values), source, tag, communicator, env); }
+  nonblocking_receive(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
+  { return ::yampi::nonblocking_receive(boost::begin(values), boost::end(values), source, tag, communicator); }
 }
 
 

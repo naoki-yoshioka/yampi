@@ -8,8 +8,6 @@
 
 # include <mpi.h>
 
-# include <yampi/envoronment.hpp>
-
 
 namespace yampi
 {
@@ -26,32 +24,32 @@ namespace yampi
       : mpi_tag_{0}
     { }
 
-    explicit tag(int const mpi_tag) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR tag(int const mpi_tag) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_tag_{mpi_tag}
     { }
 
-    explicit tag(::yampi::any_tag_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR tag(::yampi::any_tag_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_tag_{MPI_ANY_TAG}
     { }
 
-    tag(::yampi::mpi_tag_upper_bound_t const, ::yampi::environment& env)
-      : mpi_tag_{inquire_upper_bound(env)}
+    explicit tag(::yampi::mpi_tag_upper_bound_t const)
+      : mpi_tag_{inquire_upper_bound()}
     { }
 # else
     BOOST_CONSTEXPR tag() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_tag_(0)
     { }
 
-    explicit tag(int const mpi_tag) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR tag(int const mpi_tag) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_tag_(mpi_tag)
     { }
 
-    explicit tag(::yampi::any_tag_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR tag(::yampi::any_tag_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_tag_(MPI_ANY_TAG)
     { }
 
-    tag(::yampi::mpi_tag_upper_bound_t const, ::yampi::environment& env)
-      : mpi_tag_(inquire_upper_bound(env))
+    explicit tag(::yampi::mpi_tag_upper_bound_t const)
+      : mpi_tag_(inquire_upper_bound())
     { }
 # endif
 
@@ -80,7 +78,7 @@ namespace yampi
     int mpi_tag() const { return mpi_tag_; }
 
    private:
-    int inquire_upper_bound(::yampi::environment&) const
+    int inquire_upper_bound() const
     {
       // don't check flag because users cannnot delete the attribute MPI_TAG_UB
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -143,23 +141,23 @@ namespace yampi
   inline ::yampi::tag operator/(::yampi::tag lhs, ::yampi::tag const rhs)
   { lhs /= rhs; return lhs; }
 
-  inline bool is_in_valid_range(::yampi::tag const self, ::yampi::environment& env)
+  inline bool is_in_valid_range(::yampi::tag const self)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     auto const mpi_tag_lower_bound = ::yampi::tag{0};
-    auto const mpi_tag_upper_bound = ::yampi::tag{::yampi::mpi_tag_upper_bound_t{}, env};
+    auto const mpi_tag_upper_bound = ::yampi::tag{::yampi::mpi_tag_upper_bound_t{}};
 #   else
     auto const mpi_tag_lower_bound = ::yampi::tag(0);
-    auto const mpi_tag_upper_bound = ::yampi::tag(::yampi::mpi_tag_upper_bound_t(), env);
+    auto const mpi_tag_upper_bound = ::yampi::tag(::yampi::mpi_tag_upper_bound_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     ::yampi::tag const mpi_tag_lower_bound{0};
-    ::yampi::tag const mpi_tag_upper_bound{::yampi::mpi_tag_upper_bound_t{}, env};
+    ::yampi::tag const mpi_tag_upper_bound{::yampi::mpi_tag_upper_bound_t{}};
 #   else
     ::yampi::tag const mpi_tag_lower_bound(0);
-    ::yampi::tag const mpi_tag_upper_bound(::yampi::mpi_tag_upper_bound_t(), env);
+    ::yampi::tag const mpi_tag_upper_bound(::yampi::mpi_tag_upper_bound_t());
 #   endif
 # endif
 

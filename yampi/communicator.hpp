@@ -11,13 +11,13 @@
 
 namespace yampi
 {
-  class environment;
-
   class communicator
   {
     MPI_Comm mpi_comm_;
 
    public:
+    BOOST_DELETED_FUNCTION(communicator())
+/*
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     BOOST_CONSTEXPR communicator() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_comm_{MPI_COMM_WORLD}
@@ -27,6 +27,7 @@ namespace yampi
       : mpi_comm_(MPI_COMM_WORLD)
     { }
 # endif
+*/
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     communicator(communicator const&) = default;
@@ -38,7 +39,17 @@ namespace yampi
     ~communicator() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    int size(::yampi::environment&) const
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+    explicit communicator(MPI_Comm const mpi_comm)
+      : mpi_comm_{mpi_comm}
+    { }
+# else
+    explicit communicator(MPI_Comm const mpi_comm)
+      : mpi_comm_(mpi_comm)
+    { }
+# endif
+
+    int size() const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -65,7 +76,7 @@ namespace yampi
       return result;
     }
 
-    ::yampi::rank rank(::yampi::environment&) const
+    ::yampi::rank rank() const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -97,6 +108,7 @@ namespace yampi
     MPI_Comm mpi_comm() const { return mpi_comm_; }
   };
 
+/*
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
   auto BOOST_CONSTEXPR_OR_CONST world = ::yampi::communicator{};
@@ -106,6 +118,7 @@ namespace yampi
 # else
   ::yampi::communicator BOOST_CONSTEXPR_OR_CONST world;
 # endif
+*/
 }
 
 

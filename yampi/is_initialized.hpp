@@ -8,7 +8,7 @@
 # include <yampi/error.hpp>
 
 
-namespace mpi
+namespace yampi
 {
   inline bool is_initialized()
   {

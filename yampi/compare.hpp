@@ -12,8 +12,6 @@
 
 namespace yampi
 {
-  class environment;
-
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
   enum class communicators_are
     : int
@@ -24,7 +22,7 @@ namespace yampi
   { identical = MPI_IDENT, congruent = MPI_CONGRUENT, similar = MPI_SIMILAR, unequal = MPI_UNEQUAL };
 # endif
 
-  inline ::yampi::communicators_are compare(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
+  inline ::yampi::communicators_are compare(::yampi::communicator const lhs, ::yampi::communicator const rhs)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -52,29 +50,29 @@ namespace yampi
   }
 
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
-  inline bool is_identical(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::communicators_are::identical; }
+  inline bool is_identical(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::communicators_are::identical; }
 
-  inline bool is_congruent(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::communicators_are::congruent; }
+  inline bool is_congruent(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::communicators_are::congruent; }
 
-  inline bool is_similar(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::communicators_are::similar; }
+  inline bool is_similar(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::communicators_are::similar; }
 
-  inline bool is_unequal(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::communicators_are::unequal; }
+  inline bool is_unequal(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::communicators_are::unequal; }
 # else
-  inline bool is_identical(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::identical; }
+  inline bool is_identical(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::identical; }
 
-  inline bool is_congruent(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::congruent; }
+  inline bool is_congruent(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::congruent; }
 
-  inline bool is_similar(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::similar; }
+  inline bool is_similar(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::similar; }
 
-  inline bool is_unequal(::yampi::communicator const lhs, ::yampi::communicator const rhs, ::yampi::environment&)
-  { return ::yampi::compare(lhs, rhs, ::yampi::environment&) == ::yampi::unequal; }
+  inline bool is_unequal(::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  { return ::yampi::compare(lhs, rhs) == ::yampi::unequal; }
 # endif
 }
 

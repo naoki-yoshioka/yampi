@@ -23,7 +23,6 @@
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
 # include <yampi/mpi_data_type_of.hpp>
-# include <yampi/environment.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -99,7 +98,7 @@ namespace yampi
       void>::type
     call(
       typename std::iterator_traits<ContiguousIterator>::value_type const& send_value,
-      ContiguousIterator const receive_first, ::yampi::environment&) const
+      ContiguousIterator const receive_first) const
     {
       typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 
@@ -122,13 +121,13 @@ namespace yampi
 
     template <typename Value>
     typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
-    call(Value const& send_value, ::yampi::environment& env) const
+    call(Value const& send_value) const
     {
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (comm_.rank(env) == root_)
+      if (comm_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error{"yampi::gather::call"};
 # else
-      if (comm_.rank(env) == root_)
+      if (comm_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
 # endif
 
@@ -152,7 +151,7 @@ namespace yampi
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
         and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::value_type, typename std::iterator_traits<ContiguousIterator2>::value_type>::value,
       void>::type
-    call(ContiguousIterator1 const send_first, int const length, ContiguousIterator2 const receive_first, ::yampi::environment&) const
+    call(ContiguousIterator1 const send_first, int const length, ContiguousIterator2 const receive_first) const
     {
       typedef typename std::iterator_traits<ContiguousIterator1>::value_type value_type;
 
@@ -178,13 +177,13 @@ namespace yampi
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    call(ContiguousIterator const send_first, int const length, ::yampi::environment& env) const
+    call(ContiguousIterator const send_first, int const length) const
     {
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (comm_.rank(env) == root_)
+      if (comm_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error{};
 # else
-      if (comm_.rank(env) == root_)
+      if (comm_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error();
 # endif
 
@@ -209,18 +208,18 @@ namespace yampi
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
         and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::value_type, typename std::iterator_traits<ContiguousIterator2>::value_type>::value,
       void>::type
-    call(ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ContiguousIterator2 const receive_first, ::yampi::environment& env) const
-    { call(send_first, send_last-send_first, receive_first, env); }
+    call(ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ContiguousIterator2 const receive_first) const
+    { call(send_first, send_last-send_first, receive_first); }
 
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    call(ContiguousIterator const send_first, ContiguousIterator const last, ::yampi::environment& env) const
+    call(ContiguousIterator const send_first, ContiguousIterator const last) const
     {
       assert(send_last >= send_first);
-      call(send_first, send_last-send_first, env);
+      call(send_first, send_last-send_first);
     }
 
     template <typename ContiguousRange, typename ContiguousIterator>
@@ -230,23 +229,23 @@ namespace yampi
         and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value
         and YAMPI_is_same<typename boost::range_value<ContiguousRange>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    call(ContiguousRange const& send_values, ContiguousIterator const receive_first, ::yampi::environment& env) const
-    { gather(boost::begin(send_values), boost::end(send_values), receive_first, env); }
+    call(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
+    { gather(boost::begin(send_values), boost::end(send_values), receive_first); }
 
     template <typename ContiguousRange>
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_range<ContiguousRange>::value
         and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
       void>::type
-    call(ContiguousRange const& send_values, ::yampi::environment& env) const
-    { gather(boost::begin(send_values), boost::end(send_values), env); }
+    call(ContiguousRange const& send_values) const
+    { gather(boost::begin(send_values), boost::end(send_values)); }
 
 
     template <typename Value>
     typename YAMPI_enable_if<
       ::yampi::has_corresponding_mpi_data_type<Value>::value,
       std::vector<Value> >::type
-    to_vector(Value const& send_value, ::yampi::environment& env) const
+    to_vector(Value const& send_value) const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -258,8 +257,8 @@ namespace yampi
       std::vector<Value> result;
 # endif
 
-      if (comm_.rank(env) == root_)
-        result.resize(comm_.size(env));
+      if (comm_.rank() == root_)
+        result.resize(comm_.size());
 
       call(send_value, result.begin());
 
@@ -271,7 +270,7 @@ namespace yampi
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       std::vector<typename std::iterator_traits<ContiguousIterator>::value_type> >::type
-    to_vector(ContiguousIterator const send_first, int const length, ::yampi::environment& env) const
+    to_vector(ContiguousIterator const send_first, int const length) const
     {
       typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 
@@ -285,10 +284,10 @@ namespace yampi
       std::vector<value_type> result;
 # endif
 
-      if (comm_.rank(env) == root_)
-        result.resize(length*comm_.size(env));
+      if (comm_.rank() == root_)
+        result.resize(length*comm_.size());
 
-      call(send_first, length, result.begin(), env);
+      call(send_first, length, result.begin());
 
       return result;
     }
@@ -298,10 +297,10 @@ namespace yampi
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value
         and ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       std::vector<typename std::iterator_traits<ContiguousIterator>::value_type> >::type
-    to_vector(ContiguousIterator const send_first, ContiguousIterator const last, ::yampi::environment& env) const
+    to_vector(ContiguousIterator const send_first, ContiguousIterator const last) const
     {
       assert(send_last >= send_first);
-      return to_vector(send_first, send_last-send_first, env);
+      return to_vector(send_first, send_last-send_first);
     }
 
     template <typename ContiguousRange>
@@ -309,8 +308,8 @@ namespace yampi
       ::yampi::is_contiguous_range<ContiguousRange>::value
         and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
       std::vector<typename boost::range_value<ContiguousRange>::type> >::type
-    to_vector(ContiguousRange const& send_values, ::yampi::environment& env) const
-    { return to_vector(boost::begin(send_values), boost::end(send_values), env); }
+    to_vector(ContiguousRange const& send_values) const
+    { return to_vector(boost::begin(send_values), boost::end(send_values)); }
   };
 }
 
