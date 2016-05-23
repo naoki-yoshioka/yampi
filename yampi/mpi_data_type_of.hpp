@@ -80,9 +80,10 @@ namespace yampi
   { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_LONG_DOUBLE; };
 
   template <>
-  struct mpi_data_type_of<std::wchar_t>
+  struct mpi_data_type_of<wchar_t>
   { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_WCHAR; };
 
+/*
 # ifdef BOOST_HAS_STDINT_H
   template <>
   struct mpi_data_type_of<std::int8_t>
@@ -148,6 +149,7 @@ namespace yampi
   template <>
   struct mpi_data_type_of<boost::uint64_t>
   { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT64_T; };
+*/
 
   template <>
   struct mpi_data_type_of<bool>

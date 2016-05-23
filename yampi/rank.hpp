@@ -5,6 +5,8 @@
 
 # include <mpi.h>
 
+# include <yampi/error.hpp>
+
 
 namespace yampi
 {
@@ -96,27 +98,20 @@ namespace yampi
     int inquire_environment(int const key_value) const
     {
       // don't check flag because users cannnot delete the attribute MPI_HOST
+      int* result;
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_AUTO_MULTIDECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto result = int{}, flag = int{};
-#     else
-      auto result = int(), flag = int();
-#     endif
-#   else
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto result = int{};
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       auto flag = int{};
-#     else
-      auto result = int();
+#   else
       auto flag = int();
-#     endif
 #   endif
+# else
+      int flag;
+# endif
 
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
 # else
-      int result, flag;
-
       int const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
 # endif
 
@@ -128,7 +123,7 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::rank::inquire_environment");
 # endif
 
-      return result;
+      return *result;
     }
   };
 

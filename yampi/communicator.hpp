@@ -17,17 +17,6 @@ namespace yampi
 
    public:
     BOOST_DELETED_FUNCTION(communicator())
-/*
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    BOOST_CONSTEXPR communicator() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_comm_{MPI_COMM_WORLD}
-    { }
-# else
-    BOOST_CONSTEXPR communicator() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_comm_(MPI_COMM_WORLD)
-    { }
-# endif
-*/
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     communicator(communicator const&) = default;
@@ -107,18 +96,6 @@ namespace yampi
 
     MPI_Comm mpi_comm() const { return mpi_comm_; }
   };
-
-/*
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  auto BOOST_CONSTEXPR_OR_CONST world = ::yampi::communicator{};
-#   else
-  auto BOOST_CONSTEXPR_OR_CONST world = ::yampi::communicator();
-#   endif
-# else
-  ::yampi::communicator BOOST_CONSTEXPR_OR_CONST world;
-# endif
-*/
 }
 
 

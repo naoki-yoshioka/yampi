@@ -107,10 +107,11 @@ namespace yampi
   { };
 
   template <>
-  struct has_corresponding_mpi_data_type<std::wchar_t>
+  struct has_corresponding_mpi_data_type<wchar_t>
     : public YAMPI_true_type
   { };
 
+/*
 # ifdef BOOST_HAS_STDINT_H
   template <>
   struct has_corresponding_mpi_data_type<std::int8_t>
@@ -192,6 +193,7 @@ namespace yampi
   struct has_corresponding_mpi_data_type<boost::uint64_t>
     : public YAMPI_true_type
   { };
+*/
 
   template <>
   struct has_corresponding_mpi_data_type<bool>

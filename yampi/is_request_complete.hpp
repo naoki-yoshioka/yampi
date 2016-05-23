@@ -3,17 +3,29 @@
 
 # include <boost/config.hpp>
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
+
 # include <mpi.h>
 
 # include <yampi/request.hpp>
 # include <yampi/status.hpp>
 # include <yampi/eror.hpp>
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
+
 
 namespace yampi
 {
   template <typename Value>
-  inline std::pair<bool, ::yampi::status<Value> > is_request_complete(::yampi::request const& request)
+  inline std::pair<bool, ::yampi::status> is_request_complete(::yampi::request const& request)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -24,12 +36,12 @@ namespace yampi
       auto stat = MPI_Status();
 #   endif
 
-    auto const error_code = MPI_Test(&request.mpi_request(), &flag, &stat);
+    auto const error_code = MPI_Test(YAMPI_addressof(request.mpi_request()), &flag, YAMPI_addressof(stat));
 # else
     int flag;
     MPI_Status stat;
 
-    int const error_code = MPI_Test(&request.mpi_request(), &flag, &stat);
+    int const error_code = MPI_Test(YAMPI_addressof(request.mpi_request()), &flag, YAMPI_addressof(stat));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -41,9 +53,9 @@ namespace yampi
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    return std::make_pair(static_cast<bool>(flag), ::yampi::status<Value>{stat});
+    return std::make_pair(static_cast<bool>(flag), ::yampi::status{stat});
 # else
-    return std::make_pair(static_cast<bool>(flag), ::yampi::status<Value>(stat));
+    return std::make_pair(static_cast<bool>(flag), ::yampi::status(stat));
 # endif
   }
 
@@ -52,18 +64,17 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       auto flag = int{};
-      auto stat = MPI_Status{};
 #   else
       auto flag = int();
-      auto stat = MPI_Status();
 #   endif
-
-    auto const error_code = MPI_Test(&request.mpi_request(), &flag, MPI_STATUS_IGNORE);
 # else
     int flag;
-    MPI_Status stat;
+# endif
 
-    int const error_code = MPI_Test(&request.mpi_request(), &flag, MPI_STATUS_IGNORE);
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+    auto const error_code = MPI_Test(YAMPI_addressof(request.mpi_request()), &flag, MPI_STATUS_IGNORE);
+# else
+    int const error_code = MPI_Test(YAMPI_addressof(request.mpi_request()), &flag, MPI_STATUS_IGNORE);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -78,6 +89,8 @@ namespace yampi
   }
 }
 
+
+# undef YAMPI_addressof
 
 #endif
 

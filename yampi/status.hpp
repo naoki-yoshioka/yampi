@@ -20,7 +20,7 @@
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_enable_if std::enable_if
 # else
-#   define YAMPI_enable_if boost::enable_if
+#   define YAMPI_enable_if boost::enable_if_c
 # endif
 
 
@@ -41,7 +41,6 @@ namespace yampi
 # endif
   };
 
-  template <typename Value>
   class status
   {
     MPI_Status stat_;
@@ -66,30 +65,33 @@ namespace yampi
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::rank source() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank{stat.MPI_SOURCE}; }
-    ::yampi::tag tag() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::tag{stat.MPI_TAG}; }
+    ::yampi::rank source() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank{stat_.MPI_SOURCE}; }
+    ::yampi::tag tag() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::tag{stat_.MPI_TAG}; }
     void throw_error() const { throw ::yampi::error{stat_.MPI_ERROR, "yampi::status::throw_error"}; }
 # else
-    ::yampi::rank source() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(stat.MPI_SOURCE); }
-    ::yampi::tag tag() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::tag(stat.MPI_TAG); }
+    ::yampi::rank source() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(stat_.MPI_SOURCE); }
+    ::yampi::tag tag() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::tag(stat_.MPI_TAG); }
     void throw_error() const { throw ::yampi::error(stat_.MPI_ERROR, "yampi::status::throw_error"); }
 # endif
 
-    typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, std::size_t>::type
+    template <typename Value>
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<Value>::value,
+      std::size_t>::type
     message_length() const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto length = int{};
+      auto count = int{};
 #   else
-      auto length = int();
+      auto count = int();
 #   endif
 
-      auto const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &length);
+      auto const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
 # else
       int length;
 
-      int const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &length);
+      int const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -97,16 +99,16 @@ namespace yampi
         throw ::yampi::error{error_code, "yampi::status::message_length"};
 
       if (count == MPI_UNDEFINED)
-        throw ::yampi::count_value_undefiend_error{};
+        throw ::yampi::count_value_undefined_error{};
 # else
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::status::message_length");
 
       if (count == MPI_UNDEFINED)
-        throw ::yampi::count_value_undefiend_error();
+        throw ::yampi::count_value_undefined_error();
 # endif
 
-      return length;
+      return count;
     }
 
     bool empty() const

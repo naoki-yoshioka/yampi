@@ -15,7 +15,7 @@ namespace yampi
     MPI_Request req_;
 
    public:
-    BOOST_DELETED_FUNCTION(status())
+    BOOST_DELETED_FUNCTION(request())
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     explicit request(MPI_Request const req) BOOST_NOEXCEPT_OR_NOTHROW

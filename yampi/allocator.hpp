@@ -10,21 +10,32 @@
 # else
 #   include <boost/type_traits/integral_constant.hpp>
 # endif
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
 # include <yampi/error.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_ture_type std::true_type
+#   define YAMPI_true_type std::true_type
 # else
-#   define YAMPI_ture_type boost::true_type
+#   define YAMPI_true_type boost::true_type
 # endif
 
 # ifndef BOOST_NO_CXX11_NULLPTR
 #   define YAMPI_nullptr nullptr
 # else
 #   define YAMPI_nullptr NULL
+# endif
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
 # endif
 
 
@@ -34,6 +45,24 @@ namespace yampi
   class allocator
   {
    public:
+# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+    using pointer = T*;
+    using const_pointer = T const*;
+    using void_pointer = void*;
+    using const_void_pointer = void const*;
+    using reference = T&;
+    using const_reference = T const&;
+    using value_type = T;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+
+    using propagate_on_container_move_assignment = YAMPI_true_type;
+    using is_always_equal = YAMPI_true_type;
+
+    template <typename U>
+    struct rebind
+    { using other = allocator<U>; };
+# else
     typedef T* pointer;
     typedef T const* const_pointer;
     typedef void* void_pointer;
@@ -50,6 +79,7 @@ namespace yampi
     template <typename U>
     struct rebind
     { typedef allocator<U> other; };
+# endif
 
     BOOST_DEFAULTED_FUNCTION(BOOST_CONSTEXPR allocator(), BOOST_NOEXCEPT_OR_NOTHROW { })
 
@@ -60,8 +90,8 @@ namespace yampi
     allocator(allocator<U> const& other) BOOST_NOEXCEPT_OR_NOTHROW
     { }
 
-    pointer address(reference x) const { return &x; }
-    const_pointer address(const_reference x) const { return &x; }
+    pointer address(reference x) const { return YAMPI_addressof(x); }
+    const_pointer address(const_reference x) const { return YAMPI_addressof(x); }
 
     pointer allocate(std::size_t const n, const_void_pointer = YAMPI_nullptr)
     {
@@ -128,6 +158,17 @@ namespace yampi
   class allocator<void>
   {
    public:
+# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
+    using pointer = void*;
+    using const_pointer = void const*;
+    using void_pointer = void*;
+    using const_void_pointer = void const*;
+    using value_type = void;
+
+    template <typename U>
+    struct rebind
+    { using other = allocator<U>; };
+# else
     typedef void* pointer;
     typedef void const* const_pointer;
     typedef void* void_pointer;
@@ -137,6 +178,7 @@ namespace yampi
     template <typename U>
     struct rebind
     { typedef allocator<U> other; };
+# endif
   };
 
 
@@ -152,6 +194,7 @@ namespace yampi
 
 # undef YAMPI_true_type
 # undef YAMPI_nullptr
+# undef YAMPI_addressof
 
 #endif
 

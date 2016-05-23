@@ -3,17 +3,28 @@
 
 # include <boost/config.hpp>
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
+
 # include <mpi.h>
 
 # include <yampi/request.hpp>
 # include <yampi/status.hpp>
 # include <yampi/eror.hpp>
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
+
 
 namespace yampi
 {
-  template <typename Value>
-  inline ::yampi::status<Value> wait(::yampi::request const& request)
+  inline ::yampi::status wait(::yampi::request const& request)
   {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -22,11 +33,11 @@ namespace yampi
     auto stat = MPI_Status();
 #   endif
 
-    auto const error_code = MPI_Wait(&request.mpi_request(), &stat);
+    auto const error_code = MPI_Wait(YAMPI_addressof(request.mpi_request()), YAMPI_addressof(stat));
 # else
     MPI_Status stat;
 
-    int const error_code = MPI_Wait(&request.mpi_request(), &stat);
+    int const error_code = MPI_Wait(YAMPI_addressof(request.mpi_request()), YAMPI_addressof(stat));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -38,9 +49,9 @@ namespace yampi
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    return ::yampi::status<Value>{stat};
+    return ::yampi::status{stat};
 # else
-    return ::yampi::status<Value>(stat);
+    return ::yampi::status(stat);
 # endif
   }
 
@@ -53,11 +64,11 @@ namespace yampi
     auto stat = MPI_Status();
 #   endif
 
-    auto const error_code = MPI_Wait(&request.mpi_request(), MPI_STATUS_IGNORE);
+    auto const error_code = MPI_Wait(YAMPI_addressof(request.mpi_request()), MPI_STATUS_IGNORE);
 # else
     MPI_Status stat;
 
-    int const error_code = MPI_Wait(&request.mpi_request(), MPI_STATUS_IGNORE);
+    int const error_code = MPI_Wait(YAMPI_addressof(request.mpi_request()), MPI_STATUS_IGNORE);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -70,6 +81,8 @@ namespace yampi
   }
 }
 
+
+# undef YAMPI_addressof
 
 #endif
 

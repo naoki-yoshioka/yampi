@@ -166,15 +166,15 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  auto BOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag{::yampi::any_tag_t{}};
+  auto BOOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag{::yampi::any_tag_t{}};
 #   else
-  auto BOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag(::yampi::any_tag_t());
+  auto BOOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag(::yampi::any_tag_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  ::yampi::tag BOST_CONSTEXPR_OR_CONST any_tag{::yampi::any_tag_t{}};
+  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag{::yampi::any_tag_t{}};
 #   else
-  ::yampi::tag BOST_CONSTEXPR_OR_CONST any_tag(::yampi::any_tag_t());
+  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag(::yampi::any_tag_t());
 #   endif
 # endif
 }
