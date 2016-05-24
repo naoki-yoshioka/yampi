@@ -102,11 +102,11 @@ namespace yampi
       auto result = pointer();
 #   endif
 
-      auto const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, result);
+      auto const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
 # else
       pointer result;
 
-      int const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, result);
+      int const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
