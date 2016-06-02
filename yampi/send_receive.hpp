@@ -170,12 +170,29 @@ namespace yampi
     template <typename SendContiguousRange, typename ReceiveContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange>::type>::value
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange const>::type>::value
         and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ReceiveContiguousRange>::type>::value,
       ::yampi::status>::type
     send_receive_range(
       SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
       ReceiveContiguousRange& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
+      ::yampi::communicator const communicator)
+    {
+      return ::yampi::send_receive_detail::send_receive_iter(
+        boost::begin(send_values), boost::end(send_values), destination, send_tag,
+        boost::begin(receive_values), boost::end(receive_values), source, receive_tag,
+        communicator);
+    }
+
+    template <typename SendContiguousRange, typename ReceiveContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange const>::type>::value
+        and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ReceiveContiguousRange const>::type>::value,
+      ::yampi::status>::type
+    send_receive_range(
+      SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
+      ReceiveContiguousRange const& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
       ::yampi::communicator const communicator)
     {
       return ::yampi::send_receive_detail::send_receive_iter(
@@ -294,6 +311,17 @@ namespace yampi
       ::yampi::communicator const communicator)
     { return ::yampi::send_receive_detail::send_receive_iter(boost::begin(values), boost::end(values), destination, send_tag, source, receive_tag, communicator); }
 
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::status>::type
+    send_receive_range(
+      ContiguousRange const& values,
+      ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
+      ::yampi::communicator const communicator)
+    { return ::yampi::send_receive_detail::send_receive_iter(boost::begin(values), boost::end(values), destination, send_tag, source, receive_tag, communicator); }
+
 
     // ignoring status
     template <typename SendValue, typename ReceiveValue>
@@ -393,12 +421,29 @@ namespace yampi
     template <typename SendContiguousRange, typename ReceiveContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange>::type>::value
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange const>::type>::value
         and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ReceiveContiguousRange>::type>::value,
       void>::type
     send_receive_range(
       SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
       ReceiveContiguousRange& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
+      ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
+    {
+      ::yampi::send_receive_detail::send_receive_iter(
+        boost::begin(send_values), boost::end(send_values), destination, send_tag,
+        boost::begin(receive_values), boost::end(receive_values), source, receive_tag,
+        communicator, ignore_status);
+    }
+
+    template <typename SendContiguousRange, typename ReceiveContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<SendContiguousRange const>::type>::value
+        and ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ReceiveContiguousRange const>::type>::value,
+      void>::type
+    send_receive_range(
+      SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
+      ReceiveContiguousRange const& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
     {
       ::yampi::send_receive_detail::send_receive_iter(
@@ -492,6 +537,17 @@ namespace yampi
       ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
     { ::yampi::send_receive_detail::send_receive_iter(boost::begin(values), boost::end(values), destination, send_tag, source, receive_tag, communicator, ignore_status); }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      void>::type
+    send_receive_range(
+      ContiguousRange const& values,
+      ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
+      ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
+    { ::yampi::send_receive_detail::send_receive_iter(boost::begin(values), boost::end(values), destination, send_tag, source, receive_tag, communicator, ignore_status); }
   } // namespace send_receive_detail
 
 
@@ -530,12 +586,24 @@ namespace yampi
   template <typename SendContiguousRange, typename ReceiveContiguousRange>
   inline
   typename YAMPI_enable_if<
-    ::yampi::is_contiguous_range<SendContiguousRange>::value
+    ::yampi::is_contiguous_range<SendContiguousRange const>::value
       and ::yampi::is_contiguous_range<ReceiveContiguousRange>::value,
     ::yampi::status>::type
   send_receive(
     SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
     ReceiveContiguousRange& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
+    ::yampi::communicator const communicator)
+  { return ::yampi::send_receive_detail::send_receive_range(send_values, destination, send_tag, receive_values, source, receive_tag, communicator); }
+
+  template <typename SendContiguousRange, typename ReceiveContiguousRange>
+  inline
+  typename YAMPI_enable_if<
+    ::yampi::is_contiguous_range<SendContiguousRange const>::value
+      and ::yampi::is_contiguous_range<ReceiveContiguousRange const>::value,
+    ::yampi::status>::type
+  send_receive(
+    SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
+    ReceiveContiguousRange const& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator)
   { return ::yampi::send_receive_detail::send_receive_range(send_values, destination, send_tag, receive_values, source, receive_tag, communicator); }
 
@@ -571,6 +639,15 @@ namespace yampi
   typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
   send_receive(
     ContiguousRange& values,
+    ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
+    ::yampi::communicator const communicator)
+  { return ::yampi::send_receive_detail::send_receive_range(values, destination, send_tag, source, receive_tag, communicator); }
+
+  template <typename ContiguousRange>
+  inline
+  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+  send_receive(
+    ContiguousRange const& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator)
   { return ::yampi::send_receive_detail::send_receive_range(values, destination, send_tag, source, receive_tag, communicator); }
@@ -612,12 +689,24 @@ namespace yampi
   template <typename SendContiguousRange, typename ReceiveContiguousRange>
   inline
   typename YAMPI_enable_if<
-    ::yampi::is_contiguous_range<SendContiguousRange>::value
+    ::yampi::is_contiguous_range<SendContiguousRange const>::value
       and ::yampi::is_contiguous_range<ReceiveContiguousRange>::value,
     void>::type
   send_receive(
     SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
     ReceiveContiguousRange& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
+    ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
+  { ::yampi::send_receive_detail::send_receive_range(send_values, destination, send_tag, receive_values, source, receive_tag, communicator, ignore_status); }
+
+  template <typename SendContiguousRange, typename ReceiveContiguousRange>
+  inline
+  typename YAMPI_enable_if<
+    ::yampi::is_contiguous_range<SendContiguousRange const>::value
+      and ::yampi::is_contiguous_range<ReceiveContiguousRange const>::value,
+    void>::type
+  send_receive(
+    SendContiguousRange const& send_values, ::yampi::rank const destination, ::yampi::tag const send_tag,
+    ReceiveContiguousRange const& receive_values, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::send_receive_detail::send_receive_range(send_values, destination, send_tag, receive_values, source, receive_tag, communicator, ignore_status); }
 
@@ -653,6 +742,15 @@ namespace yampi
   typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
   send_receive(
     ContiguousRange& values,
+    ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
+    ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
+  { ::yampi::send_receive_detail::send_receive_range(values, destination, send_tag, source, receive_tag, communicator, ignore_status); }
+
+  template <typename ContiguousRange>
+  inline
+  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+  send_receive(
+    ContiguousRange const& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::send_receive_detail::send_receive_range(values, destination, send_tag, source, receive_tag, communicator, ignore_status); }

@@ -143,6 +143,14 @@ namespace yampi
       ::yampi::request>::type
     nonblocking_send_range(ContiguousRange& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(boost::begin(values), boost::end(values), destination, tag, communicator); }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::request>::type
+    nonblocking_send_range(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
+    { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(boost::begin(values), boost::end(values), destination, tag, communicator); }
   } // namespace nonblocking_send_detail
 
 
@@ -167,6 +175,12 @@ namespace yampi
   inline
   typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::request>::type
   nonblocking_send(ContiguousRange& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
+  { return ::yampi::nonblocking_send_detail::nonblocking_send_range(values, destination, tag, communicator); }
+
+  template <typename ContiguousRange>
+  inline
+  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::request>::type
+  nonblocking_send(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_range(values, destination, tag, communicator); }
 }
 

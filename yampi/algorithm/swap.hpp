@@ -64,7 +64,21 @@ namespace yampi
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
-    { return ::yampi::send_receive_detail::send_receive_range(values, swap_rank, tag, swap_rank, tag, communicator); }
+    {
+      return ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator);
+    }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+    swap(
+      ContiguousRange const& values, ::yampi::rank const swap_rank,
+      ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
+    {
+      return ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator);
+    }
 
 
     // ignoring status
@@ -100,7 +114,22 @@ namespace yampi
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
       ::yampi::tag const tag = ::yampi::tag{0})
-    { ::yampi::send_receive_detail::send_receive_range(values, swap_rank, tag, swap_rank, tag, communicator, ignore_status); }
+    {
+      ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator, ignore_status);
+    }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    swap(
+      ContiguousRange const& values, ::yampi::rank const swap_rank,
+      ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
+      ::yampi::tag const tag = ::yampi::tag{0})
+    {
+      ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator, ignore_status);
+    }
 # else // BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     template <typename Value>
     inline ::yampi::status
@@ -131,7 +160,21 @@ namespace yampi
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
-    { return ::yampi::send_receive_detail::send_receive_range(values, swap_rank, tag, swap_rank, tag, communicator); }
+    {
+      return ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator);
+    }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+    swap(
+      ContiguousRange const& values, ::yampi::rank const swap_rank,
+      ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
+    {
+      return ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator);
+    }
 
 
     // ignoring status
@@ -167,7 +210,22 @@ namespace yampi
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
       ::yampi::tag const tag = ::yampi::tag(0))
-    { ::yampi::send_receive_detail::send_receive_range(values, swap_rank, tag, swap_rank, tag, communicator, ignore_status); }
+    {
+      ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator, ignore_status);
+    }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    swap(
+      ContiguousRange const& values, ::yampi::rank const swap_rank,
+      ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
+      ::yampi::tag const tag = ::yampi::tag(0))
+    {
+      ::yampi::send_receive_detail::send_receive_range(
+        values, swap_rank, tag, swap_rank, tag, communicator, ignore_status);
+    }
 # endif // BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
   }
 }

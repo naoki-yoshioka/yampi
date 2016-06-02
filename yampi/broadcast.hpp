@@ -85,6 +85,11 @@ namespace yampi
     call(ContiguousRange& values) const
     { do_call_range(values); }
 
+    template <typename ContiguousRange>
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    call(ContiguousRange const& values) const
+    { do_call_range(values); }
+
 
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
@@ -169,6 +174,17 @@ namespace yampi
       ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
       void>::type
     do_call_range(ContiguousRange& values) const
+    {
+      using boost::begin;
+      using boost::end;
+      do_call_iter(begin(values), end(values));
+    }
+
+    template <typename ContiguousRange>
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      void>::type
+    do_call_range(ContiguousRange const& values) const
     {
       using boost::begin;
       using boost::end;

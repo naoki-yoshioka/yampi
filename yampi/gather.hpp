@@ -85,7 +85,7 @@ namespace yampi
     { do_call_value(send_value); }
 
     template <typename ContiguousRange>
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
+    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
     call(ContiguousRange const& send_values) const
     { do_call_range(send_values); }
 
@@ -115,7 +115,7 @@ namespace yampi
 
     template <typename ContiguousRange, typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::is_contiguous_range<ContiguousRange>::value
+      ::yampi::is_contiguous_range<ContiguousRange const>::value
         and ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
       void>::type
     call(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
@@ -273,8 +273,8 @@ namespace yampi
 
     template <typename ContiguousRange, typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value
-        and YAMPI_is_same<typename boost::range_value<ContiguousRange>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value
+        and YAMPI_is_same<typename boost::range_value<ContiguousRange const>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     do_call_range(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
     {
@@ -285,7 +285,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
       void>::type
     do_call_range(ContiguousRange const& send_values) const
     {

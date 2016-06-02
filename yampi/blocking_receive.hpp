@@ -187,7 +187,21 @@ namespace yampi
       ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
       ::yampi::status>::type
     blocking_receive_range(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
-    { return ::yampi::blocking_receive_detail::blocking_receive_iter(boost::begin(values), boost::end(values), source, tag, communicator); }
+    {
+      return ::yampi::blocking_receive_detail::blocking_receive_iter(
+        boost::begin(values), boost::end(values), source, tag, communicator);
+    }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::status>::type
+    blocking_receive_range(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
+    {
+      return ::yampi::blocking_receive_detail::blocking_receive_iter(
+        boost::begin(values), boost::end(values), source, tag, communicator);
+    }
 
 
     // Blocking receive (ignoring status)
@@ -295,6 +309,14 @@ namespace yampi
       void>::type
     blocking_receive_range(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore)
     { ::yampi::blocking_receive_detail::blocking_receive_iter(boost::begin(values), boost::end(values), source, tag, communicator, ignore); }
+
+    template <typename ContiguousRange>
+    inline
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_mpi_data_type<typename boost::range_iterator<ContiguousRange const>::type>::value,
+      void>::type
+    blocking_receive_range(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore)
+    { ::yampi::blocking_receive_detail::blocking_receive_iter(boost::begin(values), boost::end(values), source, tag, communicator, ignore); }
   } // namespace blocking_receive_detail
 
 
@@ -327,6 +349,12 @@ namespace yampi
   blocking_receive(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator); }
 
+  template <typename ContiguousRange>
+  inline
+  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+  blocking_receive(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
+  { return ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator); }
+
 
   // Blocking receive (ignoring status)
   template <typename Value>
@@ -357,6 +385,14 @@ namespace yampi
     ::yampi::is_contiguous_range<ContiguousRange>::value,
     void>::type
   blocking_receive(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
+  { ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator, ignore_status); }
+
+  template <typename ContiguousRange>
+  inline
+  typename YAMPI_enable_if<
+    ::yampi::is_contiguous_range<ContiguousRange const>::value,
+    void>::type
+  blocking_receive(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator, ignore_status); }
 }
 
