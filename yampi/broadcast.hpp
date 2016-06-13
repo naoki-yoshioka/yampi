@@ -55,10 +55,10 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     broadcast() = delete;
 # else
-   public:
+   private:
     broadcast();
 
-   private:
+   public:
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
