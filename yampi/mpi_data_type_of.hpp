@@ -11,88 +11,155 @@
 
 namespace yampi
 {
+# ifndef BOOST_NO_CXX11_CONSTEXPR
   template <typename T>
   struct mpi_data_type_of;
 
   template <>
   struct mpi_data_type_of<char>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_CHAR; };
+  { static constexpr MPI_Datatype value = MPI_CHAR; };
 
   template <>
   struct mpi_data_type_of<signed short int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_SHORT; };
+  { static constexpr MPI_Datatype value = MPI_SHORT; };
 
   template <>
   struct mpi_data_type_of<signed int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT; };
+  { static constexpr MPI_Datatype value = MPI_INT; };
 
   template <>
   struct mpi_data_type_of<signed long int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_LONG; };
+  { static constexpr MPI_Datatype value = MPI_LONG; };
 
-# ifndef BOOST_NO_LONG_LONG
+#   ifndef BOOST_NO_LONG_LONG
   template <>
   struct mpi_data_type_of<signed long long int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_LONG_LONG; };
-# endif
+  { static constexpr MPI_Datatype value = MPI_LONG_LONG; };
+#   endif
 
   template <>
   struct mpi_data_type_of<signed char>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_SIGNED_CHAR; };
+  { static constexpr MPI_Datatype value = MPI_SIGNED_CHAR; };
 
   template <>
   struct mpi_data_type_of<unsigned char>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UNSIGNED_CHAR; };
+  { static constexpr MPI_Datatype value = MPI_UNSIGNED_CHAR; };
 
   template <>
   struct mpi_data_type_of<unsigned short int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UNSIGNED_SHORT; };
+  { static constexpr MPI_Datatype value = MPI_UNSIGNED_SHORT; };
 
   template <>
   struct mpi_data_type_of<unsigned int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UNSIGNED; };
+  { static constexpr MPI_Datatype value = MPI_UNSIGNED; };
 
   template <>
   struct mpi_data_type_of<unsigned long int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UNSIGNED_LONG; };
+  { static constexpr MPI_Datatype value = MPI_UNSIGNED_LONG; };
 
-# ifndef BOOST_NO_LONG_LONG
+#   ifndef BOOST_NO_LONG_LONG
   template <>
   struct mpi_data_type_of<unsigned long long int>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UNSIGNED_LONG_LONG; };
-# endif
+  { static constexpr MPI_Datatype value = MPI_UNSIGNED_LONG_LONG; };
+#   endif
 
   template <>
   struct mpi_data_type_of<float>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_FLOAT; };
+  { static constexpr MPI_Datatype value = MPI_FLOAT; };
 
   template <>
   struct mpi_data_type_of<double>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_DOUBLE; };
+  { static constexpr MPI_Datatype value = MPI_DOUBLE; };
 
   template <>
   struct mpi_data_type_of<long double>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_LONG_DOUBLE; };
+  { static constexpr MPI_Datatype value = MPI_LONG_DOUBLE; };
 
   template <>
   struct mpi_data_type_of<wchar_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_WCHAR; };
+  { static constexpr MPI_Datatype value = MPI_WCHAR; };
 
   template <>
   struct mpi_data_type_of<bool>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_CXX_BOOL; };
+  { static constexpr MPI_Datatype value = MPI_CXX_BOOL; };
 
   template <>
   struct mpi_data_type_of<std::complex<float> >
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_CXX_FLOAT_COMPLEX; };
+  { static constexpr MPI_Datatype value = MPI_CXX_FLOAT_COMPLEX; };
 
   template <>
   struct mpi_data_type_of<std::complex<double> >
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_CXX_DOUBLE_COMPLEX; };
+  { static constexpr MPI_Datatype value = MPI_CXX_DOUBLE_COMPLEX; };
 
   template <>
   struct mpi_data_type_of<std::complex<long double> >
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_CXX_LONG_DOUBLE_COMPLEX; };
+  { static constexpr MPI_Datatype value = MPI_CXX_LONG_DOUBLE_COMPLEX; };
+# else // BOOST_NO_CXX11_CONSTEXPR
+  template <typename T>
+  struct mpi_data_type_of
+  { static MPI_Datatype const value; };
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<char>::value = MPI_CHAR;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<signed short int>::value = MPI_SHORT;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<signed int>::value = MPI_INT;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<signed long int>::value = MPI_LONG;
+
+#   ifndef BOOST_NO_LONG_LONG
+  template <>
+  MPI_Datatype const mpi_data_type_of<signed long long int>::value = MPI_LONG_LONG;
+#   endif
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<signed char>::value = MPI_SIGNED_CHAR;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<unsigned char>::value = MPI_UNSIGNED_CHAR;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<unsigned short int>::value = MPI_UNSIGNED_SHORT;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<unsigned int>::value = MPI_UNSIGNED;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<unsigned long int>::value = MPI_UNSIGNED_LONG;
+
+#   ifndef BOOST_NO_LONG_LONG
+  template <>
+  MPI_Datatype const mpi_data_type_of<unsigned long long int>::value = MPI_UNSIGNED_LONG_LONG;
+#   endif
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<float>::value = MPI_FLOAT;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<double>::value = MPI_DOUBLE;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<long double>::value = MPI_LONG_DOUBLE;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<wchar_t>::value = MPI_WCHAR;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<bool>::value = MPI_CXX_BOOL;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<std::complex<float> >::value = MPI_CXX_FLOAT_COMPLEX;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<std::complex<double> >::value = MPI_CXX_DOUBLE_COMPLEX;
+
+  template <>
+  MPI_Datatype const mpi_data_type_of<std::complex<long double> >::value = MPI_CXX_LONG_DOUBLE_COMPLEX;
+#endif // BOOST_NO_CXX11_CONSTEXPR
 }
 
 
