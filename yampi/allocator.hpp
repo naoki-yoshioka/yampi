@@ -81,7 +81,11 @@ namespace yampi
     { typedef allocator<U> other; };
 # endif
 
-    BOOST_DEFAULTED_FUNCTION(BOOST_CONSTEXPR allocator(), BOOST_NOEXCEPT_OR_NOTHROW { })
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    BOOST_CONSTEXPR allocator() = default;
+# else
+    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW { }
+# endif
 
     allocator(allocator const& other) BOOST_NOEXCEPT_OR_NOTHROW
     { }

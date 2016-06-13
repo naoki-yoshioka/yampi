@@ -52,7 +52,14 @@ namespace yampi
     ::yampi::rank root_;
 
    public:
-    BOOST_DELETED_FUNCTION(broadcast())
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    broadcast() = delete;
+# else
+   public:
+    broadcast();
+
+   private:
+# endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     explicit BOOST_CONSTEXPR broadcast(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank{0}) BOOST_NOEXCEPT_OR_NOTHROW

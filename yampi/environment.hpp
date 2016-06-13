@@ -110,17 +110,34 @@ namespace yampi
         is_initialized_ = false;
     }
 
-    BOOST_DELETED_FUNCTION(environment(environment const&))
-    BOOST_DELETED_FUNCTION(environment& operator=(environment const&))
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    environment(environment const&) = delete;
+    environment& operator=(environment const&) = delete;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    BOOST_DELETED_FUNCTION(environment(environment&&))
-    BOOST_DELETED_FUNCTION(environment& operator=(environment&&))
+    environment(environment&&) = delete;
+    environment& operator=(environment&&) = delete;
 #   endif
+# else
+   private:
+    environment(environment const&);
+    environment& operator=(environment const&);
+#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    environment(environment&&);
+    environment& operator=(environment&&);
+#   endif
+
+   public:
+# endif
 
     static int error_code_on_last_finalize() { return error_code_on_last_finalize_; }
 
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     ::yampi::communicator world() const { return ::yampi::communicator{MPI_COMM_WORLD}; }
     ::yampi::communicator self() const { return ::yampi::communicator{MPI_COMM_SELF}; }
+# else
+    ::yampi::communicator world() const { return ::yampi::communicator(MPI_COMM_WORLD); }
+    ::yampi::communicator self() const { return ::yampi::communicator(MPI_COMM_SELF); }
+# endif
 
     std::string processor_name() const
     {

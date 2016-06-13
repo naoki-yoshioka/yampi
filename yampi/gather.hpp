@@ -56,7 +56,14 @@ namespace yampi
     ::yampi::rank root_;
 
    public:
-    BOOST_DELETED_FUNCTION(gather())
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    gather() = delete;
+# else
+   private:
+    gather();
+
+   public:
+# endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     BOOST_CONSTEXPR gather(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank{0}) BOOST_NOEXCEPT_OR_NOTHROW

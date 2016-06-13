@@ -16,7 +16,14 @@ namespace yampi
     MPI_Comm mpi_comm_;
 
    public:
-    BOOST_DELETED_FUNCTION(communicator())
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    communicator() = delete;
+# else
+   private:
+    communicator();
+
+   public:
+# endif
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     communicator(communicator const&) = default;

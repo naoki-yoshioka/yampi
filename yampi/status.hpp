@@ -46,7 +46,14 @@ namespace yampi
     MPI_Status stat_;
 
    public:
-    BOOST_DELETED_FUNCTION(status())
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    status() = delete;
+# else
+   private:
+    status();
+
+   public:
+# endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     explicit status(MPI_Status const& stat) BOOST_NOEXCEPT_OR_NOTHROW : stat_{stat} { }
