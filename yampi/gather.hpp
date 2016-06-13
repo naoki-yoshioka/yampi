@@ -92,7 +92,7 @@ namespace yampi
     { do_call_value(send_value); }
 
     template <typename ContiguousRange>
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
     call(ContiguousRange const& send_values) const
     { do_call_range(send_values); }
 
@@ -179,7 +179,7 @@ namespace yampi
     }
 
     template <typename Value>
-    typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
     do_call_value(Value const& send_value) const
     {
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX

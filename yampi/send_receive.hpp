@@ -618,7 +618,7 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
   send_receive(
     ContiguousIterator const first, int const length,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -627,7 +627,7 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
   send_receive(
     ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -636,7 +636,7 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
   send_receive(
     ContiguousRange& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -645,7 +645,7 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
   send_receive(
     ContiguousRange const& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -721,7 +721,7 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
   send_receive(
     ContiguousIterator const first, int const length,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -730,7 +730,7 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
   send_receive(
     ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -739,7 +739,7 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
   send_receive(
     ContiguousRange& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -748,7 +748,7 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
   send_receive(
     ContiguousRange const& values,
     ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,

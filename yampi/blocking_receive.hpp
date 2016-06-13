@@ -207,7 +207,7 @@ namespace yampi
     // Blocking receive (ignoring status)
     template <typename Value>
     inline
-    typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
     blocking_receive_value(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -229,7 +229,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, Value>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, Value>::type
     blocking_receive_value(::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -333,25 +333,25 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
   blocking_receive(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_iter(first, length, source, tag, communicator); }
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
   blocking_receive(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_iter(first, last, source, tag, communicator); }
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
   blocking_receive(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator); }
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
   blocking_receive(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_range(values, source, tag, communicator); }
 
@@ -369,13 +369,13 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
   blocking_receive(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::blocking_receive_detail::blocking_receive_iter(first, length, source, tag, communicator, ignore_status); }
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
   blocking_receive(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::blocking_receive_detail::blocking_receive_iter(first, last, source, tag, communicator, ignore_status); }
 

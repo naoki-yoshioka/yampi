@@ -57,7 +57,7 @@ namespace yampi
       inline
       typename YAMPI_enable_if<
         ::yampi::has_corresponding_mpi_data_type<Value>::value,
-        boost::optional<::yampi::status> >::type
+        boost::optional< ::yampi::status> >::type
       transform_value(
         Value const& send_value, ::yampi::rank const source, Value& receive_value, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator,
@@ -86,7 +86,7 @@ namespace yampi
       typename YAMPI_enable_if<
         ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
-        boost::optional<::yampi::status> >::type
+        boost::optional< ::yampi::status> >::type
       transform_iter(
         ContiguousIterator1 const send_first, int const length, ::yampi::rank const source, ContiguousIterator2 const receive_first, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator,
@@ -135,7 +135,7 @@ namespace yampi
       typename YAMPI_enable_if<
         ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
-        boost::optional<::yampi::status> >::type
+        boost::optional< ::yampi::status> >::type
       transform_iter(
         ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ::yampi::rank const source, ContiguousIterator2 const receive_first, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator,
@@ -152,7 +152,7 @@ namespace yampi
       typename YAMPI_enable_if<
         ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value
           and YAMPI_is_same<typename boost::range_value<ContiguousRange>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
-        boost::optional<::yampi::status> >::type
+        boost::optional< ::yampi::status> >::type
       transform_range(
         ContiguousRange const& values, ::yampi::rank const source, ContiguousIterator const receive_first, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator,
@@ -167,7 +167,7 @@ namespace yampi
       // ignoring status
       template <typename Value, typename UnaryFunction>
       inline
-      typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+      typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
       transform_value(
         Value const& send_value, ::yampi::rank const source, Value& receive_value, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -270,7 +270,7 @@ namespace yampi
 
 
     template <typename Value, typename UnaryFunction>
-    inline boost::optional<::yampi::status>
+    inline boost::optional< ::yampi::status>
     transform(
       Value const& send_value, ::yampi::rank const source,
       Value& receive_value, ::yampi::rank const destination,
@@ -286,7 +286,7 @@ namespace yampi
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_iterator<ContiguousIterator1>::value
         and ::yampi::is_contiguous_iterator<ContiguousIterator2>::value,
-      boost::optional<::yampi::status> >::type
+      boost::optional< ::yampi::status> >::type
     transform(
       ContiguousIterator1 const send_first, int const length, ::yampi::rank const source,
       ContiguousIterator2 const receive_first, ::yampi::rank const destination,
@@ -303,7 +303,7 @@ namespace yampi
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_iterator<ContiguousIterator1>::value
         and ::yampi::is_contiguous_iterator<ContiguousIterator2>::value,
-      boost::optional<::yampi::status> >::type
+      boost::optional< ::yampi::status> >::type
     transform(
       ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ::yampi::rank const source,
       ContiguousIterator2 const receive_first, ::yampi::rank const destination,
@@ -320,7 +320,7 @@ namespace yampi
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_range<ContiguousRange>::value
         and ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
-      boost::optional<::yampi::status> >::type
+      boost::optional< ::yampi::status> >::type
     transform(
       ContiguousRange const& values, ::yampi::rank const source,
       ContiguousIterator const receive_first, ::yampi::rank const destination,

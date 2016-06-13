@@ -51,7 +51,7 @@ namespace yampi
   {
     template <typename Value>
     inline
-    typename YAMPI_enable_if<::yampi::has_corresponding_mpi_data_type<Value>::value, ::yampi::request>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, ::yampi::request>::type
     nonblocking_send_value(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -161,25 +161,25 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
   nonblocking_send(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(first, length, destination, tag, communicator); }
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
   nonblocking_send(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(first, last, destination, tag, communicator); }
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::request>::type
   nonblocking_send(ContiguousRange& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_range(values, destination, tag, communicator); }
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::request>::type
   nonblocking_send(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_range(values, destination, tag, communicator); }
 }

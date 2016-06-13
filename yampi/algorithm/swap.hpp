@@ -44,7 +44,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
     swap(
       ContiguousIterator const first, int const length, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
@@ -52,7 +52,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
     swap(
       ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
@@ -60,7 +60,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
@@ -71,7 +71,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
     swap(
       ContiguousRange const& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag{0})
@@ -91,7 +91,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
     swap(
       ContiguousIterator const first, int const length, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -100,7 +100,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
     swap(
       ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -109,7 +109,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -121,7 +121,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
     swap(
       ContiguousRange const& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -140,7 +140,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
     swap(
       ContiguousIterator const first, int const length, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
@@ -148,7 +148,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::status>::type
     swap(
       ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
@@ -156,7 +156,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, ::yampi::status>::type
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
@@ -167,7 +167,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, ::yampi::status>::type
     swap(
       ContiguousRange const& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::tag const tag = ::yampi::tag(0))
@@ -187,7 +187,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
     swap(
       ContiguousIterator const first, int const length, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -196,7 +196,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
     swap(
       ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -205,7 +205,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
     swap(
       ContiguousRange& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -217,7 +217,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     inline
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
     swap(
       ContiguousRange const& values, ::yampi::rank const swap_rank,
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,

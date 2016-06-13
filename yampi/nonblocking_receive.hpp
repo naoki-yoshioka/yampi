@@ -208,13 +208,13 @@ namespace yampi
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
   nonblocking_receive(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_receive_detail::nonblocking_receive_iter(first, length, source, tag, communicator); }
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if<::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
+  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, ::yampi::request>::type
   nonblocking_receive(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_receive_detail::nonblocking_receive_iter(first, last, source, tag, communicator); }
 

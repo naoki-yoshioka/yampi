@@ -88,12 +88,12 @@ namespace yampi
     { do_call_value(value); }
 
     template <typename ContiguousRange>
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
     call(ContiguousRange& values) const
     { do_call_range(values); }
 
     template <typename ContiguousRange>
-    typename YAMPI_enable_if<::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
     call(ContiguousRange const& values) const
     { do_call_range(values); }
 
