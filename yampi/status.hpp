@@ -58,7 +58,7 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     explicit status(MPI_Status const& stat) BOOST_NOEXCEPT_OR_NOTHROW : stat_{stat} { }
 # else
-    explicit status(MPI_Status const& stat) BOOST_NOEXCEPT_OR_NOTHROW : stat_(stat)} { }
+    explicit status(MPI_Status const& stat) BOOST_NOEXCEPT_OR_NOTHROW : stat_(stat) { }
 # endif
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
@@ -96,7 +96,7 @@ namespace yampi
 
       auto const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
 # else
-      int length;
+      int count;
 
       int const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
 # endif
