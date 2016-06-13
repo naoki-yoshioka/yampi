@@ -172,9 +172,9 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag{::yampi::any_tag_t{}};
+  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag{::yampi::any_tag_t{}};
 #   else
-  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag(::yampi::any_tag_t());
+  ::yampi::tag BOOST_CONSTEXPR_OR_CONST any_tag = ::yampi::tag(::yampi::any_tag_t());
 #   endif
 # endif
 }

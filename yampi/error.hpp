@@ -92,12 +92,14 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       if (error_string_error_code != MPI_SUCCESS)
         throw ::yampi::error_in_error{where};
+
+      return std::string{"In "} + where + ": " + std::string{error};
 # else
       if (error_string_error_code != MPI_SUCCESS)
         throw ::yampi::error_in_error(where);
-# endif
 
-      return std::string{"In "} + where + ": " + std::string{error};
+      return std::string("In ") + where + ": " + std::string(error);
+# endif
     }
   };
 }

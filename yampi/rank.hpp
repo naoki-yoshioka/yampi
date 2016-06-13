@@ -161,11 +161,11 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  ::yampi::rank const any_source{::yampi::any_source_t{}};
-  ::yampi::rank const null_process{::yampi::null_process_t{}};
+  ::yampi::rank const any_source = ::yampi::rank{::yampi::any_source_t{}};
+  ::yampi::rank const null_process = ::yampi::rank{::yampi::null_process_t{}};
 #   else
-  ::yampi::rank const any_source(::yampi::any_source_t());
-  ::yampi::rank const null_process(::yampi::null_process_t());
+  ::yampi::rank const any_source = ::yampi::rank(::yampi::any_source_t());
+  ::yampi::rank const null_process = ::yampi::rank(::yampi::null_process_t());
 #   endif
 # endif
 
@@ -179,9 +179,9 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::rank const host{::yampi::host_process_t{}};
+    ::yampi::rank const host = ::yampi::rank{::yampi::host_process_t{}};
 #   else
-    ::yampi::rank const host(::yampi::host_process_t());
+    ::yampi::rank const host = ::yampi::rank(::yampi::host_process_t());
 #   endif
 # endif
 
@@ -198,9 +198,9 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::rank const host{::yampi::host_process_t{}};
+    ::yampi::rank const host = ::yampi::rank{::yampi::host_process_t{}};
 #   else
-    ::yampi::rank const host(::yampi::host_process_t());
+    ::yampi::rank const host = ::yampi::rank(::yampi::host_process_t());
 #   endif
 # endif
 
@@ -217,9 +217,9 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::rank const io{::yampi::io_process_t{}};
+    ::yampi::rank const io = ::yampi::rank{::yampi::io_process_t{}};
 #   else
-    ::yampi::rank const io(::yampi::io_process_t());
+    ::yampi::rank const io = ::yampi::rank(::yampi::io_process_t());
 #   endif
 # endif
 
@@ -236,9 +236,9 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::rank const io{::yampi::io_process_t{}};
+    ::yampi::rank const io = ::yampi::rank{::yampi::io_process_t{}};
 #   else
-    ::yampi::rank const io(::yampi::io_process_t());
+    ::yampi::rank const io = ::yampi::rank(::yampi::io_process_t());
 #   endif
 # endif
 
