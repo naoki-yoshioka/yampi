@@ -153,11 +153,11 @@ namespace yampi
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::tag const mpi_tag_lower_bound{0};
-    ::yampi::tag const mpi_tag_upper_bound{::yampi::mpi_tag_upper_bound_t{}};
+    ::yampi::tag const mpi_tag_lower_bound = ::yampi::tag{0};
+    ::yampi::tag const mpi_tag_upper_bound = ::yampi::tag{::yampi::mpi_tag_upper_bound_t{}};
 #   else
-    ::yampi::tag const mpi_tag_lower_bound(0);
-    ::yampi::tag const mpi_tag_upper_bound(::yampi::mpi_tag_upper_bound_t());
+    ::yampi::tag const mpi_tag_lower_bound = ::yampi::tag(0);
+    ::yampi::tag const mpi_tag_upper_bound = ::yampi::tag(::yampi::mpi_tag_upper_bound_t());
 #   endif
 # endif
 
