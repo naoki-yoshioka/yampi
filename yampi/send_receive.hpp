@@ -491,9 +491,9 @@ namespace yampi
       ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
 # ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-      typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
-# else
       using value_type = typename std::iterator_traits<ContiguousIterator>::value_type;
+# else
+      typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
 # endif
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
