@@ -4,17 +4,12 @@
 # include <boost/config.hpp>
 
 # include <cstddef>
-# ifdef BOOST_HAS_STDINT_H
-#   include <cstdint>
-# endif
 # include <complex>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
 # else
 #   include <boost/type_traits/integral_constant.hpp>
 # endif
-
-# include <boost/cstdint.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -110,90 +105,6 @@ namespace yampi
   struct has_corresponding_mpi_data_type<wchar_t>
     : public YAMPI_true_type
   { };
-
-/*
-# ifdef BOOST_HAS_STDINT_H
-  template <>
-  struct has_corresponding_mpi_data_type<std::int8_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::int16_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::int32_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::int64_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::uint8_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::uint16_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::uint32_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<std::uint64_t>
-    : public YAMPI_true_type
-  { };
-# endif
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::int8_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::int16_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::int32_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::int64_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::uint8_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::uint16_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::uint32_t>
-    : public YAMPI_true_type
-  { };
-
-  template <>
-  struct has_corresponding_mpi_data_type<boost::uint64_t>
-    : public YAMPI_true_type
-  { };
-*/
 
   template <>
   struct has_corresponding_mpi_data_type<bool>

@@ -4,12 +4,7 @@
 # include <boost/config.hpp>
 
 # include <cstddef>
-# ifdef BOOST_HAS_STDINT_H
-#   include <cstdint>
-# endif
 # include <complex>
-
-# include <boost/cstdint.hpp>
 
 # include <mpi.h>
 
@@ -82,74 +77,6 @@ namespace yampi
   template <>
   struct mpi_data_type_of<wchar_t>
   { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_WCHAR; };
-
-/*
-# ifdef BOOST_HAS_STDINT_H
-  template <>
-  struct mpi_data_type_of<std::int8_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT8_T; };
-
-  template <>
-  struct mpi_data_type_of<std::int16_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT16_T; };
-
-  template <>
-  struct mpi_data_type_of<std::int32_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT32_T; };
-
-  template <>
-  struct mpi_data_type_of<std::int64_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT64_T; };
-
-  template <>
-  struct mpi_data_type_of<std::uint8_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT8_T; };
-
-  template <>
-  struct mpi_data_type_of<std::uint16_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT16_T; };
-
-  template <>
-  struct mpi_data_type_of<std::uint32_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT32_T; };
-
-  template <>
-  struct mpi_data_type_of<std::uint64_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT64_T; };
-# endif
-
-  template <>
-  struct mpi_data_type_of<boost::int8_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT8_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::int16_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT16_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::int32_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT32_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::int64_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_INT64_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::uint8_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT8_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::uint16_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT16_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::uint32_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT32_T; };
-
-  template <>
-  struct mpi_data_type_of<boost::uint64_t>
-  { BOOST_STATIC_CONSTEXPR MPI_Datatype value = MPI_UINT64_T; };
-*/
 
   template <>
   struct mpi_data_type_of<bool>
