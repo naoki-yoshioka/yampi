@@ -92,7 +92,7 @@ namespace yampi
     bool operator==(rank const other) const { return mpi_rank_ == other.mpi_rank_; }
     bool operator<(rank const other) const { return mpi_rank_ < other.mpi_rank_; }
 
-    int mpi_rank() const { return mpi_rank_; }
+    int const& mpi_rank() const { return mpi_rank_; }
 
    private:
     int inquire_environment(int const key_value) const

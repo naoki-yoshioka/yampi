@@ -75,7 +75,7 @@ namespace yampi
     bool operator==(tag const other) const { return mpi_tag_ == other.mpi_tag_; }
     bool operator<(tag const other) const { return mpi_tag_ < other.mpi_tag_; }
 
-    int mpi_tag() const { return mpi_tag_; }
+    int const& mpi_tag() const { return mpi_tag_; }
 
    private:
     int inquire_upper_bound() const

@@ -101,7 +101,7 @@ namespace yampi
 # endif
     }
 
-    MPI_Comm mpi_comm() const { return mpi_comm_; }
+    MPI_Comm const& mpi_comm() const { return mpi_comm_; }
   };
 }
 
