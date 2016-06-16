@@ -101,6 +101,23 @@ namespace yampi
 # endif
     }
 
+    void barrier() const
+    {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+      auto const error_code = MPI_Barrier(mpi_comm_);
+# else
+      int const error_code = MPI_Barrier(mpi_comm_);
+# endif
+
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error{error_code, "yampi::communicator::barrier"};
+# else
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::barrier");
+# endif
+    }
+
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
   };
 }
