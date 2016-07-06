@@ -25,11 +25,11 @@ namespace yampi
   namespace detail
   {
     template <typename T>
-    BOOST_CONSTEXPR T&& forward(typename KET_remove_reference<T>::type& t) BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR T&& forward(typename YAMPI_remove_reference<T>::type& t) BOOST_NOEXCEPT_OR_NOTHROW
     { return static_cast<T&&>(t); }
 
     template <typename T>
-    BOOST_CONSTEXPR T&& forward(typename KET_remove_reference<T>::type&& t) BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR T&& forward(typename YAMPI_remove_reference<T>::type&& t) BOOST_NOEXCEPT_OR_NOTHROW
     { return static_cast<T&&>(t); }
   }
 }
