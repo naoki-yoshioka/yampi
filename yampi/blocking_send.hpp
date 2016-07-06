@@ -55,10 +55,10 @@ namespace yampi
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Send(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+        = MPI_Send(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # else
       int const error_code
-        = MPI_Send(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+        = MPI_Send(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX

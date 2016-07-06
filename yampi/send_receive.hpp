@@ -69,7 +69,7 @@ namespace yampi
 
       auto const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<SendValue*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(receive_value), 1, ::yampi::mpi_data_type_of<ReceiveValue>::value, source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), YAMPI_addressof(stat));
 # else
@@ -77,7 +77,7 @@ namespace yampi
 
       int const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<SendValue*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(receive_value), 1, ::yampi::mpi_data_type_of<ReceiveValue>::value, source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), YAMPI_addressof(stat));
 # endif
@@ -338,13 +338,13 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<SendValue*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(receive_value), 1, ::yampi::mpi_data_type_of<ReceiveValue>::value, source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else
       int const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<SendValue*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<SendValue>::value, destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(receive_value), 1, ::yampi::mpi_data_type_of<ReceiveValue>::value, source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # endif

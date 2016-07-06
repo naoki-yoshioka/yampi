@@ -62,12 +62,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Isend(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # else
       MPI_Request request;
 
       int const error_code
-        = MPI_Isend(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX

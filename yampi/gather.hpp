@@ -163,10 +163,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Gather(YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
 # else
       int const error_code
-        = MPI_Gather(YAMPI_addressof(send_value), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
