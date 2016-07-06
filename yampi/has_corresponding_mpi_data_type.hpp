@@ -106,7 +106,7 @@ namespace yampi
     : public YAMPI_true_type
   { };
 
-# if MPI_VERSION >= 3
+# if defined(__FUJITSU) || MPI_VERSION >= 3
   template <>
   struct has_corresponding_mpi_data_type<bool>
     : public YAMPI_true_type
@@ -126,7 +126,7 @@ namespace yampi
   struct has_corresponding_mpi_data_type<std::complex<long double> >
     : public YAMPI_true_type
   { };
-# endif // MPI_VERSION >= 3
+# endif // defined(__FUJITSU) || MPI_VERSION >= 3
 }
 
 

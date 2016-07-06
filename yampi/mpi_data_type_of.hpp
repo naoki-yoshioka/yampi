@@ -79,7 +79,7 @@ namespace yampi
   struct mpi_data_type_of<wchar_t>
   { static constexpr MPI_Datatype value = MPI_WCHAR; };
 
-#   if MPI_VERSION >= 3
+#   if defined(__FUJITSU) || MPI_VERSION >= 3
   template <>
   struct mpi_data_type_of<bool>
   { static constexpr MPI_Datatype value = MPI_CXX_BOOL; };
@@ -95,7 +95,7 @@ namespace yampi
   template <>
   struct mpi_data_type_of<std::complex<long double> >
   { static constexpr MPI_Datatype value = MPI_CXX_LONG_DOUBLE_COMPLEX; };
-#   endif // MPI_VERSION >= 3
+#   endif // defined(__FUJITSU) || MPI_VERSION >= 3
 # else // BOOST_NO_CXX11_CONSTEXPR
   template <typename T>
   struct mpi_data_type_of
@@ -150,7 +150,7 @@ namespace yampi
   template <>
   MPI_Datatype const mpi_data_type_of<wchar_t>::value = MPI_WCHAR;
 
-#   if MPI_VERSION >= 3
+#   if defined(__FUJITSU) || MPI_VERSION >= 3
   template <>
   MPI_Datatype const mpi_data_type_of<bool>::value = MPI_CXX_BOOL;
 
