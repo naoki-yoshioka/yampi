@@ -239,10 +239,10 @@ namespace yampi
     {
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       if (comm_.rank() == root_)
-        throw ::yampi::nonroot_call_on_root_error{};
+        throw ::yampi::nonroot_call_on_root_error{"yampi::gather::call"};
 # else
       if (comm_.rank() == root_)
-        throw ::yampi::nonroot_call_on_root_error();
+        throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
 # endif
 
 # ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
