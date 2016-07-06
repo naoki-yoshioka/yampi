@@ -36,11 +36,11 @@ namespace yampi
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    explicit communicator(MPI_Comm const mpi_comm)
+    explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
       : mpi_comm_{mpi_comm}
     { }
 # else
-    explicit communicator(MPI_Comm const mpi_comm)
+    explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
       : mpi_comm_(mpi_comm)
     { }
 # endif
