@@ -15,6 +15,9 @@
 # else
 #   include <boost/core/addressof.hpp>
 # endif
+# if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
+#   include <utility>
+# endif
 
 # include <mpi.h>
 
