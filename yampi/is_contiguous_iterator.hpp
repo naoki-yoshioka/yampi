@@ -33,7 +33,7 @@ namespace yampi
     : YAMPI_false_type
   { };
 
-# ifdef __GNUC__
+# if defined(__GNUC__)
   template <typename Value, typename Allocator>
   struct is_contiguous_iterator<
     __gnu_cxx::__normal_iterator<Value*, std::vector<Value, Allocator> > >
@@ -45,7 +45,7 @@ namespace yampi
     __gnu_cxx::__normal_iterator<Value const*, std::vector<Value, Allocator> > >
     : YAMPI_true_type
   { };
-# else
+# elif !defined(__FUJITSU)
   template <typename Iterator>
   struct is_contiguous_iterator<
     Iterator,
