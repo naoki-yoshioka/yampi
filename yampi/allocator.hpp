@@ -22,6 +22,7 @@
 # include <mpi.h>
 
 # include <yampi/error.hpp>
+# include <yampi/detail/workaround.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -150,7 +151,7 @@ namespace yampi
 # if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename U, typename... Arguments>
     void construct(U* ptr, Arguments&&... arguments)
-    { ::new((void *)ptr) U(std::forward<Arguments>(arguments)...); }
+    { ::new((void *)ptr) U(YAMPI_DETAIL_forward<Arguments>(arguments)...); }
 # else
     void construct(pointer ptr, const_reference value)
     { new((void *)ptr) T(value); }

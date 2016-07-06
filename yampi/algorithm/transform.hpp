@@ -29,6 +29,7 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/status.hpp>
+# include <yampi/detail/workaround.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_enable_if std::enable_if
@@ -40,7 +41,7 @@
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
 #   define YAMPI_RVALUE_REFERENCE_OR_COPY(Type) Type&&
-#   define YAMPI_FORWARD(Value, value) std::forward<Value>(value)
+#   define YAMPI_FORWARD(Value, value) YAMPI_DETAIL_forward<Value>(value)
 # else
 #   define YAMPI_RVALUE_REFERENCE_OR_COPY(Type) Type
 #   define YAMPI_FORWARD(Value, value) value
