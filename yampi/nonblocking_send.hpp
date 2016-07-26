@@ -9,9 +9,6 @@
 # else
 #   include <boost/utility/enable_if.hpp>
 # endif
-# ifndef BOOST_NO_CXX11_HDR_ARRAY
-#   include <array>
-# endif
 # include <vector>
 # include <iterator>
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -19,8 +16,6 @@
 # else
 #   include <boost/core/addressof.hpp>
 # endif
-
-# include <boost/array.hpp>
 
 # include <mpi.h>
 
