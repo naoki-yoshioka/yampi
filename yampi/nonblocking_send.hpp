@@ -19,8 +19,9 @@
 
 # include <mpi.h>
 
-# include <yampi/has_corresponding_mpi_data_type.hpp>
-# include <yampi/mpi_data_type_of.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
+# include <yampi/datatype_of.hpp>
+# include <yampi/datatype.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -46,7 +47,7 @@ namespace yampi
   {
     template <typename Value>
     inline
-    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, ::yampi::request>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, ::yampi::request>::type
     nonblocking_send_value(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -57,12 +58,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # else
       MPI_Request request;
 
       int const error_code
-        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::mpi_data_type_of<Value>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -81,7 +82,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       ::yampi::request>::type
     nonblocking_send_iter(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -99,12 +100,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Isend(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # else
       MPI_Request request;
 
       int const error_code
-        = MPI_Isend(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
+        = MPI_Isend(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(request));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -123,7 +124,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       ::yampi::request>::type
     nonblocking_send_iter(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -134,7 +135,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value,
       ::yampi::request>::type
     nonblocking_send_range(ContiguousRange& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(boost::begin(values), boost::end(values), destination, tag, communicator); }
@@ -142,7 +143,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
       ::yampi::request>::type
     nonblocking_send_range(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
     { return ::yampi::nonblocking_send_detail::nonblocking_send_iter(boost::begin(values), boost::end(values), destination, tag, communicator); }

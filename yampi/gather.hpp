@@ -23,10 +23,11 @@
 
 # include <mpi.h>
 
-# include <yampi/has_corresponding_mpi_data_type.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
-# include <yampi/mpi_data_type_of.hpp>
+# include <yampi/datatype_of.hpp>
+# include <yampi/datatype.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -149,7 +150,7 @@ namespace yampi
    private:
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     do_call_value(
       typename std::iterator_traits<ContiguousIterator>::value_type const& send_value,
@@ -163,10 +164,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # else
       int const error_code
-        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), 1, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -179,7 +180,7 @@ namespace yampi
     }
 
     template <typename Value>
-    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, void>::type
     do_call_value(Value const& send_value) const
     {
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -206,7 +207,7 @@ namespace yampi
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
         and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::value_type, typename std::iterator_traits<ContiguousIterator2>::value_type>::value,
       void>::type
     do_call_iter(ContiguousIterator1 const send_first, int const length, ContiguousIterator2 const receive_first) const
@@ -219,10 +220,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), length, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # else
       int const error_code
-        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::mpi_data_type_of<value_type>::value, YAMPI_addressof(*receive_first), length, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -280,7 +281,7 @@ namespace yampi
 
     template <typename ContiguousRange, typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value
         and YAMPI_is_same<typename boost::range_value<ContiguousRange const>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     do_call_range(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
@@ -292,7 +293,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
       void>::type
     do_call_range(ContiguousRange const& send_values) const
     {

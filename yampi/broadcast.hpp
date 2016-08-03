@@ -22,10 +22,11 @@
 
 # include <mpi.h>
 
-# include <yampi/has_corresponding_mpi_data_type.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
-# include <yampi/mpi_data_type_of.hpp>
+# include <yampi/datatype_of.hpp>
+# include <yampi/datatype.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -116,16 +117,16 @@ namespace yampi
    private:
     template <typename Value>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<Value>::value,
+      ::yampi::has_corresponding_datatype<Value>::value,
       void>::type
     do_call_value(Value& value) const
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Bcast(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Bcast(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # else
       int const error_code
-        = MPI_Bcast(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Bcast(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -139,7 +140,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     do_call_iter(ContiguousIterator const first, int const length) const
     {
@@ -151,10 +152,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Bcast(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Bcast(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # else
       int const error_code
-        = MPI_Bcast(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, root_.mpi_rank(), comm_.mpi_comm());
+        = MPI_Bcast(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -168,7 +169,7 @@ namespace yampi
 
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     do_call_iter(ContiguousIterator const first, ContiguousIterator const last) const
     {
@@ -178,7 +179,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value,
       void>::type
     do_call_range(ContiguousRange& values) const
     {
@@ -189,7 +190,7 @@ namespace yampi
 
     template <typename ContiguousRange>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
       void>::type
     do_call_range(ContiguousRange const& values) const
     {

@@ -17,10 +17,8 @@
 # include <yampi/tag.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/communicator.hpp>
-# include <yampi/has_corresponding_mpi_data_type.hpp>
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
-# include <yampi/mpi_data_type_of.hpp>
 # include <yampi/communicator.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS

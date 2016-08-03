@@ -12,8 +12,9 @@
 
 # include <mpi.h>
 
-# include <yampi/has_corresponding_mpi_data_type.hpp>
-# include <yampi/mpi_data_type_of.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
+# include <yampi/datatype_of.hpp>
+# include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 
@@ -83,7 +84,7 @@ namespace yampi
 
     template <typename Value>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<Value>::value,
+      ::yampi::has_corresponding_datatype<Value>::value,
       std::size_t>::type
     message_length() const
     {
@@ -94,11 +95,11 @@ namespace yampi
       auto count = int();
 #   endif
 
-      auto const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
+      auto const error_code = MPI_GET_COUNT(&stat_, ::yampi::datatype_of<Value>::call().mpi_datatype(), &count);
 # else
       int count;
 
-      int const error_code = MPI_GET_COUNT(&stat_, ::yampi::mpi_data_type_of<Value>::value, &count);
+      int const error_code = MPI_GET_COUNT(&stat_, ::yampi::datatype_of<Value>::call().mpi_datatype(), &count);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX

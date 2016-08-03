@@ -22,7 +22,7 @@
 
 # include <yampi/blocking_send.hpp>
 # include <yampi/blocking_receive.hpp>
-# include <yampi/has_corresponding_mpi_data_type.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
 # include <yampi/communicator.hpp>
@@ -57,7 +57,7 @@ namespace yampi
       template <typename Value, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<Value>::value,
+        ::yampi::has_corresponding_datatype<Value>::value,
         boost::optional< ::yampi::status> >::type
       transform_value(
         Value const& send_value, ::yampi::rank const source, Value& receive_value, ::yampi::rank const destination,
@@ -85,7 +85,7 @@ namespace yampi
       template <typename ContiguousIterator1, typename ContiguousIterator2, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
+        ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
         boost::optional< ::yampi::status> >::type
       transform_iter(
@@ -134,7 +134,7 @@ namespace yampi
       template <typename ContiguousIterator1, typename ContiguousIterator2, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
+        ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
         boost::optional< ::yampi::status> >::type
       transform_iter(
@@ -151,7 +151,7 @@ namespace yampi
       template <typename ContiguousRange, typename ContiguousIterator, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value
+        ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value
           and YAMPI_is_same<typename boost::range_value<ContiguousRange>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
         boost::optional< ::yampi::status> >::type
       transform_range(
@@ -168,7 +168,7 @@ namespace yampi
       // ignoring status
       template <typename Value, typename UnaryFunction>
       inline
-      typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+      typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, void>::type
       transform_value(
         Value const& send_value, ::yampi::rank const source, Value& receive_value, ::yampi::rank const destination,
         ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status,
@@ -192,7 +192,7 @@ namespace yampi
       template <typename ContiguousIterator1, typename ContiguousIterator2, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
+        ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
         void>::type
       transform_iter(
@@ -238,7 +238,7 @@ namespace yampi
       template <typename ContiguousIterator1, typename ContiguousIterator2, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
+        ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
           and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::type, typename std::iterator_traits<ContiguousIterator2>::type>::value,
         void>::type
       transform_iter(
@@ -255,7 +255,7 @@ namespace yampi
       template <typename ContiguousRange, typename ContiguousIterator, typename UnaryFunction>
       inline
       typename YAMPI_enable_if<
-        ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value
+        ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value
           and YAMPI_is_same<typename boost::range_value<ContiguousRange>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
         void>::type
       transform_range(

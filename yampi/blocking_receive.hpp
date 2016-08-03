@@ -23,10 +23,11 @@
 
 # include <mpi.h>
 
-# include <yampi/has_corresponding_mpi_data_type.hpp>
+# include <yampi/has_corresponding_datatype.hpp>
 # include <yampi/is_contiguous_iterator.hpp>
 # include <yampi/is_contiguous_range.hpp>
-# include <yampi/mpi_data_type_of.hpp>
+# include <yampi/datatype_of.hpp>
+# include <yampi/datatype.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -54,7 +55,7 @@ namespace yampi
     template <typename Value>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<Value>::value,
+      ::yampi::has_corresponding_datatype<Value>::value,
       ::yampi::status>::type
     blocking_receive_value(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -66,12 +67,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # else
       MPI_Status stat;
 
       int const error_code
-        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -90,7 +91,7 @@ namespace yampi
     template <typename Value>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<Value>::value,
+      ::yampi::has_corresponding_datatype<Value>::value,
       std::pair<Value, ::yampi::status> >::type
     blocking_receive_value(::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -104,13 +105,13 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # else
       Value result;
       MPI_Status stat;
 
       int const error_code
-        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -130,7 +131,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       ::yampi::status>::type
     blocking_receive_iter(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -148,12 +149,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # else
       MPI_Status stat;
 
       int const error_code
-        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
+        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -172,7 +173,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       ::yampi::status>::type
     blocking_receive_iter(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -184,7 +185,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value,
       ::yampi::status>::type
     blocking_receive_range(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -195,7 +196,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_value<ContiguousRange const>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
       ::yampi::status>::type
     blocking_receive_range(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
     {
@@ -207,15 +208,15 @@ namespace yampi
     // Blocking receive (ignoring status)
     template <typename Value>
     inline
-    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, void>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, void>::type
     blocking_receive_value(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else
       int const error_code
-        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(value), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -229,7 +230,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if< ::yampi::has_corresponding_mpi_data_type<Value>::value, Value>::type
+    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, Value>::type
     blocking_receive_value(::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
@@ -240,12 +241,12 @@ namespace yampi
 #   endif
 
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else
       Value result;
 
       int const error_code
-        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::mpi_data_type_of<Value>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(result), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -263,7 +264,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     blocking_receive_iter(ContiguousIterator const first, int const length, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const)
     {
@@ -275,10 +276,10 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
-        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else
       int const error_code
-        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::mpi_data_type_of<value_type>::value, source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
+        = MPI_Recv(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
@@ -293,7 +294,7 @@ namespace yampi
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
     blocking_receive_iter(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore)
     {
@@ -305,7 +306,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_iterator<ContiguousRange>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_iterator<ContiguousRange>::type>::value,
       void>::type
     blocking_receive_range(ContiguousRange& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore)
     { ::yampi::blocking_receive_detail::blocking_receive_iter(boost::begin(values), boost::end(values), source, tag, communicator, ignore); }
@@ -313,7 +314,7 @@ namespace yampi
     template <typename ContiguousRange>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_mpi_data_type<typename boost::range_iterator<ContiguousRange const>::type>::value,
+      ::yampi::has_corresponding_datatype<typename boost::range_iterator<ContiguousRange const>::type>::value,
       void>::type
     blocking_receive_range(ContiguousRange const& values, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore)
     { ::yampi::blocking_receive_detail::blocking_receive_iter(boost::begin(values), boost::end(values), source, tag, communicator, ignore); }
