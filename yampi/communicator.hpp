@@ -143,19 +143,19 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  auto const world_communicator = ::yampi::rank{::yampi::world_communicator_t{}};
-  auto const self_communicator = ::yampi::rank{::yampi::self_communicator_t{}};
+  auto const world_communicator = ::yampi::communicator{::yampi::world_communicator_t{}};
+  auto const self_communicator = ::yampi::communicator{::yampi::self_communicator_t{}};
 #   else
-  auto const world_communicator = ::yampi::rank(::yampi::world_communicator_t());
-  auto const self_communicator = ::yampi::rank(::yampi::self_communicator_t());
+  auto const world_communicator = ::yampi::communicator(::yampi::world_communicator_t());
+  auto const self_communicator = ::yampi::communicator(::yampi::self_communicator_t());
 #   endif
 # else
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-  ::yampi::communicator const world_communicator = ::yampi::rank{::yampi::world_communicator_t{}};
-  ::yampi::communicator const self_communicator = ::yampi::rank{::yampi::self_communicator_t{}};
+  ::yampi::communicator const world_communicator = ::yampi::communicator{::yampi::world_communicator_t{}};
+  ::yampi::communicator const self_communicator = ::yampi::communicator{::yampi::self_communicator_t{}};
 #   else
-  ::yampi::communicator const world_communicator = ::yampi::rank(::yampi::world_communicator_t());
-  ::yampi::communicator const self_communicator = ::yampi::rank(::yampi::self_communicator_t());
+  ::yampi::communicator const world_communicator = ::yampi::communicator(::yampi::world_communicator_t());
+  ::yampi::communicator const self_communicator = ::yampi::communicator(::yampi::self_communicator_t());
 #   endif
 # endif
 }
