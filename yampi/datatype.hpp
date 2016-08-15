@@ -14,19 +14,19 @@ namespace yampi
 
    public:
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    BOOST_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_{MPI_DATATYPE_NULL}
     { }
 
-    explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_{mpi_datatype}
     { }
 # else
-    BOOST_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
 
-    explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(mpi_datatype)
     { }
 # endif
