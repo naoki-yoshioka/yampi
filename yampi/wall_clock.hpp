@@ -38,7 +38,7 @@ namespace yampi
     typedef YAMPI_chrono::duration<rep, period> duration;
     typedef YAMPI_chrono::time_point< ::yampi::wall_clock> time_point;
 # endif
-    BOOST_STATIC_CONSTEXPR bool is_steady = true;
+    BOOST_STATIC_CONSTEXPR bool is_steady = false;
 
     static time_point now() { return static_cast<time_point>(static_cast<duration>(MPI_Wtime())); }
     static duration tick() { return static_cast<duration>(MPI_Wtick()); }
