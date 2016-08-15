@@ -11,6 +11,9 @@
 
 namespace yampi
 {
+  struct world_communicator_t { };
+  struct self_communicator_t { };
+
   class communicator
   {
     MPI_Comm mpi_comm_;
@@ -39,9 +42,25 @@ namespace yampi
     explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
       : mpi_comm_{mpi_comm}
     { }
+
+    explicit BOOST_CONSTEXPR communicator(::yampi::world_communicator_t const)
+      : mpi_comm_{MPI_COMM_WORLD}
+    { }
+
+    explicit BOOST_CONSTEXPR communicator(::yampi::self_communicator_t const)
+      : mpi_comm_{MPI_COMM_SELF}
+    { }
 # else
     explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
       : mpi_comm_(mpi_comm)
+    { }
+
+    explicit BOOST_CONSTEXPR communicator(::yampi::world_communicator_t const)
+      : mpi_comm_(MPI_COMM_WORLD)
+    { }
+
+    explicit BOOST_CONSTEXPR communicator(::yampi::self_communicator_t const)
+      : mpi_comm_(MPI_COMM_SELF)
     { }
 # endif
 
@@ -120,6 +139,25 @@ namespace yampi
 
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
   };
+
+
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+  auto const world_communicator = ::yampi::rank{::yampi::world_communicator_t{}};
+  auto const self_communicator = ::yampi::rank{::yampi::self_communicator_t{}};
+#   else
+  auto const world_communicator = ::yampi::rank(::yampi::world_communicator_t());
+  auto const self_communicator = ::yampi::rank(::yampi::self_communicator_t());
+#   endif
+# else
+#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+  ::yampi::communicator const world_communicator = ::yampi::rank{::yampi::world_communicator_t{}};
+  ::yampi::communicator const self_communicator = ::yampi::rank{::yampi::self_communicator_t{}};
+#   else
+  ::yampi::communicator const world_communicator = ::yampi::rank(::yampi::world_communicator_t());
+  ::yampi::communicator const self_communicator = ::yampi::rank(::yampi::self_communicator_t());
+#   endif
+# endif
 }
 
 

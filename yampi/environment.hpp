@@ -5,7 +5,6 @@
 
 # include <cstddef>
 # include <stdexcept>
-# include <string>
 
 # include <mpi.h>
 
@@ -130,45 +129,6 @@ namespace yampi
 # endif
 
     static int error_code_on_last_finalize() { return error_code_on_last_finalize_; }
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    ::yampi::communicator world() const { return ::yampi::communicator{MPI_COMM_WORLD}; }
-    ::yampi::communicator self() const { return ::yampi::communicator{MPI_COMM_SELF}; }
-# else
-    ::yampi::communicator world() const { return ::yampi::communicator(MPI_COMM_WORLD); }
-    ::yampi::communicator self() const { return ::yampi::communicator(MPI_COMM_SELF); }
-# endif
-
-    std::string processor_name() const
-    {
-      char name[MPI_MAX_PROCESSOR_NAME];
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-        auto length = int{};
-#   else
-        auto length = int();
-#   endif
-
-      auto const error_code = MPI_Get_processor_name(name, &length);
-# else
-      int length;
-
-      int const error_code = MPI_Get_processor_name(name, &length);
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::environment::processor_name"};
-# else
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::environment::processor_name");
-# endif
-
-      return name;
-    }
-
-    double wall_clock_tick() const { return MPI_Wtick(); }
-    double wall_clock_time() const { return MPI_Wtime(); }
   };
 
   bool environment::is_initialized_ = false;
