@@ -13,23 +13,29 @@ namespace yampi
     MPI_Datatype mpi_datatype_;
 
    public:
+# ifndef __FUJITSU
+#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
+# else
+#   define YAMPI_CONSTEXPR
+# endif
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    YAMPI_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_{MPI_DATATYPE_NULL}
     { }
 
-    explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_{mpi_datatype}
     { }
 # else
-    datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    YAMPI_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
 
-    explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(mpi_datatype)
     { }
 # endif
+# undef YAMPI_CONSTEXPR
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     datatype(datatype const&) = default;

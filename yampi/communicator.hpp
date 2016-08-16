@@ -38,16 +38,21 @@ namespace yampi
     ~communicator() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
+# ifndef __FUJITSU
+#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
+# else
+#   define YAMPI_CONSTEXPR
+# endif
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
     explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
       : mpi_comm_{mpi_comm}
     { }
 
-    explicit BOOST_CONSTEXPR communicator(::yampi::world_communicator_t const)
+    explicit YAMPI_CONSTEXPR communicator(::yampi::world_communicator_t const)
       : mpi_comm_{MPI_COMM_WORLD}
     { }
 
-    explicit BOOST_CONSTEXPR communicator(::yampi::self_communicator_t const)
+    explicit YAMPI_CONSTEXPR communicator(::yampi::self_communicator_t const)
       : mpi_comm_{MPI_COMM_SELF}
     { }
 # else
@@ -55,14 +60,15 @@ namespace yampi
       : mpi_comm_(mpi_comm)
     { }
 
-    explicit BOOST_CONSTEXPR communicator(::yampi::world_communicator_t const)
+    explicit YAMPI_CONSTEXPR communicator(::yampi::world_communicator_t const)
       : mpi_comm_(MPI_COMM_WORLD)
     { }
 
-    explicit BOOST_CONSTEXPR communicator(::yampi::self_communicator_t const)
+    explicit YAMPI_CONSTEXPR communicator(::yampi::self_communicator_t const)
       : mpi_comm_(MPI_COMM_SELF)
     { }
 # endif
+# undef YAMPI_CONSTEXPR
 
     int size() const
     {
