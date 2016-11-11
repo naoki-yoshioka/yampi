@@ -151,7 +151,8 @@ namespace yampi
 
 
   template <typename Value>
-  inline ::yampi::request
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value const>::value, ::yampi::request>::type
   nonblocking_send(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_send_detail::nonblocking_send_value(value, destination, tag, communicator); }
 

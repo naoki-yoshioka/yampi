@@ -553,7 +553,11 @@ namespace yampi
 
 
   template <typename SendValue, typename ReceiveValue>
-  inline ::yampi::status
+  inline
+  typename YAMPI_enable_if<
+    (not ::yampi::is_contiguous_range<SendValue const>::value)
+      or (not ::yampi::is_contiguous_range<ReceiveValue>::value),
+    ::yampi::status>::type
   send_receive(
     SendValue const& send_value, ::yampi::rank const destination, ::yampi::tag const send_tag,
     ReceiveValue& receive_value, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -611,7 +615,8 @@ namespace yampi
 
   // with replacement
   template <typename Value>
-  inline ::yampi::status
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, ::yampi::status>::type
   send_receive(
     Value& value, ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator)
@@ -656,7 +661,11 @@ namespace yampi
 
   // ignoring status
   template <typename SendValue, typename ReceiveValue>
-  inline void
+  inline
+  typename YAMPI_enable_if<
+    (not ::yampi::is_contiguous_range<SendValue const>::value)
+      or (not ::yampi::is_contiguous_range<ReceiveValue>::value),
+    void>::type
   send_receive(
     SendValue const& send_value, ::yampi::rank const destination, ::yampi::tag const send_tag,
     ReceiveValue& receive_value, ::yampi::rank const source, ::yampi::tag const receive_tag,
@@ -714,7 +723,8 @@ namespace yampi
 
   // with replacement, ignoring status
   template <typename Value>
-  inline void
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, void>::type
   send_receive(
     Value& value, ::yampi::rank const destination, ::yampi::tag const send_tag, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)

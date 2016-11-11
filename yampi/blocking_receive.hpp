@@ -323,7 +323,8 @@ namespace yampi
 
   // Blocking receive
   template <typename Value>
-  inline yampi::status
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, ::yampi::status>::type
   blocking_receive(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::blocking_receive_detail::blocking_receive_value(value, source, tag, communicator); }
 
@@ -359,7 +360,8 @@ namespace yampi
 
   // Blocking receive (ignoring status)
   template <typename Value>
-  inline void
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, void>::type
   blocking_receive(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator, ::yampi::ignore_status_t const ignore_status)
   { ::yampi::blocking_receive_detail::blocking_receive_value(value, source, tag, communicator, ignore_status); }
 

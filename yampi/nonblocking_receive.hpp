@@ -198,7 +198,8 @@ namespace yampi
 
 
   template <typename Value>
-  inline ::yampi::request
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, ::yampi::request>::type
   nonblocking_receive(Value& value, ::yampi::rank const source, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { return ::yampi::nonblocking_receive_detail::nonblocking_receive_value(value, source, tag, communicator); }
 

@@ -123,7 +123,8 @@ namespace yampi
 
 
   template <typename Value>
-  inline void
+  inline
+  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value const>::value, void>::type
   blocking_send(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
   { ::yampi::blocking_send_detail::blocking_send_value(value, destination, tag, communicator); }
 

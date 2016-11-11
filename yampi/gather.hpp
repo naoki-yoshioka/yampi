@@ -88,7 +88,7 @@ namespace yampi
 
 
     template <typename Value>
-    typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value>::value, void>::type
+    typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value const>::value, void>::type
     call(Value const& send_value) const
     { do_call_value(send_value); }
 
