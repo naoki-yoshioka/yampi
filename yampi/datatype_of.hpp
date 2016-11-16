@@ -66,7 +66,7 @@ namespace yampi
   YAMPI_NEW_DATATYPE(long double, ::yampi::datatype{MPI_LONG_DOUBLE})
   YAMPI_NEW_DATATYPE(wchar_t, ::yampi::datatype{MPI_WCHAR})
 
-#   if defined(__FUJITSU) || MPI_VERSION >= 3
+#   if defined(YAMPI_ENABLE_CXX_DATATYPES) || defined(__FUJITSU) || MPI_VERSION >= 3
   YAMPI_NEW_DATATYPE(bool, ::yampi::datatype{MPI_CXX_BOOL})
   YAMPI_NEW_DATATYPE(std::complex<float>, ::yampi::datatype{MPI_CXX_FLOAT_COMPLEX})
   YAMPI_NEW_DATATYPE(std::complex<double>, ::yampi::datatype{MPI_CXX_DOUBLE_COMPLEX})
@@ -93,7 +93,7 @@ namespace yampi
   YAMPI_NEW_DATATYPE(long double, ::yampi::datatype(MPI_LONG_DOUBLE))
   YAMPI_NEW_DATATYPE(wchar_t, ::yampi::datatype(MPI_WCHAR))
 
-#   if defined(__FUJITSU) || MPI_VERSION >= 3
+#   if defined(YAMPI_ENABLE_CXX_DATATYPES) || defined(__FUJITSU) || MPI_VERSION >= 3
   YAMPI_NEW_DATATYPE(bool, ::yampi::datatype(MPI_CXX_BOOL))
   YAMPI_NEW_DATATYPE(std::complex<float>, ::yampi::datatype(MPI_CXX_FLOAT_COMPLEX))
   YAMPI_NEW_DATATYPE(std::complex<double>, ::yampi::datatype(MPI_CXX_DOUBLE_COMPLEX))
