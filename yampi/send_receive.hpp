@@ -124,7 +124,7 @@ namespace yampi
 
       auto const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(*send_first), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<send_value_type*>(YAMPI_addressof(*send_first)), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(*receive_first), receive_length, ::yampi::datatype_of<receive_value_type>::call().mpi_datatype(), source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), YAMPI_addressof(stat));
 # else
@@ -132,7 +132,7 @@ namespace yampi
 
       int const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(*send_first), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<send_value_type*>(YAMPI_addressof(*send_first)), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(*receive_first), receive_length, ::yampi::datatype_of<receive_value_type>::call().mpi_datatype(), source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), YAMPI_addressof(stat));
 # endif
@@ -381,13 +381,13 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
       auto const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(*send_first), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<send_value_type*>(YAMPI_addressof(*send_first)), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(*receive_first), receive_length, ::yampi::datatype_of<receive_value_type>::call().mpi_datatype(), source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else
       int const error_code
         = MPI_Sendrecv(
-            YAMPI_addressof(*send_first), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
+            const_cast<send_value_type*>(YAMPI_addressof(*send_first)), send_length, ::yampi::datatype_of<send_value_type>::call().mpi_datatype(), destination.mpi_rank(), send_tag.mpi_tag(),
             YAMPI_addressof(*receive_first), receive_length, ::yampi::datatype_of<receive_value_type>::call().mpi_datatype(), source.mpi_rank(), receive_tag.mpi_tag(),
             communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # endif
