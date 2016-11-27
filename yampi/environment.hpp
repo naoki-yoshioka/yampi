@@ -31,10 +31,21 @@ namespace yampi
 # endif
   };
 
+  template <typename T>
+  class allocator;
+
+  class datatype_committer;
+
   class environment
   {
     static bool is_initialized_;
     static int error_code_on_last_finalize_;
+
+    static int num_unreleased_resources_;
+
+    template <typename T>
+    friend class ::yampi::allocator;
+    friend class ::yampi::datatype_committer;
 
    public:
     BOOST_STATIC_CONSTEXPR int major_version = MPI_VERSION;
@@ -102,11 +113,10 @@ namespace yampi
 
     ~environment() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (!::yampi::is_finalized())
+      if (num_unreleased_resources_ == 0 and not ::yampi::is_finalized())
         error_code_on_last_finalize_ = MPI_Finalize();
 
-      if (is_initialized_)
-        is_initialized_ = false;
+      is_initialized_ = false;
     }
 
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -133,6 +143,8 @@ namespace yampi
 
   bool environment::is_initialized_ = false;
   int environment::error_code_on_last_finalize_ = MPI_SUCCESS;
+
+  int environment::num_unreleased_resources_ = 0;
 
   inline bool is_finalized_successfully()
   { return environment::error_code_on_last_finalize() == MPI_SUCCESS; }

@@ -23,6 +23,8 @@
 
 # include <yampi/error.hpp>
 # include <yampi/detail/workaround.hpp>
+# include <yampi/is_initialized.hpp>
+# include <yampi/environment.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -103,6 +105,8 @@ namespace yampi
 
     pointer allocate(std::size_t const n, const_void_pointer = YAMPI_nullptr)
     {
+      assert(::yampi::is_initialized());
+
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
 #   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
       auto result = pointer{};
@@ -125,6 +129,8 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::allocator::allocate");
 # endif
 
+      ++::yampi::environment::num_unreleased_resources_;
+
       return result;
     }
 
@@ -143,6 +149,16 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::allocator::deallocate");
 # endif
+
+      --::yampi::environment::num_unreleased_resources_;
+      if (::yampi::environment::num_unreleased_resources_ == 0
+          and not ::yampi::environment::is_initialized_)
+      {
+        if (not ::yampi::is_finalized())
+          ::yampi::environment::error_code_on_last_finalize_ = MPI_Finalize();
+
+        ::yampi::environment::is_initialized_ = false;
+      }
     }
 
     size_type max_size() const BOOST_NOEXCEPT_OR_NOTHROW
