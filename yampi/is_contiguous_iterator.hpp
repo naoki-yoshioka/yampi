@@ -33,7 +33,7 @@ namespace yampi
     : YAMPI_false_type
   { };
 
-# if defined(__GNUC__)
+# if defined(__GNUC__) || defined(__IBMCPP__)
   template <typename Value, typename Allocator>
   struct is_contiguous_iterator<
     __gnu_cxx::__normal_iterator<Value*, std::vector<Value, Allocator> > >
