@@ -133,7 +133,7 @@ namespace yampi
   auto BOOST_CONSTEXPR_OR_CONST ignore_status = ignore_status_t();
 #   endif
 # else
-  ignore_status_t BOOST_CONSTEXPR_OR_CONST ignore_status;
+  ignore_status_t BOOST_CONSTEXPR_OR_CONST ignore_status = ignore_status_t();
 # endif
 }
 
