@@ -36,115 +36,117 @@ namespace yampi
 
   class datatype_committer;
 
-  class environment
-  {
-    static bool is_initialized_;
-    static int error_code_on_last_finalize_;
-
-    static int num_unreleased_resources_;
-
-    template <typename T>
-    friend class ::yampi::allocator;
-    friend class ::yampi::datatype_committer;
-
-   public:
-    BOOST_STATIC_CONSTEXPR int major_version = MPI_VERSION;
-    BOOST_STATIC_CONSTEXPR int minor_version = MPI_SUBVERSION;
-
-    environment()
+  namespace {
+    class environment
     {
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (is_initialized_)
-        throw ::yampi::already_initialized_error{};
-# else
-      if (is_initialized_)
-        throw ::yampi::already_initialized_error();
-# endif
+      static bool is_initialized_;
+      static int error_code_on_last_finalize_;
 
-      is_initialized_ = true;
+      static int num_unreleased_resources_;
 
-      if (!::yampi::is_initialized())
+      template <typename T>
+      friend class ::yampi::allocator;
+      friend class ::yampi::datatype_committer;
+
+     public:
+      BOOST_STATIC_CONSTEXPR int major_version = MPI_VERSION;
+      BOOST_STATIC_CONSTEXPR int minor_version = MPI_SUBVERSION;
+
+      environment()
       {
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+        if (is_initialized_)
+          throw ::yampi::already_initialized_error{};
+# else
+        if (is_initialized_)
+          throw ::yampi::already_initialized_error();
+# endif
+
+        is_initialized_ = true;
+
+        if (!::yampi::is_initialized())
+        {
 # ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-        auto const error_code = MPI_Init(NULL, NULL);
+          auto const error_code = MPI_Init(NULL, NULL);
 # else
-        int const error_code = MPI_Init(NULL, NULL);
+          int const error_code = MPI_Init(NULL, NULL);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error{error_code, "yampi::environment::environment"};
+          if (error_code != MPI_SUCCESS)
+            throw ::yampi::error{error_code, "yampi::environment::environment"};
 # else
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error(error_code, "yampi::environment::environment");
+          if (error_code != MPI_SUCCESS)
+            throw ::yampi::error(error_code, "yampi::environment::environment");
 # endif
+        }
       }
-    }
 
-    environment(int const argc, char const* argv[])
-    {
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (is_initialized_)
-        throw ::yampi::already_initialized_error{};
-# else
-      if (is_initialized_)
-        throw ::yampi::already_initialized_error();
-# endif
-
-      is_initialized_ = true;
-
-      if (!::yampi::is_initialized())
+      environment(int argc, char* argv[])
       {
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-        auto const error_code = MPI_Init(const_cast<int*>(&argc), const_cast<char***>(&argv));
+# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+        if (is_initialized_)
+          throw ::yampi::already_initialized_error{};
 # else
-        int const error_code = MPI_Init(const_cast<int*>(&argc), const_cast<char***>(&argv));
+        if (is_initialized_)
+          throw ::yampi::already_initialized_error();
+# endif
+
+        is_initialized_ = true;
+
+        if (!::yampi::is_initialized())
+        {
+# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
+          auto const error_code = MPI_Init(&argc, &argv);
+# else
+          int const error_code = MPI_Init(&argc, &argv);
 # endif
 
 # ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error{error_code, "yampi::environment::environment"};
+          if (error_code != MPI_SUCCESS)
+            throw ::yampi::error{error_code, "yampi::environment::environment"};
 # else
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error(error_code, "yampi::environment::environment");
+          if (error_code != MPI_SUCCESS)
+            throw ::yampi::error(error_code, "yampi::environment::environment");
 # endif
+        }
       }
-    }
 
-    ~environment() BOOST_NOEXCEPT_OR_NOTHROW
-    {
-      if (num_unreleased_resources_ == 0 and not ::yampi::is_finalized())
-        error_code_on_last_finalize_ = MPI_Finalize();
+      ~environment() BOOST_NOEXCEPT_OR_NOTHROW
+      {
+        if (num_unreleased_resources_ == 0 and not ::yampi::is_finalized())
+          error_code_on_last_finalize_ = MPI_Finalize();
 
-      is_initialized_ = false;
-    }
+        is_initialized_ = false;
+      }
 
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    environment(environment const&) = delete;
-    environment& operator=(environment const&) = delete;
+      environment(environment const&) = delete;
+      environment& operator=(environment const&) = delete;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    environment(environment&&) = delete;
-    environment& operator=(environment&&) = delete;
+      environment(environment&&) = delete;
+      environment& operator=(environment&&) = delete;
 #   endif
 # else
-   private:
-    environment(environment const&);
-    environment& operator=(environment const&);
+     private:
+      environment(environment const&);
+      environment& operator=(environment const&);
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    environment(environment&&);
-    environment& operator=(environment&&);
+      environment(environment&&);
+      environment& operator=(environment&&);
 #   endif
 
-   public:
+     public:
 # endif
 
-    static int error_code_on_last_finalize() { return error_code_on_last_finalize_; }
-  };
+      static int error_code_on_last_finalize() { return error_code_on_last_finalize_; }
+    };
 
-  bool environment::is_initialized_ = false;
-  int environment::error_code_on_last_finalize_ = MPI_SUCCESS;
+    bool environment::is_initialized_ = false;
+    int environment::error_code_on_last_finalize_ = MPI_SUCCESS;
 
-  int environment::num_unreleased_resources_ = 0;
+    int environment::num_unreleased_resources_ = 0;
+  }
 
   inline bool is_finalized_successfully()
   { return environment::error_code_on_last_finalize() == MPI_SUCCESS; }

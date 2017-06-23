@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # include <cstddef>
 # include <limits>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
