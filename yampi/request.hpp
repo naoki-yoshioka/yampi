@@ -24,15 +24,6 @@ namespace yampi
    public:
 # endif
 
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    explicit request(MPI_Request const req) BOOST_NOEXCEPT_OR_NOTHROW
-      : req_{req}
-    { }
-
-    explicit request(::yampi::null_request_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : req_{MPI_REQUEST_NULL}
-    { }
-# else
     explicit request(MPI_Request const req) BOOST_NOEXCEPT_OR_NOTHROW
       : req_(req)
     { }
@@ -40,7 +31,6 @@ namespace yampi
     explicit request(::yampi::null_request_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : req_(MPI_REQUEST_NULL)
     { }
-# endif
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     request(request const&) = default;

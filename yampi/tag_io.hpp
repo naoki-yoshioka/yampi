@@ -10,7 +10,9 @@ namespace yampi
 {
   template <typename Character, typename CharacterTraits>
   inline std::basic_ostream<Character, CharacterTraits>&
-  operator<<(std::basic_ostream<Character, CharacterTraits>& output_stream, ::yampi::tag const& tag)
+  operator<<(
+    std::basic_ostream<Character, CharacterTraits>& output_stream,
+    ::yampi::tag const& tag)
   { return output_stream << tag.mpi_tag(); }
 }
 

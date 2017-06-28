@@ -27,20 +27,14 @@ namespace yampi
 {
   struct wall_clock
   {
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-    using rep = double;
-    using period = YAMPI_ratio<1>;
-    using duration = YAMPI_chrono::duration<rep, period>;
-    using time_point = YAMPI_chrono::time_point< ::yampi::wall_clock>;
-# else
     typedef double rep;
     typedef YAMPI_ratio<1> period;
     typedef YAMPI_chrono::duration<rep, period> duration;
     typedef YAMPI_chrono::time_point< ::yampi::wall_clock> time_point;
-# endif
     BOOST_STATIC_CONSTEXPR bool is_steady = false;
 
-    static time_point now() { return static_cast<time_point>(static_cast<duration>(MPI_Wtime())); }
+    static time_point now()
+    { return static_cast<time_point>(static_cast<duration>(MPI_Wtime())); }
     static duration tick() { return static_cast<duration>(MPI_Wtick()); }
   };
 }

@@ -18,15 +18,6 @@ namespace yampi
 # else
 #   define YAMPI_CONSTEXPR
 # endif
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    YAMPI_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_datatype_{MPI_DATATYPE_NULL}
-    { }
-
-    explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_datatype_{mpi_datatype}
-    { }
-# else
     YAMPI_CONSTEXPR datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
@@ -34,7 +25,6 @@ namespace yampi
     explicit BOOST_CONSTEXPR datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(mpi_datatype)
     { }
-# endif
 # undef YAMPI_CONSTEXPR
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS

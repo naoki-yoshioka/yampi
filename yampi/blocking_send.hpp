@@ -51,100 +51,89 @@ namespace yampi
   {
     template <typename Value>
     inline
-    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, void>::type
-    blocking_send_value(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_datatype<Value>::value,
+      void>::type
+    blocking_send(
+      Value const& value,
+      ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator const communicator)
     {
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto const error_code
-        = MPI_Send(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
-# else
       int const error_code
-        = MPI_Send(const_cast<Value*>(YAMPI_addressof(value)), 1, ::yampi::datatype_of<Value>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::blocking_send"};
-# else
+        = MPI_Send(
+            const_cast<Value*>(YAMPI_addressof(value)), 1,
+            ::yampi::datatype_of<Value>::call().mpi_datatype(),
+            destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::blocking_send");
-# endif
     }
 
     template <typename ContiguousIterator>
     inline
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<
+        typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    blocking_send_iter(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-    {
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-      using value_type = typename std::iterator_traits<ContiguousIterator>::value_type;
-# else
-      typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
-# endif
-
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto const error_code
-        = MPI_Send(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
-# else
-      int const error_code
-        = MPI_Send(YAMPI_addressof(*first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::blocking_send"};
-# else
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::blocking_send");
-# endif
-    }
-
-    template <typename ContiguousIterator>
-    inline
-    typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
-      void>::type
-    blocking_send_iter(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
+    blocking_send(
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator const communicator)
     {
       assert(last >= first);
-      ::yampi::blocking_send_detail::blocking_send_iter(first, last-first, destination, tag, communicator);
-    }
 
-    template <typename ContiguousRange>
-    inline
-    typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange>::type>::value,
-      void>::type
-    blocking_send_range(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-    { ::yampi::blocking_send_detail::blocking_send_iter(boost::begin(values), boost::end(values), destination, tag, communicator); }
+      typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
+      int const error_code
+        = MPI_Send(
+            YAMPI_addressof(*first), last-first,
+            ::yampi::datatype_of<value_type>::call().mpi_datatype(),
+            destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::blocking_send");
+    }
   } // namespace blocking_send_detail
 
 
   template <typename Value>
   inline
-  typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value const>::value, void>::type
-  blocking_send(Value const& value, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-  { ::yampi::blocking_send_detail::blocking_send_value(value, destination, tag, communicator); }
+  typename YAMPI_enable_if<
+    not ::yampi::is_contiguous_range<Value const>::value,
+    void>::type
+  blocking_send(
+    Value const& value,
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const communicator)
+  {
+    ::yampi::blocking_send_detail::blocking_send(
+      value, destination, tag, communicator);
+  }
 
   template <typename ContiguousIterator>
   inline
-  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
-  blocking_send(ContiguousIterator const first, int const length, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-  { ::yampi::blocking_send_detail::blocking_send_iter(first, length, destination, tag, communicator); }
-
-  template <typename ContiguousIterator>
-  inline
-  typename YAMPI_enable_if< ::yampi::is_contiguous_iterator<ContiguousIterator>::value, void>::type
-  blocking_send(ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-  { ::yampi::blocking_send_detail::blocking_send_iter(first, last, destination, tag, communicator); }
+  typename YAMPI_enable_if<
+    ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
+    void>::type
+  blocking_send(
+    ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const communicator)
+  {
+    ::yampi::blocking_send_detail::blocking_send(
+      first, last, destination, tag, communicator);
+  }
 
   template <typename ContiguousRange>
   inline
-  typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange>::value, void>::type
-  blocking_send(ContiguousRange const& values, ::yampi::rank const destination, ::yampi::tag const tag, ::yampi::communicator const communicator)
-  { ::yampi::blocking_send_detail::blocking_send_range(values, destination, tag, communicator); }
+  typename YAMPI_enable_if<
+    ::yampi::is_contiguous_range<ContiguousRange>::value,
+    void>::type
+  blocking_send(
+    ContiguousRange const& values,
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const communicator)
+  {
+    ::yampi::blocking_send_detail::blocking_send(
+      boost::begin(values), boost::end(values), destination, tag, communicator);
+  }
 }
 
 

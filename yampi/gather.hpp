@@ -53,7 +53,7 @@ namespace yampi
 {
   class gather
   {
-    ::yampi::communicator comm_;
+    ::yampi::communicator communicator_;
     ::yampi::rank root_;
 
    public:
@@ -66,15 +66,11 @@ namespace yampi
    public:
 # endif
 
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    BOOST_CONSTEXPR gather(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank{0}) BOOST_NOEXCEPT_OR_NOTHROW
-      : comm_{comm}, root_{root}
+    BOOST_CONSTEXPR gather(
+      ::yampi::communicator const communicator,
+      ::yampi::rank const root = ::yampi::rank(0)) BOOST_NOEXCEPT_OR_NOTHROW
+      : communicator_(communicator), root_(root)
     { }
-# else
-    BOOST_CONSTEXPR gather(::yampi::communicator const comm, ::yampi::rank const root = ::yampi::rank(0)) BOOST_NOEXCEPT_OR_NOTHROW
-      : comm_(comm), root_(root)
-    { }
-# endif
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     gather(gather const&) = default;
@@ -87,17 +83,6 @@ namespace yampi
 # endif
 
 
-    template <typename Value>
-    typename YAMPI_enable_if<not ::yampi::is_contiguous_range<Value const>::value, void>::type
-    call(Value const& send_value) const
-    { do_call_value(send_value); }
-
-    template <typename ContiguousRange>
-    typename YAMPI_enable_if< ::yampi::is_contiguous_range<ContiguousRange const>::value, void>::type
-    call(ContiguousRange const& send_values) const
-    { do_call_range(send_values); }
-
-
     template <typename Value, typename ContiguousIterator>
     typename YAMPI_enable_if<
       not ::yampi::is_contiguous_iterator<Value>::value
@@ -105,21 +90,33 @@ namespace yampi
         and ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
       void>::type
     call(Value const& send_value, ContiguousIterator const receive_first) const
-    { do_call_value(send_value, receive_first); }
+    { do_call(send_value, receive_first); }
 
-    template <typename ContiguousIterator>
+    template <typename Value>
     typename YAMPI_enable_if<
-      ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
+      not ::yampi::is_contiguous_range<Value const>::value,
       void>::type
-    call(ContiguousIterator const send_first, int const length) const
-    { do_call_iter(send_first, length); }
+    call(Value const& send_value) const
+    { do_call(send_value); }
+
+
+    template <typename ContiguousIterator1, typename ContiguousIterator2>
+    typename YAMPI_enable_if<
+      ::yampi::is_contiguous_iterator<ContiguousIterator1>::value
+        and ::yampi::is_contiguous_iterator<ContiguousIterator2>::value,
+      void>::type
+    call(
+      ContiguousIterator1 const send_first, ContiguousIterator1 const send_last,
+      ContiguousIterator2 const receive_first) const
+    { do_call(send_first, send_last, receive_first); }
 
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
       ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
       void>::type
     call(ContiguousIterator const send_first, ContiguousIterator const send_last) const
-    { do_call_iter(send_first, send_last); }
+    { do_call(send_first, send_last); }
+
 
     template <typename ContiguousRange, typename ContiguousIterator>
     typename YAMPI_enable_if<
@@ -127,179 +124,81 @@ namespace yampi
         and ::yampi::is_contiguous_iterator<ContiguousIterator>::value,
       void>::type
     call(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
-    { do_call_range(send_values, receive_first); }
+    { do_call(boost::begin(send_values), boost::end(send_values), receive_first); }
 
-
-    template <typename ContiguousIterator1, typename ContiguousIterator2>
+    template <typename ContiguousRange>
     typename YAMPI_enable_if<
-      ::yampi::is_contiguous_iterator<ContiguousIterator1>::value
-        and ::yampi::is_contiguous_iterator<ContiguousIterator2>::value,
+      ::yampi::is_contiguous_range<ContiguousRange const>::value,
       void>::type
-    call(ContiguousIterator1 const send_first, int const length, ContiguousIterator2 const receive_first) const
-    { do_call_iter(send_first, length, receive_first); }
-
-    template <typename ContiguousIterator1, typename ContiguousIterator2>
-    typename YAMPI_enable_if<
-      ::yampi::is_contiguous_iterator<ContiguousIterator1>::value
-        and ::yampi::is_contiguous_iterator<ContiguousIterator2>::value,
-      void>::type
-    call(ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ContiguousIterator2 const receive_first) const
-    { do_call_iter(send_first, send_last, receive_first); }
+    call(ContiguousRange const& send_values) const
+    { do_call(boost::begin(send_values), boost::end(send_values)); }
 
 
    private:
     template <typename ContiguousIterator>
     typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+      ::yampi::has_corresponding_datatype<
+        typename std::iterator_traits<ContiguousIterator>::value_type>::value,
       void>::type
-    do_call_value(
+    do_call(
       typename std::iterator_traits<ContiguousIterator>::value_type const& send_value,
       ContiguousIterator const receive_first) const
     {
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-      using value_type = typename std::iterator_traits<ContiguousIterator>::value_type;
-# else
       typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
-# endif
-
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto const error_code
-        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
-# else
       int const error_code
-        = MPI_Gather(const_cast<value_type*>(YAMPI_addressof(send_value)), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), 1, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::gather::call"};
-# else
+        = MPI_Gather(
+            const_cast<value_type*>(YAMPI_addressof(send_value)), 1,
+            ::yampi::datatype_of<value_type>::call().mpi_datatype(),
+            YAMPI_addressof(*receive_first), 1,
+            ::yampi::datatype_of<value_type>::call().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather::call");
-# endif
     }
 
     template <typename Value>
-    typename YAMPI_enable_if< ::yampi::has_corresponding_datatype<Value>::value, void>::type
-    do_call_value(Value const& send_value) const
+    typename YAMPI_enable_if<
+      ::yampi::has_corresponding_datatype<Value>::value,
+      void>::type
+    do_call(Value const& send_value) const
     {
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (comm_.rank() == root_)
-        throw ::yampi::nonroot_call_on_root_error{"yampi::gather::call"};
-# else
-      if (comm_.rank() == root_)
+      if (communicator_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
-# endif
 
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto null = Value{};
-#   else
-      auto null = Value();
-#   endif
-# else
       Value null;
-# endif
-
-      do_call_value(send_value, YAMPI_addressof(null));
+      do_call(send_value, YAMPI_addressof(null));
     }
 
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
-    typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename std::iterator_traits<ContiguousIterator1>::value_type>::value
-        and YAMPI_is_same<typename std::iterator_traits<ContiguousIterator1>::value_type, typename std::iterator_traits<ContiguousIterator2>::value_type>::value,
-      void>::type
-    do_call_iter(ContiguousIterator1 const send_first, int const length, ContiguousIterator2 const receive_first) const
+    void do_call(
+      ContiguousIterator1 const send_first, ContiguousIterator1 const send_last,
+      ContiguousIterator2 const receive_first) const
     {
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-      using value_type = typename std::iterator_traits<ContiguousIterator1>::value_type;
-# else
+      assert(send_last >= send_first);
+
       typedef typename std::iterator_traits<ContiguousIterator1>::value_type value_type;
-# endif
-
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto const error_code
-        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
-# else
       int const error_code
-        = MPI_Gather(YAMPI_addressof(*send_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), YAMPI_addressof(*receive_first), length, ::yampi::datatype_of<value_type>::call().mpi_datatype(), root_.mpi_rank(), comm_.mpi_comm());
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "mpi::gather"};
-# else
+        = MPI_Gather(
+            YAMPI_addressof(*send_first), send_last-send_first,
+            ::yampi::datatype_of<value_type>::call().mpi_datatype(),
+            YAMPI_addressof(*receive_first), send_last-send_first,
+            ::yampi::datatype_of<value_type>::call().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "mpi::gather");
-# endif
     }
 
     template <typename ContiguousIterator>
-    void do_call_iter(ContiguousIterator const send_first, int const length) const
+    void do_call(
+      ContiguousIterator const send_first, ContiguousIterator const send_last) const
     {
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (comm_.rank() == root_)
-        throw ::yampi::nonroot_call_on_root_error{"yampi::gather::call"};
-# else
-      if (comm_.rank() == root_)
+      if (communicator_.rank() == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
-# endif
 
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-      using value_type = typename std::iterator_traits<ContiguousIterator>::value_type;
-# else
       typedef typename std::iterator_traits<ContiguousIterator>::value_type value_type;
-# endif
-
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto null = value_type{};
-#   else
-      auto null = value_type();
-#   endif
-# else
       value_type null;
-# endif
-
-      do_call_iter(send_first, length, YAMPI_addressof(null));
-    }
-
-    template <typename ContiguousIterator1, typename ContiguousIterator2>
-    void do_call_iter(ContiguousIterator1 const send_first, ContiguousIterator1 const send_last, ContiguousIterator2 const receive_first) const
-    {
-      assert(send_last >= send_first);
-      do_call_iter(send_first, send_last-send_first, receive_first);
-    }
-
-    template <typename ContiguousIterator>
-    void do_call_iter(ContiguousIterator const send_first, ContiguousIterator const send_last) const
-    {
-      assert(send_last >= send_first);
-      do_call_iter(send_first, send_last-send_first);
-    }
-
-    template <typename ContiguousRange, typename ContiguousIterator>
-    typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value
-        and YAMPI_is_same<typename boost::range_value<ContiguousRange const>::type, typename std::iterator_traits<ContiguousIterator>::value_type>::value,
-      void>::type
-    do_call_range(ContiguousRange const& send_values, ContiguousIterator const receive_first) const
-    {
-      using boost::begin;
-      using boost::end;
-      do_call_iter(begin(send_values), end(send_values), receive_first);
-    }
-
-    template <typename ContiguousRange>
-    typename YAMPI_enable_if<
-      ::yampi::has_corresponding_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
-      void>::type
-    do_call_range(ContiguousRange const& send_values) const
-    {
-      using boost::begin;
-      using boost::end;
-      do_call_iter(begin(send_values), end(send_values));
+      do_call(send_first, send_last, YAMPI_addressof(null));
     }
   };
 }

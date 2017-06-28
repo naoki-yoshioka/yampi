@@ -15,37 +15,25 @@ namespace yampi
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
   enum class communicators_are
     : int
-  { identical = MPI_IDENT, congruent = MPI_CONGRUENT, similar = MPI_SIMILAR, unequal = MPI_UNEQUAL };
+  {
+    identical = MPI_IDENT, congruent = MPI_CONGRUENT,
+    similar = MPI_SIMILAR, unequal = MPI_UNEQUAL
+  };
 # else
   enum communicators_are
-    : int
-  { identical = MPI_IDENT, congruent = MPI_CONGRUENT, similar = MPI_SIMILAR, unequal = MPI_UNEQUAL };
-# endif
-
-  inline ::yampi::communicators_are compare(::yampi::communicator const lhs, ::yampi::communicator const rhs)
   {
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    auto result = int{};
-#   else
-    auto result = int();
-#   endif
-
-    auto const error_code = MPI_Comm_compare(lhs.mpi_comm(), rhs.mpi_comm(), &result);
-# else
-    int result;
-
-    int const error_code = MPI_Comm_compare(lhs.mpi_comm(), rhs.mpi_comm(), &result);
+    identical = MPI_IDENT, congruent = MPI_CONGRUENT,
+    similar = MPI_SIMILAR, unequal = MPI_UNEQUAL
+  };
 # endif
 
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error{error_code, "yampi::compare"};
-# else
+  inline ::yampi::communicators_are compare(
+    ::yampi::communicator const lhs, ::yampi::communicator const rhs)
+  {
+    int result;
+    int const error_code = MPI_Comm_compare(lhs.mpi_comm(), rhs.mpi_comm(), &result);
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::compare");
-# endif
-
     return static_cast<communicators_are>(result);
   }
 

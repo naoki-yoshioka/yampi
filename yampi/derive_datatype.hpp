@@ -56,93 +56,29 @@ namespace yampi
       YAMPI_array<MPI_Datatype, num_arguments> const& mpi_datatypes,
       Value const& value, MPI_Aint const& value_address)
     {
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto temp = MPI_Datatype{};
-#     else
-      auto temp = MPI_Datatype();
-#     endif
-      auto const struct_error_code
-        = MPI_Type_create_struct(
-            num_arguments, blocklengths.data(), displacements.data(), mpi_datatypes.data(),
-            YAMPI_addressof(temp));
-#   else // BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      MPI_Datatype temp{};
-#     else
       MPI_Datatype temp;
-#     endif
       int const struct_error_code
         = MPI_Type_create_struct(
             num_arguments, blocklengths.data(), displacements.data(), mpi_datatypes.data(),
             YAMPI_addressof(temp));
-#   endif // BOOST_NO_CXX11_AUTO_DECLARATIONS
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (struct_error_code != MPI_SUCCESS)
-        throw ::yampi::error{struct_error_code, "yampi::derive_datatype"};
-#   else
       if (struct_error_code != MPI_SUCCESS)
         throw ::yampi::error(struct_error_code, "yampi::derive_datatype");
-#   endif
 
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto value_extent = MPI_Aint{};
-#     else
-      auto value_extent = MPI_Aint();
-#     endif
-      auto const address_error_code
-        = MPI_Get_address(YAMPI_addressof(value)+1, YAMPI_addressof(value_extent));
-#   else // BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      MPI_Aint value_extent{};
-#     else
       MPI_Aint value_extent;
-#     endif
       int const address_error_code
         = MPI_Get_address(YAMPI_addressof(value)+1, YAMPI_addressof(value_extent));
-#   endif // BOOST_NO_CXX11_AUTO_DECLARATIONS
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (address_error_code != MPI_SUCCESS)
-        throw ::yampi::error{address_error_code, "yampi::derive_datatype"};
-#   else
       if (address_error_code != MPI_SUCCESS)
         throw ::yampi::error(address_error_code, "yampi::derive_datatype");
-#   endif
 
       value_extent -= value_address;
 
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto result = MPI_Datatype{};
-#     else
-      auto result = MPI_Datatype();
-#     endif
-      auto const resized_error_code
-        = MPI_Type_create_resized(temp, 0, value_extent, YAMPI_addressof(result));
-#   else // BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      MPI_Datatype result{};
-#     else
       MPI_Datatype result;
-#     endif
       int const resized_error_code
         = MPI_Type_create_resized(temp, 0, value_extent, YAMPI_addressof(result));
-#   endif // BOOST_NO_CXX11_AUTO_DECLARATIONS
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (resized_error_code != MPI_SUCCESS)
-        throw ::yampi::error{resized_error_code, "yampi::derive_datatype"};
-
-      ::yampi::datatype_of<Value>::set(::yampi::datatype{result});
-#   else
       if (resized_error_code != MPI_SUCCESS)
         throw ::yampi::error(resized_error_code, "yampi::derive_datatype");
 
       ::yampi::datatype_of<Value>::set(::yampi::datatype(result));
-#   endif
     }
   }
 
@@ -157,31 +93,11 @@ namespace yampi
       Value const& value, MPI_Aint const& value_address,
       Member const& member, Members const&... members)
     {
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto member_address = MPI_Aint{};
-#     else
-      auto member_address = MPI_Aint();
-#     endif
-      auto const error_code
-        = MPI_Get_address(YAMPI_addressof(member), YAMPI_addressof(member_address));
-#   else // BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      MPI_Aint member_address{};
-#     else
       MPI_Aint member_address;
-#     endif
       int const error_code
         = MPI_Get_address(YAMPI_addressof(member), YAMPI_addressof(member_address));
-#   endif // BOOST_NO_CXX11_AUTO_DECLARATIONS
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::derive_datatype"};
-#   else
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::derive_datatype");
-#   endif
 
       blocklengths[num_arguments-sizeof...(Members)-1] = 1;
       displacements[num_arguments-sizeof...(Members)-1] = member_address-value_address;
@@ -193,7 +109,8 @@ namespace yampi
     }
 
     template <
-      std::size_t num_arguments, typename Value, typename T, std::size_t blocklength, typename... Members>
+      std::size_t num_arguments, typename Value,
+      typename T, std::size_t blocklength, typename... Members>
     inline void derive_datatype(
       YAMPI_array<int, num_arguments>& blocklengths,
       YAMPI_array<MPI_Aint, num_arguments>& displacements,
@@ -201,29 +118,11 @@ namespace yampi
       Value const& value, MPI_Aint const& value_address,
       T const (&array)[blocklength], Members const&... members)
     {
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto member_address = MPI_Aint{};
-#     else
-      auto member_address = MPI_Aint();
-#     endif
-      auto const error_code = MPI_Get_address(array, YAMPI_addressof(member_address));
-#   else // BOOST_NO_CXX11_AUTO_DECLARATIONS
-#     ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      MPI_Aint member_address{};
-#     else
       MPI_Aint member_address;
-#     endif
-      int const error_code = MPI_Get_address(array, YAMPI_addressof(member_address));
-#   endif // BOOST_NO_CXX11_AUTO_DECLARATIONS
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::derive_datatype"};
-#   else
+      int const error_code
+        = MPI_Get_address(array, YAMPI_addressof(member_address));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::derive_datatype");
-#   endif
 
       blocklengths[num_arguments-sizeof...(Members)-1] = blocklength;
       displacements[num_arguments-sizeof...(Members)-1] = member_address-value_address;
@@ -239,15 +138,10 @@ namespace yampi
   inline void derive_datatype(Value const& value, Members const&... members)
   {
     MPI_Aint value_address;
-    auto const error_code = MPI_Get_address(YAMPI_addressof(value), YAMPI_addressof(value_address));
-
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error{error_code, "yampi::derive_datatype"};
-#   else
+    auto const error_code
+      = MPI_Get_address(YAMPI_addressof(value), YAMPI_addressof(value_address));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::derive_datatype");
-#   endif
 
     YAMPI_array<int, sizeof...(Members)> blocklengths;
     YAMPI_array<MPI_Aint, sizeof...(Members)> displacements;

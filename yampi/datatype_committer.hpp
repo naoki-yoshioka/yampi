@@ -13,7 +13,9 @@
 
 # include <yampi/error.hpp>
 # include <yampi/datatype.hpp>
-# include <yampi/is_initialized.hpp>
+# ifndef NDEBUG
+#   include <yampi/is_initialized.hpp>
+# endif
 # include <yampi/environment.hpp>
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -31,39 +33,15 @@ namespace yampi
     static int error_code_on_last_freeing_;
 
    public:
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-    datatype_committer(::yampi::datatype const& datatype)
-      : datatype_{datatype}
-    {
-      assert(::yampi::is_initialized());
-
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto error_code = MPI_Type_commit(const_cast<MPI_Datatype*>(YAMPI_addressof(datatype.mpi_datatype())));
-#   else
-      int error_code = MPI_Type_commit(const_cast<MPI_Datatype*>(YAMPI_addressof(datatype.mpi_datatype())));
-#   endif
-
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::datatype_committer"};
-
-      ++::yampi::environment::num_unreleased_resources_;
-    }
-# else
     datatype_committer(::yampi::datatype const& datatype)
       : datatype_(datatype)
     {
-#   ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto error_code = MPI_Type_commit(const_cast<MPI_Datatype*>(YAMPI_addressof(datatype.mpi_datatype())));
-#   else
       int error_code = MPI_Type_commit(const_cast<MPI_Datatype*>(YAMPI_addressof(datatype.mpi_datatype())));
-#   endif
-
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::datatype_committer");
 
       ++::yampi::environment::num_unreleased_resources_;
     }
-# endif
 
     ~datatype_committer() BOOST_NOEXCEPT_OR_NOTHROW
     {

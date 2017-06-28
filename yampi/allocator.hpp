@@ -23,9 +23,7 @@
 # include <mpi.h>
 
 # include <yampi/error.hpp>
-# include <yampi/detail/workaround.hpp>
 # include <yampi/is_initialized.hpp>
-# include <yampi/environment.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -33,10 +31,8 @@
 #   define YAMPI_true_type boost::true_type
 # endif
 
-# ifndef BOOST_NO_CXX11_NULLPTR
-#   define YAMPI_nullptr nullptr
-# else
-#   define YAMPI_nullptr NULL
+# ifdef BOOST_NO_CXX11_NULLPTR
+#   define nullptr NULL
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -52,24 +48,6 @@ namespace yampi
   class allocator
   {
    public:
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-    using pointer = T*;
-    using const_pointer = T const*;
-    using void_pointer = void*;
-    using const_void_pointer = void const*;
-    using reference = T&;
-    using const_reference = T const&;
-    using value_type = T;
-    using size_type = std::size_t;
-    using difference_type = std::ptrdiff_t;
-
-    using propagate_on_container_move_assignment = YAMPI_true_type;
-    using is_always_equal = YAMPI_true_type;
-
-    template <typename U>
-    struct rebind
-    { using other = allocator<U>; };
-# else
     typedef T* pointer;
     typedef T const* const_pointer;
     typedef void* void_pointer;
@@ -86,10 +64,9 @@ namespace yampi
     template <typename U>
     struct rebind
     { typedef allocator<U> other; };
-# endif
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    BOOST_CONSTEXPR allocator() = default;
+    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # else
     BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW { }
 # endif
@@ -104,62 +81,24 @@ namespace yampi
     pointer address(reference x) const { return YAMPI_addressof(x); }
     const_pointer address(const_reference x) const { return YAMPI_addressof(x); }
 
-    pointer allocate(std::size_t const n, const_void_pointer = YAMPI_nullptr)
+    pointer allocate(std::size_t const n, const_void_pointer = nullptr)
     {
       assert(::yampi::is_initialized());
 
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-#   ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      auto result = pointer{};
-#   else
-      auto result = pointer();
-#   endif
-
-      auto const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
-# else
       pointer result;
-
-      int const error_code = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::allocator::allocate"};
-# else
+      int const error_code
+        = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::allocator::allocate");
-# endif
-
-      ++::yampi::environment::num_unreleased_resources_;
 
       return result;
     }
 
     void deallocate(pointer ptr, std::size_t const)
     {
-# ifndef BOOST_NO_CXX11_AUTO_DECLARATIONS
-      auto const error_code = MPI_Free_mem(ptr);
-# else
       int const error_code = MPI_Free_mem(ptr);
-# endif
-
-# ifndef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error{error_code, "yampi::allocator::deallocate"};
-# else
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::allocator::deallocate");
-# endif
-
-      --::yampi::environment::num_unreleased_resources_;
-      if (::yampi::environment::num_unreleased_resources_ == 0
-          and not ::yampi::environment::is_initialized_)
-      {
-        if (not ::yampi::is_finalized())
-          ::yampi::environment::error_code_on_last_finalize_ = MPI_Finalize();
-
-        ::yampi::environment::is_initialized_ = false;
-      }
     }
 
     size_type max_size() const BOOST_NOEXCEPT_OR_NOTHROW
@@ -168,7 +107,7 @@ namespace yampi
 # if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename U, typename... Arguments>
     void construct(U* ptr, Arguments&&... arguments)
-    { ::new((void *)ptr) U(YAMPI_DETAIL_forward<Arguments>(arguments)...); }
+    { ::new((void *)ptr) U(std::forward<Arguments>(arguments)...); }
 # else
     void construct(pointer ptr, const_reference value)
     { new((void *)ptr) T(value); }
@@ -183,17 +122,6 @@ namespace yampi
   class allocator<void>
   {
    public:
-# ifndef BOOST_NO_CXX11_TEMPLATE_ALIASES
-    using pointer = void*;
-    using const_pointer = void const*;
-    using void_pointer = void*;
-    using const_void_pointer = void const*;
-    using value_type = void;
-
-    template <typename U>
-    struct rebind
-    { using other = allocator<U>; };
-# else
     typedef void* pointer;
     typedef void const* const_pointer;
     typedef void* void_pointer;
@@ -203,7 +131,6 @@ namespace yampi
     template <typename U>
     struct rebind
     { typedef allocator<U> other; };
-# endif
   };
 
 
@@ -218,7 +145,9 @@ namespace yampi
 
 
 # undef YAMPI_true_type
-# undef YAMPI_nullptr
+# ifdef BOOST_NO_CXX11_NULLPTR
+#   undef nullptr
+# endif
 # undef YAMPI_addressof
 
 #endif
