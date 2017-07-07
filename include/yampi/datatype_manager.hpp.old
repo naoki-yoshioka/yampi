@@ -1,0 +1,632 @@
+#ifndef YAMPI_DATATYPE_MANAGER_HPP
+# define YAMPI_DATATYPE_MANAGER_HPP
+
+# include <boost/config.hpp>
+
+# include <cassert>
+# include <cstddef>
+# include <vector>
+# include <algorithm>
+# include <iterator>
+# include <utility>
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+# else
+#   include <boost/type_traits/is_same.hpp>
+# endif
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
+
+# include <mpi.h>
+
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   include <boost/static_assert.hpp>
+# endif
+
+# include <yampi/environment.hpp>
+# include <yampi/datatype.hpp>
+# include <yampi/error.hpp>
+# include <yampi/allocator.hpp>
+# include <yampi/access.hpp>
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_same std::is_same
+# else
+#   define YAMPI_is_same boost::is_same
+# endif
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
+
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   define static_assert BOOST_STATIC_ASSERT_MSG
+# endif
+
+
+namespace yampi
+{
+  class strided_block
+  {
+    int length_;
+    int stride_;
+
+   public:
+    strided_block(int const length, int const stride)
+      : length_(length), stride_(stride)
+    { }
+
+    int const& length() const { return length_; }
+    int const& stride() const { return stride_; }
+  };
+
+  class displaced_block
+  {
+    int length_;
+    int displacement_;
+
+   public:
+    displaced_block(int const length, int const displacement)
+      : length_(length), displacement_(displacement)
+    { }
+
+    int const& length() const { return length_; }
+    int const& displacement() const { return displacement_; }
+  };
+
+  template <typename RandomAccessIterator>
+  class displaced_constant_blocks
+  {
+    static_assert(
+      typename YAMPI_is_same<
+        typename std::iterator_traits<RandomAccessIterator>::value_type,
+        int>::value,
+      "value_type of RandomAccessIterator must be the same to int");
+    int block_length_;
+    RandomAccessIterator displacements_first_;
+    RandomAccessIterator displacements_last_;
+
+   public:
+    displaced_constant_blocks(
+      int const block_length,
+      RandomAccessIterator const displacements_first,
+      RandomAccessIterator const displacements_last)
+      : block_length_(block_length),
+        displacements_first_(displacements_first),
+        displacements_last_(displacements_last)
+    { assert(displacements_last_ >= displacements_first_); }
+
+    int const& block_length() const { return block_length_; }
+    RandomAccessIterator const& displacements_first() const { return displacements_first_; }
+    RandomAccessIterator const& displacements_last() const { return displacements_last_; }
+
+    int count() const { return displacements_last_-displacements_first_; }
+
+    int nth_block_displacement(int const n) const
+    {
+      assert(n >= 0 and n < count());
+      return *(displacements_first_+n);
+    }
+  };
+
+  class displaced_typed_block
+  {
+    ::yampi::datatype datatype_;
+    int length_;
+    MPI_Aint displacement_address_;
+
+   public:
+    template <typename Value, typename Base>
+    displaced_block(
+      ::yampi::datatype const& datatype, int const length,
+      Value const& value, Base const& base, ::yampi::environment const& environment)
+      : datatype_(datatype),
+        length_(length),
+        displacement_address_(displacement_address(value, base, environment))
+    { }
+
+    template <typename Value>
+    displaced_block(
+      ::yampi::datatype const& datatype, int const length,
+      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
+      : datatype_(datatype),
+        length_(length),
+        displacement_address_(displacement_address(value, base_address, environment))
+    { }
+
+    ::yampi::datatype datatype_;
+    int const& length() const { return length_; }
+    MPI_Aint const& displacement_address() const { return displacement_address_; }
+
+   private:
+    template <typename Value>
+    MPI_Aint displacement_address(
+      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
+    {
+      MPI_Aint value_address;
+      int error_code
+        = MPI_Get_address(
+            const_cast<Value*>(YAMPI_addressof(value)), YAMPI_addressof(value_address));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code,
+          "yampi::datatype_manager_detail::displaced_typed_block::displacement_address",
+          environment);
+
+      return value_address-base_address;
+    }
+
+    template <typename Value, typename Base>
+    MPI_Aint displacement_address(
+      Value const& value, Base const& base, ::yampi::environment const& environment)
+    {
+      MPI_Aint base_address;
+      error_code
+        = MPI_Get_address(
+            const_cast<Base*>(YAMPI_addressof(base)), YAMPI_addressof(base_address));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code,
+          "yampi::datatype_manager_detail::displaced_typed_block::displacement_address",
+          environment);
+
+      return displacement_address(value, base_address, environment);
+    }
+  };
+
+
+  namespace datatype_manager_detail
+  {
+# ifdef BOOST_NO_CXX11_LAMBDAS
+    struct length_of_displaced_block
+    {
+      typedef int result_type;
+
+      int operator()(::yampi::displaced_block const& block) const
+      { return block.length(); }
+    };
+
+    struct displacement_of_displaced_block
+    {
+      typedef int result_type;
+
+      int operator()(::yampi::displaced_block const& block) const
+      { return block.displacement(); }
+    };
+
+
+    struct mpi_datatype_of_displaced_typed_block
+    {
+      typedef MPI_Datatype result_type;
+
+      MPI_Datatype operator()(::yampi::displaced_typed_block const& block) const
+      { return block.datatype().mpi_datatype(); }
+    };
+
+    struct length_of_displaced_typed_block
+    {
+      typedef int result_type;
+
+      int operator()(::yampi::displaced_typed_block const& block) const
+      { return block.length(); }
+    };
+
+    struct displacement_address_of_displaced_typed_block
+    {
+      typedef MPI_Aint result_type;
+
+      MPI_Aint operator()(::yampi::displaced_typed_block const& block) const
+      { return block.displacement_address(); }
+    };
+# endif // BOOST_NO_CXX11_LAMBDAS
+
+
+    /*
+    template <typename Value, typename Member, typename... Members>
+    inline ::yampi::datatype do_derive(
+      ::yampi::datatype const& datatype, Value const& value,
+      ::yampi::environment const& environment,
+      Member const& member, Members const&... members)
+    {
+      MPI_Aint value_address;
+      int const error_code
+        = MPI_Get_address(
+            const_cast<Value*>(YAMPI_addressof(value)), YAMPI_addressof(value_address));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::datatype_manager_detail::do_derive", environment);
+
+      YAMPI_array<int, sizeof...(Members)+2u> block_lengths;
+      YAMPI_array<MPI_Aint, sizeof...(Members)+2u> block_lengths;
+      YAMPI_array<MPI_Datatype, sizeof...(Members)+2u> block_lengths;
+    }
+
+
+    template <typename Value>
+    struct derive
+    {
+      static ::yampi::datatype call(
+        ::yampi::datatype const& datatype, Value const& value,
+        ::yampi::environment const& environment)
+      { return ::yampi::access::derive(datatype, value, environment); }
+    };
+
+    template <typename Real>
+    struct derive< std::complex<Real> >
+    {
+      static ::yampi::datatype call(
+        ::yampi::datatype const& datatype, std::complex<Real> const& value,
+        ::yampi::environment const& environment)
+      {
+        return ::yampi::datatype_manager_detail::do_derive(
+          datatype, value, environment, value.real(), value.imag());
+      }
+    };
+    */
+  }
+
+
+  template < typename Allocator = ::yampi::allocator< ::yampi::datatype > >
+  class datatype_manager
+  {
+    typedef typename Allocator::template rebind<MPI_Datatype>::other allocator_type;
+    typedef std::vector<MPI_Datatype, allocator_type> mpi_datatypes_type;
+    mpi_datatypes_type mpi_datatypes_;
+
+   public:
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    datatype_manager() = default;
+# else
+    datatype_manager() : mpi_datatypes_() { }
+# endif
+
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    datatype_manager(datatype_manager const&) = delete;
+    datatype_manager& operator=(datatype_manager const&) = delete;
+# else
+   private:
+    datatype_manager(datatype_manager const&);
+    datatype_manager& operator=(datatype_manager const&);
+
+   public:
+# endif
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    datatype_manager(datatype_manager&&) = default;
+    datatype_manager& operator=(datatype_manager&&) = default;
+#   else
+    datatype_manager(datatype_manager&& other)
+      : mpi_datatypes_(std::move(other.mpi_datatypes_))
+    { }
+
+    datatype_manager& operator=(datatype_manager&& other)
+    { mpi_datatypes_ = std::move(other.mpi_datatypes_); }
+#   endif
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
+    explicit datatype_manager(std::size_t const num_datatypes)
+      : mpi_datatypes_()
+    { mpi_datatypes_.reserve(num_datatypes); }
+
+    ~datatype_manager()
+    {
+# ifndef BOOST_NO_CXX11_RANGE_BASED_FOR
+      for (MPI_Datatype& mpi_datatype: mpi_datatypes_)
+        MPI_Type_free(YAMPI_addressof(mpi_datatype));
+# else // BOOST_NO_CXX11_RANGE_BASED_FOR
+      for (typename mpi_datatypes_type::iterator iter = mpi_datatypes_.begin(),
+             last = mpi_datatypes_.end();
+           iter != last; ++iter)
+        MPI_Type_free(YAMPI_addressof(*iter));
+# endif // BOOST_NO_CXX11_RANGE_BASED_FOR
+    }
+
+    void free()
+    {
+      for (int index = static_cast<int>(mpi_datatypes_.size())-1; index >= 0; --index)
+      {
+        typedef typename mpi_datatypes_type::size_type size_type;
+        int const error_code
+          = MPI_Type_free(YAMPI_addressof(mpi_datatypes_[static_cast<size_type>(index)]));
+        if (error_code != MPI_SUCCESS)
+          throw ::yampi::error(error_code, "::yampi::datatype_manager::free", environment);
+
+        mpi_datatypes_.pop_back();
+      }
+    }
+
+    // MPI_Type_contiguous
+    ::yampi::datatype derive_contiguous(
+      ::yampi::datatype const& datatype, int const count, ::yampi::environment const& environment)
+    {
+      MPI_Datatype mpi_datatype;
+      int const error_code
+        = MPI_Type_contiguous(count, datatype.mpi_datatype(), YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "::yampi::datatype_manager::derive_contiguous", environment);
+
+      commit(mpi_datatype, environment);
+
+      mpi_datatypes_.push_back(mpi_datatype);
+      return ::yampi::datatype(mpi_datatype);
+    }
+
+    // MPI_Type_vector
+    ::yampi::datatype derive_strided_blocks(
+      ::yampi::datatype const& datatype, ::yampi::strided_block const& block, int const count,
+      ::yampi::environment const& environment)
+    {
+      MPI_Datatype mpi_datatype;
+      int const error_code
+        = MPI_Type_vector(
+            count, block.length(), block.stride(),
+            datatype.mpi_datatype(), YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "::yampi::datatype_manager::derive_strided_blocks", environment);
+
+      commit(mpi_datatype, environment);
+
+      mpi_datatypes_.push_back(mpi_datatype);
+      return ::yampi::datatype(mpi_datatype);
+    }
+
+    // MPI_Type_indexed
+    template <typename RandomAccessIterator, typename Allocator>
+    ::yampi::datatype derive_displaced_blocks(
+      ::yampi::datatype const& datatype,
+      RandomAccessIterator const displaced_blocks_first,
+      RandomAccessIterator const displaced_blocks_last,
+      std::vector<int, Allocator>& buffer,
+      ::yampi::environment const& environment)
+    {
+      static_assert(
+        typename YAMPI_is_same<
+          typename std::iterator_traits<RandomAccessIterator>::value_type,
+          ::yampi::displaced_block>::value,
+        "value_type of RandomAccessIterator must be the same to ::yampi::displaced_block");
+      assert(displaced_blocks_last >= displaced_blocks_first);
+
+      int const count = displaced_blocks_last-displaced_blocks_first;
+      buffer.clear();
+      buffer.reserve(2*count);
+# ifndef BOOST_NO_CXX11_LAMBDAS
+      std::transform(
+        displaced_blocks_first, displaced_blocks_last, std::back_inserter(buffer),
+        [](::yampi::displaced_block const& block) { return block.length(); });
+      std::transform(
+        displaced_blocks_first, displaced_blocks_last, std::back_inserter(buffer),
+        [](::yampi::displaced_block const& block) { return block.displacement(); });
+# else // BOOST_NO_CXX11_LAMBDAS
+      std::transform(
+        displaced_blocks_first, displaced_blocks_last, std::back_inserter(buffer),
+        ::yampi::datatype_manager_detail::length_of_displaced_block());
+      std::transform(
+        displaced_blocks_first, displaced_blocks_last, std::back_inserter(buffer),
+        ::yampi::datatype_manager_detail::displacement_of_displaced_block());
+# endif // BOOST_NO_CXX11_LAMBDAS
+
+      MPI_Datatype mpi_datatype;
+      int const error_code
+        = MPI_Type_indexed(
+            count, YAMPI_addressof(buffer[0]), YAMPI_addressof(buffer[count]),
+            datatype.mpi_datatype(), YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "::yampi::datatype_manager::derive_displaced_blocks", environment);
+
+      commit(mpi_datatype, environment);
+
+      mpi_datatypes_.push_back(mpi_datatype);
+      return ::yampi::datatype(mpi_datatype);
+    }
+
+    template <typename RandomAccessIterator>
+    ::yampi::datatype derive_displaced_blocks(
+      ::yampi::datatype const& datatype,
+      RandomAccessIterator const displaced_blocks_first,
+      RandomAccessIterator const displaced_blocks_last,
+      ::yampi::environment const& environment)
+    {
+      std::vector<int, typename Allocator::template rebind<int>::other> buffer;
+      return derive_displaced_blocks(
+        datatype, displaced_blocks_first, displaced_blocks_last, buffer, environment);
+    }
+
+    // MPI_Type_create_indexed_block
+    template <typename RandomAccessIterator, typename Allocator>
+    ::yampi::datatype derive_displaced_constant_blocks(
+      ::yampi::datatype const& datatype,
+      ::yampi::displaced_constant_blocks<RandomAccessIterator> const& blocks,
+      std::vector<int, Allocator>& buffer,
+      ::yampi::environment const& environment)
+    {
+      int const count = blocks.count();
+      buffer.clear();
+      buffer.reserve(count);
+      std::copy(
+        blocks.displacements_first(), blocks.displacements_last(), std::back_inserter(buffer));
+
+      MPI_Datatype mpi_datatype;
+      int const error_code
+        = MPI_Type_create_indexed_block(
+            count, blocks.block_length(), YAMPI_addressof(buffer.front()),
+            datatype.mpi_datatype(), YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "::yampi::datatype_manager::derive_displaced_constant_blocks", environment);
+
+      commit(mpi_datatype, environment);
+
+      mpi_datatypes_.push_back(mpi_datatype);
+      return ::yampi::datatype(mpi_datatype);
+    }
+
+    template <typename RandomAccessIterator, typename Allocator>
+    ::yampi::datatype derive_displaced_constant_blocks(
+      ::yampi::datatype const& datatype,
+      ::yampi::displaced_constant_blocks<RandomAccessIterator> const& blocks,
+      std::vector<int, Allocator>& buffer,
+      ::yampi::environment const& environment)
+    {
+      std::vector<int, typename Allocator::template rebind<int>::other> buffer;
+      return derive_displaced_constant_blocks(datatype, blocks, buffer, environment);
+    }
+
+    // MPI_Type_create_struct
+    template <typename RandomAccessIterator, typename Allocator>
+    ::yampi::datatype derive_displaced_typed_blocks(
+      RandomAccessIterator const displaced_typed_blocks_first,
+      RandomAccessIterator const displaced_typed_blocks_last,
+      std::vector<MPI_Datatype, Allocator>& mpi_datatype_buffer,
+      std::vector<int, Allocator>& length_buffer,
+      std::vector<MPI_Aint, Allocator>& displacement_address_buffer,
+      ::yampi::environment const& environment)
+    {
+      static_assert(
+        typename YAMPI_is_same<
+          typename std::iterator_traits<RandomAccessIterator>::value_type,
+          ::yampi::displaced_typed_block>::value,
+        "value_type of RandomAccessIterator must be the same to ::yampi::displaced_typed_block");
+      assert(displaced_typed_blocks_last >= displaced_typed_blocks_first);
+
+      int const count = displaced_typed_blocks_last-displaced_typed_blocks_first;
+      mpi_datatype_buffer.clear();
+      length_buffer.clear();
+      displacement_address_buffer.clear();
+      mpi_datatype_buffer.reserve(count);
+      length_buffer.reserve(count);
+      displacement_address_buffer.reserve(count);
+
+# ifndef BOOST_NO_CXX11_LAMBDAS
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(mpi_datatype_buffer),
+        [](::yampi::displaced_typed_block const& block)
+        { return block.datatype().mpi_datatype(); });
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(length_buffer),
+        [](::yampi::displaced_typed_block const& block) { return block.length(); });
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(displacement_address_buffer),
+        [](::yampi::displaced_typed_block const& block) { return block.displacement_address(); });
+# else // BOOST_NO_CXX11_LAMBDAS
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(mpi_datatype_buffer),
+        ::yampi::datatype_manager_detail::mpi_datatype_of_displaced_typed_block());
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(length_buffer),
+        ::yampi::datatype_manager_detail::length_of_displaced_typed_block());
+      std::transform(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        std::back_inserter(displacement_address_buffer),
+        ::yampi::datatype_manager_detail::displacement_address_of_displaced_typed_block());
+# endif // BOOST_NO_CXX11_LAMBDAS
+
+      MPI_Datatype mpi_datatype;
+      int const error_code
+        = MPI_Type_create_struct(
+            count,
+            YAMPI_addressof(length_buffer.front()),
+            YAMPI_addressof(displacement_address_buffer.front()),
+            YAMPI_addressof(mpi_datatype_buffer.front()),
+            YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "::yampi::datatype_manager::derive_displaced_typed_blocks", environment);
+
+      commit(mpi_datatype, environment);
+
+      mpi_datatypes_.push_back(mpi_datatype);
+      return ::yampi::datatype(mpi_datatype);
+    }
+
+    template <typename RandomAccessIterator, typename Allocator>
+    ::yampi::datatype derive_displaced_typed_blocks(
+      RandomAccessIterator const displaced_typed_blocks_first,
+      RandomAccessIterator const displaced_typed_blocks_last,
+      std::vector<MPI_Datatype, Allocator>& mpi_datatype_buffer,
+      std::vector<int, Allocator>& length_buffer,
+      std::vector<MPI_Aint, Allocator>& displacement_address_buffer,
+      ::yampi::environment const& environment)
+    {
+      std::vector<MPI_Datatype, typename Allocator::template rebind<MPI_Datatype>::other>
+        mpi_datatype_buffer;
+      std::vector<int, typename Allocator::template rebind<int>::other>
+        length_buffer;
+      std::vector<MPI_Aint, typename Allocator::template rebind<MPI_Aint>::other>
+        displacement_address_buffer;
+
+      return derive_displaced_typed_blocks(
+        displaced_typed_blocks_first, displaced_typed_blocks_last,
+        mpi_datatype_buffer, length_buffer, displacement_address_buffer, environment);
+    }
+    /*
+    template <typename Value>
+    ::yampi::datatype derive(
+      ::yampi::datatype const& datatype, Value const& value,
+      ::yampi::environment const& environment)
+    {
+      ::yampi::datatype new_datatype
+        = ::yampi::datatype_manager_detail::derive<Value>::call(
+            datatype, value, environment);
+      commit(new_datatype.mpi_datatype(), environment);
+      mpi_datatypes_.push_back(new_datatype.mpi_datatype());
+      return new_datatype;
+    }
+
+    template <typename Value>
+    ::yampi::datatype derive(
+      ::yampi::datatype const& datatype, ::yampi::environment const& environment)
+    {
+      ::yampi::datatype new_datatype
+        = ::yampi::datatype_manager_detail::derive<Value>::call(
+            datatype, Value(), environment);
+      commit(new_datatype.mpi_datatype(), environment);
+      mpi_datatypes_.push_back(new_datatype.mpi_datatype());
+      return new_datatype;
+    }
+
+    template <typename Value, typename Member, typename... Members>
+    ::yampi::datatype derive(
+      ::yampi::datatype const& datatype, Value const& value,
+      ::yampi::environment const& environment,
+      Member const& member, Members const&... members)
+    {
+      ::yampi::datatype new_type
+        = ::yampi::datatype_manager_detail::do_derive(
+            datatype, value, environment, member, members...);
+      commit(new_datatype.mpi_datatype(), environment);
+      mpi_datatypes_.push_back(new_datatype.mpi_datatype());
+      return new_datatype;
+    }
+    */
+
+   private:
+    void commit(MPI_Datatype& mpi_datatype, ::yampi::environment const& environment)
+    {
+      int const error_code = MPI_Type_commit(YAMPI_addressof(mpi_datatype));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "::yampi::datatype_manager::commit", environment);
+    }
+  };
+}
+
+
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   undef static_assert
+# endif
+# undef YAMPI_addressof
+# undef YAMPI_is_same
+
+#endif
