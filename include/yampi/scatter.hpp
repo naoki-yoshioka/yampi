@@ -1,5 +1,5 @@
-#ifndef YAMPI_GATHER_HPP
-# define YAMPI_GATHER_HPP
+#ifndef YAMPI_SCATTER_HPP
+# define YAMPI_SCATTER_HPP
 
 # include <boost/config.hpp>
 
@@ -26,6 +26,7 @@
 # include <yampi/communicator.hpp>
 # include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
+# include <yampi/tag.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
 
@@ -48,57 +49,80 @@
 
 namespace yampi
 {
-  // TODO: implement MPI_Gatherv
-  class gather
+  // TODO: implement MPI_Scatterv
+  class scatter
   {
     ::yampi::communicator communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    gather() = delete;
+    scatter() = delete;
 # else
    private:
-    gather();
+    scatter();
 
    public:
 # endif
 
-    BOOST_CONSTEXPR gather(
+    BOOST_CONSTEXPR scatter(
       ::yampi::communicator const communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    gather(gather const&) = default;
-    gather& operator=(gather const&) = default;
+    scatter(scatter const&) = default;
+    scatter& operator=(scatter const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    gather(gather&&) = default;
-    gather& operator=(gather&&) = default;
+    scatter(scatter&&) = default;
+    scatter& operator=(scatter&&) = default;
 #   endif
-    ~gather() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    ~scatter() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
 
-    template <typename SendValue, typename ContiguousIterator>
+    template <typename ContiguousIterator, typename ReceiveValue>
     void call(
       ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ContiguousIterator const first) const
+      ContiguousIterator const first,
+      ::yampi::buffer<ReceiveValue>& receive_buffer) const
     {
       static_assert(
         (YAMPI_is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
-           SendValue>::value),
-        "value_type of ContiguousIterator must be the same to SendValue");
+           ReceiveValue>::value),
+        "value_type of ContiguousIterator must be the same to ReceiveValue");
 
       int const error_code
-        = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<SendValue*>(YAMPI_addressof(*first)),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+        = MPI_Scatter(
+            const_cast<ReceiveValue*>(YAMPI_addressof(*first)),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+    }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    void call(
+      ::yampi::environment const& environment,
+      ContiguousIterator const first,
+      ::yampi::buffer<ReceiveValue> const& receive_buffer) const
+    {
+      static_assert(
+        (YAMPI_is_same<
+           typename std::iterator_traits<ContiguousIterator>::value_type,
+           ReceiveValue>::value),
+        "value_type of ContiguousIterator must be the same to ReceiveValue");
+
+      int const error_code
+        = MPI_Scatter(
+            const_cast<ReceiveValue*>(YAMPI_addressof(*first)),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            const_cast<ReceiveValue*>(receive_buffer.data()),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather::call", environment);
@@ -111,7 +135,7 @@ namespace yampi
       ::yampi::buffer<ReceiveValue>& receive_buffer) const
     {
       int const error_code
-        = MPI_Gather(
+        = MPI_Scatter(
             const_cast<SendValue*>(send_buffer.data()),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             YAMPI_addressof(receive_buffer.data()),
@@ -128,7 +152,7 @@ namespace yampi
       ::yampi::buffer<ReceiveValue> const& receive_buffer) const
     {
       int const error_code
-        = MPI_Gather(
+        = MPI_Scatter(
             const_cast<SendValue*>(send_buffer.data()),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             const_cast<ReceiveValue*>(YAMPI_addressof(receive_buffer.data())),
@@ -138,26 +162,20 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::gather::call", environment);
     }
 
-    template <typename SendValue>
+    template <typename ReceiveValue>
     void call(
       ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer) const
+      ::yampi::buffer<ReceiveValue> const& receive_buffer) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
 
-      SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null));
+      ReceiveValue null;
+      call(environment, YAMPI_addressof(null), receive_buffer);
     }
+
   };
 }
 
 
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_addressof
-# undef YAMPI_is_same
-
 #endif
-

@@ -135,29 +135,6 @@ namespace yampi
     displaced_blocks(displaced_blocks&&) = default;
     displaced_blocks& operator=(displaced_blocks&&) = default;
 #   endif
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    displaced_blocks() : block_lengths_(), displacements_() { }
-
-    displaced_blocks(displaced_blocks const& other)
-      : block_lengths_(other.block_lengths_), displacements_(other.displacements_)
-    { }
-
-    displaced_blocks& operator=(displaced_blocks rhs)
-    { this->swap(rhs); return *this; }
-
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    displaced_blocks(displaced_blocks&& other)
-      : block_lengths_(std::move(other.block_lengths_)),
-        displacements_(std::move(other.displacements_))
-    { }
-
-    displaced_blocks& operator=(displaced_blocks&& rhs)
-    {
-      block_lengths_ = std::move(rhs.block_lengths_);
-      displacements_ = std::move(rhs.displacements_);
-      return *this;
-    }
-#   endif
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
     displaced_blocks(
@@ -406,29 +383,6 @@ namespace yampi
     displaced_constant_blocks(displaced_constant_blocks&&) = default;
     displaced_constant_blocks& operator=(displaced_constant_blocks&&) = default;
 #   endif
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    displaced_constant_blocks() : block_length_(), displacements_() { }
-
-    displaced_constant_blocks(displaced_constant_blocks const& other)
-      : block_length_(other.block_length_), displacements_(other.displacements_)
-    { }
-
-    displaced_constant_blocks& operator=(displaced_constant_blocks rhs)
-    { this->swap(rhs); return *this; }
-
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    displaced_constant_blocks(displaced_constant_blocks&& other)
-      : block_length_(std::move(other.block_length_)),
-        displacements_(std::move(other.displacements_))
-    { }
-
-    displaced_constant_blocks& operator=(displaced_constant_blocks&& rhs)
-    {
-      block_length_ = std::move(rhs.block_length_);
-      displacements_ = std::move(rhs.displacements_);
-      return *this;
-    }
-#   endif
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
     explicit displaced_constant_blocks(allocator_type const& allocator)
@@ -672,33 +626,6 @@ namespace yampi
     displaced_typed_blocks(displaced_typed_blocks&&) = default;
     displaced_typed_blocks& operator=(displaced_typed_blocks&&) = default;
 #   endif
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    displaced_typed_blocks() : mpi_datatypes_(), block_lengths_(), displacement_addresses_() { }
-
-    displaced_typed_blocks(displaced_typed_blocks const& other)
-      : mpi_datatypes_(other.mpi_datatypes_),
-        block_lengths_(other.block_lengths_),
-        displacement_addresses_(other.displacement_addresses_)
-    { }
-
-    displaced_typed_blocks& operator=(displaced_typed_blocks rhs)
-    { this->swap(rhs); return *this; }
-
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    displaced_typed_blocks(displaced_typed_blocks&& other)
-      : mpi_datatypes_(std::move(other.mpi_datatypes_)),
-        block_lengths_(std::move(other.block_lengths_)),
-        displacement_addresses_(std::move(other.displacement_addresses_))
-    { }
-
-    displaced_typed_blocks& operator=(displaced_typed_blocks&& rhs)
-    {
-      mpi_datatypes_ = std::move(rhs.mpi_datatypes_);
-      block_lengths_ = std::move(rhs.block_lengths_);
-      displacement_addresses_ = std::move(rhs.displacement_addresses_);
-      return *this;
-    }
-#   endif
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
     displaced_typed_blocks(
@@ -776,43 +703,6 @@ namespace yampi
       std::initializer_list< ::yampi::displaced_typed_block > initializer_list)
     { this->assign(initializer_list); }
 # endif // BOOST_NO_CXX11_HDR_INITIALIZER_LIST
-
-    /*
-    template <typename Base>
-    displaced_typed_blocks(Base const& base)
-    { }
-//
-   public:
-    template <typename Value, typename Base>
-    displaced_typed_block(
-      ::yampi::datatype const& datatype, int const length,
-      Value const& value, Base const& base, ::yampi::environment const& environment)
-      : datatype_(datatype),
-        length_(length),
-        displacement_address_(displacement_address(value, base, environment))
-    { }
-
-    template <typename Value>
-    displaced_typed_block(
-      ::yampi::datatype const& datatype, int const length,
-      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
-      : datatype_(datatype),
-        length_(length),
-        displacement_address_(displacement_address(value, base_address, environment))
-    { }
-
-   private:
-    template <typename Value>
-    MPI_Aint displacement_address(
-      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
-    { return ::yampi::address(value, environment) - base_address; }
-
-    template <typename Value, typename Base>
-    MPI_Aint displacement_address(
-      Value const& value, Base const& base, ::yampi::environment const& environment)
-    { return displacement_address(value, ::yampi::address(base, environment), environment); }
-//
-*/
 
 
     mpi_datatypes_type const& mpi_datatypes() const { return mpi_datatypes_; }
@@ -1088,12 +978,19 @@ namespace yampi
     derived_datatype(derived_datatype&&) = default;
     derived_datatype& operator=(derived_datatype&&) = default;
 #   else
-    derived_datatype(derived_datatype&& other)
+    derived_datatype(derived_datatype&& other) BOOST_NOEXCEPT
       : datatype_(std::move(other.datatype_)), is_free_(std::move(other.is_free_))
     { }
 
-    derived_datatype& operator=(derived_datatype&& other)
-    { datatype_ = std::move(other.datatype_); is_free_ = std::move(other.is_free_); }
+    derived_datatype& operator=(derived_datatype&& other) BOOST_NOEXCEPT
+    {
+      if (this != &other)
+      {
+        datatype_ = std::move(other.datatype_);
+        is_free_ = std::move(other.is_free_);
+      }
+      return *this;
+    }
 #   endif
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
@@ -1279,6 +1176,7 @@ namespace yampi
     }
 
 
+    // TODO: implement easier versions of MPI_Type_create_struct
     /*
     template <typename Value>
     ::yampi::datatype derive(

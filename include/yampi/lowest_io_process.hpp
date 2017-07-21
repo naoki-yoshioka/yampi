@@ -15,13 +15,16 @@
 # include <yampi/environment.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/communicator.hpp>
-# include <yampi/error.hpp>
+# include <yampi/buffer.hpp>
+# include <yampi/all_reduce.hpp>
+# include <yampi/binary_operation.hpp>
 
 
 namespace yampi
 {
   // return the rank that is lowest in the group of world communicator
-  inline boost::optional< ::yampi::rank > lowest_io_process(::yampi::environment const& environment)
+  inline boost::optional< ::yampi::rank > lowest_io_process(
+    ::yampi::environment const& environment)
   {
     BOOST_CONSTEXPR_OR_CONST ::yampi::rank zero_rank = ::yampi::rank(0);
     ::yampi::rank const io_process = ::yampi::io_process(environment);
@@ -30,16 +33,11 @@ namespace yampi
     else if (io_process == ::yampi::null_process())
       return boost::none;
 
-    // TODO: implement yampi::all_reduce and replace the following statements to it
-    int result;
-    int const error_code
-      = MPI_Allreduce(
-          const_cast<int*>(&io_process.mpi_rank()), &result, 1, MPI_INT, MPI_MIN,
-          ::yampi::world_communicator().mpi_comm());
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::lowest_io_process", environment);
-
-    return ::yampi::rank(result);
+    return static_cast< ::yampi::rank >(
+      ::yampi::all_reduce(
+        ::yampi::world_communicator(), environment,
+        ::yampi::make_buffer(io_process.mpi_rank()),
+        ::yampi::operations::minimum()));
   }
 }
 

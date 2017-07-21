@@ -1,5 +1,5 @@
-#ifndef YAMPI_GATHER_HPP
-# define YAMPI_GATHER_HPP
+#ifndef MPI_REDUCE_HPP
+# define MPI_REDUCE_HPP
 
 # include <boost/config.hpp>
 
@@ -26,6 +26,7 @@
 # include <yampi/communicator.hpp>
 # include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
+# include <yampi/binary_operation.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
 
@@ -48,36 +49,35 @@
 
 namespace yampi
 {
-  // TODO: implement MPI_Gatherv
-  class gather
+  class reduce
   {
     ::yampi::communicator communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    gather() = delete;
+    reduce() = delete;
 # else
    private:
-    gather();
+    reduce();
 
    public:
 # endif
 
-    BOOST_CONSTEXPR gather(
+    BOOST_CONSTEXPR reduce(
       ::yampi::communicator const communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    gather(gather const&) = default;
-    gather& operator=(gather const&) = default;
+    reduce(reduce const&) = default;
+    reduce& operator=(reduce const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    gather(gather&&) = default;
-    gather& operator=(gather&&) = default;
+    reduce(reduce&&) = default;
+    reduce& operator=(reduce&&) = default;
 #   endif
-    ~gather() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    ~reduce() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
 
@@ -85,7 +85,8 @@ namespace yampi
     void call(
       ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ContiguousIterator const first) const
+      ContiguousIterator const first,
+      ::yampi::binary_operation const operation) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -94,60 +95,26 @@ namespace yampi
         "value_type of ContiguousIterator must be the same to SendValue");
 
       int const error_code
-        = MPI_Gather(
+        = MPI_Reduce(
             const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             const_cast<SendValue*>(YAMPI_addressof(*first)),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue>& receive_buffer) const
-    {
-      int const error_code
-        = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            YAMPI_addressof(receive_buffer.data()),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer) const
-    {
-      int const error_code
-        = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<ReceiveValue*>(YAMPI_addressof(receive_buffer.data())),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
     }
 
     template <typename SendValue>
     void call(
       ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer) const
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const operation) const
     {
       if (communicator_.rank(environment) == root_)
-        throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
+        throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
 
       SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null));
+      call(environment, send_buffer, YAMPI_addressof(null), operation);
     }
   };
 }
@@ -160,4 +127,3 @@ namespace yampi
 # undef YAMPI_is_same
 
 #endif
-
