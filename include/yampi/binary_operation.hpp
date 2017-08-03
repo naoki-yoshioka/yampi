@@ -43,8 +43,13 @@ namespace yampi
       : mpi_op_(mpi_op)
     { }
 
+# ifndef __FUJITSU
+#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
+# else
+#   define YAMPI_CONSTEXPR
+# endif
 # define YAMPI_DEFINE_OPERATION_CONSTRUCTOR(op, mpiop) \
-    explicit BOOST_CONSTEXPR binary_operation(::yampi:: op ## _t const) BOOST_NOEXCEPT_OR_NOTHROW\
+    explicit YAMPI_CONSTEXPR binary_operation(::yampi:: op ## _t const) BOOST_NOEXCEPT_OR_NOTHROW\
       : mpi_op_(MPI_ ## mpiop )\
     { }
 
@@ -62,6 +67,7 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(minimum_location, MINLOC)
 
 # undef YAMPI_DEFINE_OPERATION_CONSTRUCTOR
+# undef YAMPI_CONSTEXPR
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     binary_operation(binary_operation const&) = default;
@@ -98,8 +104,13 @@ namespace yampi
 
   namespace operations
   {
+# ifndef __FUJITSU
+#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
+# else
+#   define YAMPI_CONSTEXPR
+# endif
 # define YAMPI_DEFINE_OPERATION_FUNCTION(op) \
-    inline BOOST_CONSTEXPR ::yampi::binary_operation op ()\
+    inline YAMPI_CONSTEXPR ::yampi::binary_operation op ()\
     { return ::yampi::binary_operation(::yampi:: op ## _t()); }
 
     YAMPI_DEFINE_OPERATION_FUNCTION(maximum)
@@ -116,6 +127,7 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_FUNCTION(minimum_location)
 
 # undef YAMPI_DEFINE_OPERATION_FUNCTION
+# undef YAMPI_CONSTEXPR
   }
 }
 
