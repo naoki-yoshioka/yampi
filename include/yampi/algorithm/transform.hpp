@@ -244,10 +244,5 @@ namespace yampi
 }
 
 
-# undef YAMPI_RVALUE_REFERENCE_OR_COPY
-# undef YAMPI_FORWARD_OR_COPY
-# undef YAMPI_enable_if
-# undef YAMPI_is_same
-
 #endif
 
