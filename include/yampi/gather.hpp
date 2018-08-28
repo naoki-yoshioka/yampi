@@ -64,7 +64,7 @@ namespace yampi
    public:
 # endif
 
-    BOOST_CONSTEXPR gather(
+    gather(
       ::yampi::communicator const communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)

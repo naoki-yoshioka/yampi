@@ -17,23 +17,13 @@ namespace yampi
   template <typename T>
   struct basic_datatype_of;
 
-# ifndef __FUJITSU
-#   define YAMPI_MAKE_BASIC_DATATYPE_OF(type, mpi_datatype) \
-  template <>\
-  struct basic_datatype_of< type >\
-  {\
-    static BOOST_CONSTEXPR ::yampi::datatype call()\
-    { return ::yampi::datatype( mpi_datatype ); }\
-  };
-# else // __FUJITSU
-#   define YAMPI_MAKE_BASIC_DATATYPE_OF(type, mpi_datatype) \
+# define YAMPI_MAKE_BASIC_DATATYPE_OF(type, mpi_datatype) \
   template <>\
   struct basic_datatype_of< type >\
   {\
     static ::yampi::datatype call()\
     { return ::yampi::datatype( mpi_datatype ); }\
   };
-# endif
 
 
   YAMPI_MAKE_BASIC_DATATYPE_OF(char, MPI_CHAR)
@@ -69,7 +59,6 @@ namespace yampi
 # endif
 
 # undef YAMPI_MAKE_BASIC_DATATYPE_OF
-# undef YAMPI_STATIC_CONSTEXPR
 }
 
 

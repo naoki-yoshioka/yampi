@@ -39,17 +39,12 @@ namespace yampi
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 
-    explicit BOOST_CONSTEXPR binary_operation(MPI_Op const mpi_op) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit binary_operation(MPI_Op const mpi_op) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_op_(mpi_op)
     { }
 
-# ifndef __FUJITSU
-#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
-# else
-#   define YAMPI_CONSTEXPR
-# endif
 # define YAMPI_DEFINE_OPERATION_CONSTRUCTOR(op, mpiop) \
-    explicit YAMPI_CONSTEXPR binary_operation(::yampi:: op ## _t const) BOOST_NOEXCEPT_OR_NOTHROW\
+    explicit binary_operation(::yampi:: op ## _t const) BOOST_NOEXCEPT_OR_NOTHROW\
       : mpi_op_(MPI_ ## mpiop )\
     { }
 
@@ -67,7 +62,6 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(minimum_location, MINLOC)
 
 # undef YAMPI_DEFINE_OPERATION_CONSTRUCTOR
-# undef YAMPI_CONSTEXPR
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     binary_operation(binary_operation const&) = default;
@@ -79,10 +73,10 @@ namespace yampi
     ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    BOOST_CONSTEXPR bool operator==(binary_operation const other) const
+    bool operator==(binary_operation const other) const
     { return mpi_op_ == other.mpi_op_; }
 
-    BOOST_CONSTEXPR MPI_Op const& mpi_op() const { return mpi_op_; }
+    MPI_Op const& mpi_op() const { return mpi_op_; }
 
     void swap(binary_operation& other)
       BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Op>::value ))
@@ -92,7 +86,7 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(
+  inline bool operator!=(
     ::yampi::binary_operation const lhs, ::yampi::binary_operation const rhs)
   { return not (lhs == rhs); }
 
@@ -104,13 +98,8 @@ namespace yampi
 
   namespace operations
   {
-# ifndef __FUJITSU
-#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
-# else
-#   define YAMPI_CONSTEXPR
-# endif
 # define YAMPI_DEFINE_OPERATION_FUNCTION(op) \
-    inline YAMPI_CONSTEXPR ::yampi::binary_operation op ()\
+    inline ::yampi::binary_operation op ()\
     { return ::yampi::binary_operation(::yampi:: op ## _t()); }
 
     YAMPI_DEFINE_OPERATION_FUNCTION(maximum)
@@ -127,7 +116,6 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_FUNCTION(minimum_location)
 
 # undef YAMPI_DEFINE_OPERATION_FUNCTION
-# undef YAMPI_CONSTEXPR
   }
 }
 

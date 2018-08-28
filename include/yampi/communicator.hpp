@@ -42,23 +42,17 @@ namespace yampi
     ~communicator() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-# ifndef __FUJITSU
-#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
-# else
-#   define YAMPI_CONSTEXPR
-# endif
-    explicit BOOST_CONSTEXPR communicator(MPI_Comm const mpi_comm)
+    explicit communicator(MPI_Comm const mpi_comm)
       : mpi_comm_(mpi_comm)
     { }
 
-    explicit YAMPI_CONSTEXPR communicator(::yampi::world_communicator_t const)
+    explicit communicator(::yampi::world_communicator_t const)
       : mpi_comm_(MPI_COMM_WORLD)
     { }
 
-    explicit YAMPI_CONSTEXPR communicator(::yampi::self_communicator_t const)
+    explicit communicator(::yampi::self_communicator_t const)
       : mpi_comm_(MPI_COMM_SELF)
     { }
-# undef YAMPI_CONSTEXPR
 
     int size(::yampi::environment const& environment) const
     {
@@ -100,17 +94,11 @@ namespace yampi
   { lhs.swap(rhs); }
 
 
-# ifndef __FUJITSU
-#   define YAMPI_CONSTEXPR BOOST_CONSTEXPR
-# else
-#   define YAMPI_CONSTEXPR 
-# endif
-  inline YAMPI_CONSTEXPR ::yampi::communicator world_communicator()
+  inline ::yampi::communicator world_communicator()
   { return ::yampi::communicator(::yampi::world_communicator_t()); }
 
-  inline YAMPI_CONSTEXPR ::yampi::communicator self_communicator()
+  inline ::yampi::communicator self_communicator()
   { return ::yampi::communicator(::yampi::self_communicator_t()); }
-# undef YAMPI_CONSTEXPR
 
 
   inline bool is_valid_rank(
