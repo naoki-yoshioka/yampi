@@ -6,6 +6,7 @@
 # include <cassert>
 # include <cstddef>
 # include <limits>
+# include <stdexcept>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
 # else
@@ -25,6 +26,8 @@
 # include <mpi.h>
 
 # include <yampi/is_initialized.hpp>
+# include <yampi/is_finalized.hpp>
+# include <yampi/environment.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -45,6 +48,16 @@
 
 namespace yampi
 {
+  class not_yet_initialized_error
+    : public std::logic_error
+  {
+   public:
+    not_yet_initialized_error()
+      : std::logic_error("MPI environment has not been initialized yet")
+    { }
+  };
+
+
   class allocate_error
     : public std::runtime_error
   {
@@ -96,11 +109,16 @@ namespace yampi
     struct rebind
     { typedef allocator<U> other; };
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# else
-    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW { }
-# endif
+    allocator()
+    {
+      if (not ::yampi::is_initialized())
+        throw ::yampi::not_yet_initialized_error();
+
+      if (::yampi::is_finalized())
+        throw ::yampi::already_finalized_error(); // defined in environment.hpp
+    }
+
+    explicit allocator(::yampi::environment const&) BOOST_NOEXCEPT_OR_NOTHROW { }
 
     allocator(allocator const& other) BOOST_NOEXCEPT_OR_NOTHROW
     { }
