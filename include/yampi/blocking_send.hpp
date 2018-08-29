@@ -134,7 +134,7 @@ namespace yampi
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::blocking_send_detail::blocking_send<communication_mode_type>::call(
-      YAPMI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+      YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
       communicator, environment, buffer, destination, tag);
   }
 }
