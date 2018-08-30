@@ -87,7 +87,6 @@ namespace yampi
   };
 
 
-  // TODO: modify to depend on yampi::environment
   template <typename T>
   class allocator
   {
