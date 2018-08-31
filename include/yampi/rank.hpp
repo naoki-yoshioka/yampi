@@ -32,7 +32,6 @@ namespace yampi
   struct host_process_t { };
   struct io_process_t { };
   struct any_source_t { };
-  struct null_process_t { };
 
   class rank
   {
@@ -49,10 +48,6 @@ namespace yampi
 
     explicit BOOST_CONSTEXPR rank(::yampi::any_source_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_rank_(MPI_ANY_SOURCE)
-    { }
-
-    explicit BOOST_CONSTEXPR rank(::yampi::null_process_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_rank_(MPI_PROC_NULL)
     { }
 
     explicit rank(::yampi::host_process_t const, ::yampi::environment const& environment)
@@ -86,6 +81,8 @@ namespace yampi
 #   endif
     ~rank() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
+
+    bool is_valid() const { return mpi_rank != MPI_PROC_NULL; }
 
     BOOST_CONSTEXPR bool operator==(rank const other) const
     { return mpi_rank_ == other.mpi_rank_; }
@@ -232,9 +229,6 @@ namespace yampi
   inline BOOST_CONSTEXPR ::yampi::rank any_source()
   { return ::yampi::rank(::yampi::any_source_t()); }
 
-  inline BOOST_CONSTEXPR ::yampi::rank null_process()
-  { return ::yampi::rank(::yampi::null_process_t()); }
-
   inline ::yampi::rank host_process(::yampi::environment const& environment)
   { return ::yampi::rank(::yampi::host_process_t(), environment); }
 
@@ -243,13 +237,13 @@ namespace yampi
 
 
   inline bool exists_host_process(::yampi::environment const& environment)
-  { return ::yampi::host_process(environment) != ::yampi::null_process(); }
+  { return ::yampi::host_process(environment).is_valid(); }
 
   inline bool is_host_process(::yampi::rank const self, ::yampi::environment const& environment)
   { return self == ::yampi::host_process(environment); }
 
   inline bool exists_io_process(::yampi::environment const& environment)
-  { return ::yampi::io_process(environment) != ::yampi::null_process(); }
+  { return ::yampi::io_process(environment).is_valid(); }
 
   inline bool is_io_process(::yampi::rank const self, ::yampi::environment const& environment)
   {
