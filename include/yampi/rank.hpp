@@ -82,7 +82,7 @@ namespace yampi
     ~rank() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    bool is_null() const { return mpi_rank == MPI_PROC_NULL; }
+    bool is_null() const { return mpi_rank_ == MPI_PROC_NULL; }
 
     BOOST_CONSTEXPR bool operator==(rank const other) const
     { return mpi_rank_ == other.mpi_rank_; }
