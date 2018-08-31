@@ -82,7 +82,7 @@ namespace yampi
     ~rank() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    bool is_valid() const { return mpi_rank != MPI_PROC_NULL; }
+    bool is_null() const { return mpi_rank == MPI_PROC_NULL; }
 
     BOOST_CONSTEXPR bool operator==(rank const other) const
     { return mpi_rank_ == other.mpi_rank_; }
@@ -237,13 +237,13 @@ namespace yampi
 
 
   inline bool exists_host_process(::yampi::environment const& environment)
-  { return ::yampi::host_process(environment).is_valid(); }
+  { return not ::yampi::host_process(environment).is_null(); }
 
   inline bool is_host_process(::yampi::rank const self, ::yampi::environment const& environment)
   { return self == ::yampi::host_process(environment); }
 
   inline bool exists_io_process(::yampi::environment const& environment)
-  { return ::yampi::io_process(environment).is_valid(); }
+  { return not ::yampi::io_process(environment).is_null(); }
 
   inline bool is_io_process(::yampi::rank const self, ::yampi::environment const& environment)
   {

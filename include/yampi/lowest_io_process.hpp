@@ -26,7 +26,7 @@ namespace yampi
     ::yampi::rank const io_process = ::yampi::io_process(environment);
     if (io_process == ::yampi::any_source())
       return zero_rank;
-    else if (not io_process.is_valid())
+    else if (io_process.is_null())
       return boost::none;
 
     return static_cast< ::yampi::rank >(
