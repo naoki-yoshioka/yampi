@@ -54,6 +54,8 @@ namespace yampi
       : mpi_comm_(MPI_COMM_SELF)
     { }
 
+    bool is_null() const { return mpi_comm_ == MPI_COMM_NULL; }
+
     int size(::yampi::environment const& environment) const
     {
       int result;
