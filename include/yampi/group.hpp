@@ -65,21 +65,39 @@ namespace yampi
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     group() = delete;
-# else
+# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
    private:
     group();
 
    public:
-# endif
+# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    group(group const&) = delete;
+    group& operator=(group const&) = delete;
+#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    group(group const&);
+    group& operator=(group const&);
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    group(group const&) = default;
-    group& operator=(group const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+   public:
+#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     group(group&&) = default;
     group& operator=(group&&) = default;
-#   endif
-# endif
+#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group(group&& other) : mpi_group_(std::move(other.mpi_group)) { }
+    group& operator=(group&& other) { mpi_group_ = std::move(other.mpi_group); return *this; }
+#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+# else // BOOST_NO_CXX11_RVALUE_REFERENCES
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group(group const&) = default;
+    group& operator=(group const&) = default;
+#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group(group const& other) : mpi_group_(other.mpi_group) { }
+    group& operator=(group other) { using std::swap; swap(other); return *this; }
+#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     ~group() BOOST_NOEXCEPT_OR_NOTHROW
     {
@@ -117,7 +135,6 @@ namespace yampi
       int const error_code = MPI_Group_free(&mpi_group_);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::group::size", environment);
-      return result;
     }
 
 
@@ -194,7 +211,7 @@ namespace yampi
 
 
   inline ::yampi::group make_union(
-    ::yampi::group const lhs, ::yampi::group const rhs, ::yampi::environment const& environment)
+    ::yampi::group const& lhs, ::yampi::group const& rhs, ::yampi::environment const& environment)
   {
     MPI_Group mpi_group;
     int const error_code = MPI_Group_union(lhs.mpi_group(), rhs.mpi_group(), &mpi_group);
@@ -204,7 +221,7 @@ namespace yampi
   }
 
   inline ::yampi::group make_intersection(
-    ::yampi::group const lhs, ::yampi::group const rhs, ::yampi::environment const& environment)
+    ::yampi::group const& lhs, ::yampi::group const& rhs, ::yampi::environment const& environment)
   {
     MPI_Group mpi_group;
     int const error_code = MPI_Group_intersection(lhs.mpi_group(), rhs.mpi_group(), &mpi_group);
@@ -214,7 +231,7 @@ namespace yampi
   }
 
   inline ::yampi::group make_difference(
-    ::yampi::group const lhs, ::yampi::group const rhs, ::yampi::environment const& environment)
+    ::yampi::group const& lhs, ::yampi::group const& rhs, ::yampi::environment const& environment)
   {
     MPI_Group mpi_group;
     int const error_code = MPI_Group_difference(lhs.mpi_group(), rhs.mpi_group(), &mpi_group);
@@ -226,7 +243,7 @@ namespace yampi
   // TODO: Implement range versions
   template <typename ContiguousIterator>
   inline ::yampi::group make_inclusive(
-    ::yampi::group const original, ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::environment const& environment)
   {
     static_assert(
@@ -249,12 +266,12 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline ::yampi::group make_inclusive(
-    ::yampi::group const original, ContiguousRange const& ranks, ::yampi::environment const& environment)
-  { return ::yampi::make_inclusive(original, boost::begin(ranks), boost::end(ranks), environment); }
+    ::yampi::group const& original_group, ContiguousRange const& ranks, ::yampi::environment const& environment)
+  { return ::yampi::make_inclusive(original_group, boost::begin(ranks), boost::end(ranks), environment); }
 
   template <typename ContiguousIterator>
   inline ::yampi::group make_exclusive(
-    ::yampi::group const original, ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::environment const& environment)
   {
     static_assert(
@@ -277,8 +294,8 @@ namespace yampi
 
   template <typename ContiguousRange>
   inline ::yampi::group make_exclusive(
-    ::yampi::group const original, ContiguousRange const& ranks, ::yampi::environment const& environment)
-  { return ::yampi::make_exclusive(original, boost::begin(ranks), boost::end(ranks), environment); }
+    ::yampi::group const& original_group, ContiguousRange const& ranks, ::yampi::environment const& environment)
+  { return ::yampi::make_exclusive(original_group, boost::begin(ranks), boost::end(ranks), environment); }
 }
 
 

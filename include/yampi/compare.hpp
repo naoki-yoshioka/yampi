@@ -55,7 +55,7 @@ namespace yampi
 
 
   inline YAMPI_COMMUNICATORS_ARE compare(
-    ::yampi::communicator const lhs, ::yampi::communicator const rhs,
+    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
     ::yampi::environment const& environment)
   {
     int result;
@@ -66,7 +66,7 @@ namespace yampi
   }
 
   inline YAMPI_GROUPS_ARE compare(
-    ::yampi::group const lhs, ::yampi::group const rhs,
+    ::yampi::group const& lhs, ::yampi::group const& rhs,
     ::yampi::environment const& environment)
   {
     int result;
@@ -81,37 +81,37 @@ namespace yampi
 
 
   inline bool is_identical(
-    ::yampi::communicator const lhs, ::yampi::communicator const rhs,
+    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::identical; }
 
   inline bool is_identical(
-    ::yampi::group const lhs, ::yampi::group const rhs,
+    ::yampi::group const& lhs, ::yampi::group const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::groups_are::identical; }
 
   inline bool is_congruent(
-    ::yampi::communicator const lhs, ::yampi::communicator const rhs,
+    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::congruent; }
 
   inline bool is_similar(
-    ::yampi::communicator const lhs, ::yampi::communicator const rhs,
+    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::similar; }
 
   inline bool is_similar(
-    ::yampi::group const lhs, ::yampi::group const rhs,
+    ::yampi::group const& lhs, ::yampi::group const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::groups_are::similar; }
 
   inline bool is_unequal(
-    ::yampi::communicator const lhs, ::yampi::communicator const rhs,
+    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::unequal; }
 
   inline bool is_unequal(
-    ::yampi::group const lhs, ::yampi::group const rhs,
+    ::yampi::group const& lhs, ::yampi::group const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::groups_are::unequal; }
 }
