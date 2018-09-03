@@ -31,7 +31,8 @@ namespace yampi
 
     return static_cast< ::yampi::rank >(
       ::yampi::all_reduce(
-        ::yampi::world_communicator(), environment,
+        ::yampi::communicator(::yampi::world_communicator_t()),
+        environment,
         ::yampi::make_buffer(io_process.mpi_rank()),
         ::yampi::operations::minimum()));
   }

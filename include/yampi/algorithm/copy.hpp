@@ -24,7 +24,7 @@ namespace yampi
     template <typename Value>
     inline boost::optional< ::yampi::status>
     copy(
-      ::yampi::communicator const communicator, ::yampi::environment const& environment,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment,
       ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
       ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
       ::yampi::tag const tag = ::yampi::tag(0))
@@ -50,7 +50,7 @@ namespace yampi
     template <typename Value>
     inline boost::optional< ::yampi::status>
     copy(
-      ::yampi::communicator const communicator, ::yampi::environment const& environment,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment,
       ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
       ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
       ::yampi::tag const tag = ::yampi::tag(0))
@@ -77,7 +77,7 @@ namespace yampi
     // ignoring status
     template <typename Value>
     inline void copy(
-      ::yampi::communicator const communicator,
+      ::yampi::communicator const& communicator,
       ::yampi::ignore_status_t const, ::yampi::environment const& environment,
       ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
       ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
@@ -101,7 +101,7 @@ namespace yampi
 
     template <typename Value>
     inline void copy(
-      ::yampi::communicator const communicator,
+      ::yampi::communicator const& communicator,
       ::yampi::ignore_status_t const, ::yampi::environment const& environment,
       ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
       ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,

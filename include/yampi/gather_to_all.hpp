@@ -51,7 +51,7 @@ namespace yampi
   // TODO: implement MPI_Allgatherv
   template <typename SendValue, typename ContiguousIterator>
   inline void gather_to_all(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first)
   {
@@ -74,7 +74,7 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void gather_to_all(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer)
   {
@@ -91,7 +91,7 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void gather_to_all(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer)
   {

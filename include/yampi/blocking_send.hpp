@@ -42,7 +42,7 @@ namespace yampi
 {
   template <typename Value>
   inline void blocking_send(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
   {
     int const error_code
@@ -65,7 +65,7 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
       { ::yampi::blocking_send(communicator, environment, buffer, destination, tag); }
     };
@@ -76,7 +76,7 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
       {
         int const error_code
@@ -94,7 +94,7 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
       {
         int const error_code
@@ -112,7 +112,7 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
       {
         int const error_code
@@ -129,7 +129,7 @@ namespace yampi
   template <typename CommunicationMode, typename Value>
   inline void blocking_send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;

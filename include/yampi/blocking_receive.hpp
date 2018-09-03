@@ -32,7 +32,7 @@ namespace yampi
   // Blocking receive
   template <typename Value>
   inline ::yampi::status blocking_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const source = ::yampi::any_source(),
     ::yampi::tag const tag = ::yampi::any_tag())
@@ -50,7 +50,7 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status blocking_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const source = ::yampi::any_source(),
     ::yampi::tag const tag = ::yampi::any_tag())
@@ -69,7 +69,7 @@ namespace yampi
   // Blocking receive (ignoring status)
   template <typename Value>
   inline void blocking_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const source = ::yampi::any_source(),
@@ -85,7 +85,7 @@ namespace yampi
 
   template <typename Value>
   inline void blocking_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const source = ::yampi::any_source(),

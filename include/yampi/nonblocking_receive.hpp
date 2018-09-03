@@ -31,7 +31,7 @@ namespace yampi
 {
   template <typename Value>
   inline ::yampi::request nonblocking_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const source = ::yampi::any_source(),
     ::yampi::tag const tag = ::yampi::any_tag())
@@ -50,7 +50,7 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::request nonblocking_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const source = ::yampi::any_source(),
     ::yampi::tag const tag = ::yampi::any_tag())

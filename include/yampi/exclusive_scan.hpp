@@ -52,7 +52,7 @@ namespace yampi
 {
   template <typename SendValue, typename ContiguousIterator>
   inline void exclusive_scan(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
     ::yampi::binary_operation const operation)
@@ -75,7 +75,7 @@ namespace yampi
 
   template <typename SendValue>
   inline SendValue exclusive_scan(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::binary_operation const operation)
   {
