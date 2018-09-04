@@ -14,7 +14,7 @@
 int main(int argc, char* argv[])
 {
   yampi::environment env(argc, argv);
-  yampi::world_communicator_t world_communicator_tag;
+  yampi::world_communicator_t const world_communicator_tag;
   yampi::communicator const comm(world_communicator_tag);
 
   std::cout << "I am " << comm.rank(env) << " of " << comm.size(env) << std::endl;
