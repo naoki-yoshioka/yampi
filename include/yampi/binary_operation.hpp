@@ -4,10 +4,23 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
+# include <yampi/environment.hpp>
+# include <yampi/error.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
 
 
 namespace yampi
@@ -30,14 +43,45 @@ namespace yampi
     MPI_Op mpi_op_;
 
    public:
+    binary_operation() : mpi_op_(MPI_OP_NULL) { }
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    binary_operation() = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+    binary_operation(binary_operation const&) = delete;
+    binary_operation& operator=(binary_operation const&) = delete;
+# else
    private:
-    binary_operation();
+    binary_operation(binary_operation const&);
+    binary_operation& operator=(binary_operation const&);
 
    public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+# endif
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    binary_operation(binary_operation&&) = default;
+    binary_operation& operator=(binary_operation&&) = default;
+#   else
+    binary_operation(binary_operation&& other) : mpi_op_(std::move(other.mpi_op_)) { }
+    binary_operation& operator=(binary_operation&& other)
+    {
+      if (this != YAMPI_addressof(other))
+        mpi_op_ = std::move(other.mpi_op_);
+      return *this;
+    }
+#   endif
+# endif
+
+    ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      if (mpi_op_ == MPI_OP_NULL
+          or mpi_op_ == MPI_MAX or mpi_op_ == MPI_MIN
+          or mpi_op_ == MPI_SUM or mpi_op_ == MPI_PROD
+          or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
+          or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
+          or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
+          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC)
+        return;
+
+      MPI_Op_free(YAMPI_addressof(mpi_op_));
+    }
 
     explicit binary_operation(MPI_Op const mpi_op) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_op_(mpi_op)
@@ -63,17 +107,50 @@ namespace yampi
 
 # undef YAMPI_DEFINE_OPERATION_CONSTRUCTOR
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    binary_operation(binary_operation const&) = default;
-    binary_operation& operator=(binary_operation const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    binary_operation(binary_operation&&) = default;
-    binary_operation& operator=(binary_operation&&) = default;
-#   endif
-    ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    // TODO: Implement something like yampi::function and constructor using it
+    binary_operation(
+      MPI_User_function* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment)
+      : mpi_op_(create(mpi_user_function, is_commutative, environment))
+    { }
 
-    bool operator==(binary_operation const other) const
+   private:
+    MPI_Op create(
+      MPI_User_function* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Op result;
+      int const error_code
+        = MPI_Op_create(
+            mpi_user_function, static_cast<int>(is_commutative),
+            YAMPI_addressof(result));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::binary_operation::create", environment);
+
+      return result;
+    }
+
+   public:
+    void release(::yampi::environment const& environment)
+    {
+      if (mpi_op_ == MPI_OP_NULL
+          or mpi_op_ == MPI_MAX or mpi_op_ == MPI_MIN
+          or mpi_op_ == MPI_SUM or mpi_op_ == MPI_PROD
+          or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
+          or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
+          or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
+          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC)
+        return;
+
+      int const error_code = MPI_Op_free(YAMPI_addressof(mpi_op_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::binary_operation::release", environment);
+    }
+
+
+    bool is_null() const { return mpi_op_ == MPI_OP_NULL; }
+
+    bool operator==(binary_operation const& other) const
     { return mpi_op_ == other.mpi_op_; }
 
     MPI_Op const& mpi_op() const { return mpi_op_; }
@@ -87,37 +164,16 @@ namespace yampi
   };
 
   inline bool operator!=(
-    ::yampi::binary_operation const lhs, ::yampi::binary_operation const rhs)
+    ::yampi::binary_operation const& lhs, ::yampi::binary_operation const& rhs)
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::binary_operation& lhs, ::yampi::binary_operation& rhs)
     BOOST_NOEXCEPT_IF((
       ::yampi::utility::is_nothrow_swappable< ::yampi::binary_operation >::value ))
   { lhs.swap(rhs); }
-
-
-  namespace operations
-  {
-# define YAMPI_DEFINE_OPERATION_FUNCTION(op) \
-    inline ::yampi::binary_operation op ()\
-    { return ::yampi::binary_operation(::yampi:: op ## _t()); }
-
-    YAMPI_DEFINE_OPERATION_FUNCTION(maximum)
-    YAMPI_DEFINE_OPERATION_FUNCTION(minimum)
-    YAMPI_DEFINE_OPERATION_FUNCTION(plus)
-    YAMPI_DEFINE_OPERATION_FUNCTION(multiplies)
-    YAMPI_DEFINE_OPERATION_FUNCTION(logical_and)
-    YAMPI_DEFINE_OPERATION_FUNCTION(bit_and)
-    YAMPI_DEFINE_OPERATION_FUNCTION(logical_or)
-    YAMPI_DEFINE_OPERATION_FUNCTION(bit_or)
-    YAMPI_DEFINE_OPERATION_FUNCTION(logical_xor)
-    YAMPI_DEFINE_OPERATION_FUNCTION(bit_xor)
-    YAMPI_DEFINE_OPERATION_FUNCTION(maximum_location)
-    YAMPI_DEFINE_OPERATION_FUNCTION(minimum_location)
-
-# undef YAMPI_DEFINE_OPERATION_FUNCTION
-  }
 }
 
+
+# undef YAMPI_addressof
 
 #endif

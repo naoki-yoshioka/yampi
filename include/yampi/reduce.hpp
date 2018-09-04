@@ -88,7 +88,7 @@ namespace yampi
       ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
       ContiguousIterator const first,
-      ::yampi::binary_operation const operation) const
+      ::yampi::binary_operation const& operation) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -110,7 +110,7 @@ namespace yampi
     void call(
       ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::binary_operation const operation) const
+      ::yampi::binary_operation const& operation) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");

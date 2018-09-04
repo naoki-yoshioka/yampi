@@ -55,7 +55,7 @@ namespace yampi
     ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
-    ::yampi::binary_operation const operation)
+    ::yampi::binary_operation const& operation)
   {
     static_assert(
       (YAMPI_is_same<
@@ -77,7 +77,7 @@ namespace yampi
   inline SendValue all_reduce(
     ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::binary_operation const operation)
+    ::yampi::binary_operation const& operation)
   {
     assert(send_buffer.count() == 1);
 
@@ -89,5 +89,7 @@ namespace yampi
 
 
 # undef static_assert
+# undef YAMPI_addressof
+# undef YAMPI_is_same
 
 #endif

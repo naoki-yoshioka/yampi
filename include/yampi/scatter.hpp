@@ -180,4 +180,10 @@ namespace yampi
 }
 
 
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   undef static_assert
+# endif
+# undef YAMPI_addressof
+# undef YAMPI_is_same
+
 #endif
