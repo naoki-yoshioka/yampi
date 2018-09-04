@@ -19,6 +19,7 @@
 # include <yampi/tag.hpp>
 # include <yampi/status.hpp>
 # include <yampi/error.hpp>
+# include <yampi/cartesian.hpp>
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
@@ -207,6 +208,195 @@ namespace yampi
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
+  }
+
+
+
+  /* Cartesian versions */
+  template <typename SendValue, typename ReceiveValue>
+  inline ::yampi::status send_receive(
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
+    ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), environment,
+      send_buffer, ::yampi::rank(mpi_destination), send_tag,
+      receive_buffer, ::yampi::rank(mpi_source), receive_tag);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline ::yampi::status send_receive(
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
+    ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), environment,
+      send_buffer, ::yampi::rank(mpi_destination), send_tag,
+      receive_buffer, ::yampi::rank(mpi_source), receive_tag);
+  }
+
+
+  // with replacement
+  template <typename Value>
+  inline ::yampi::status send_receive(
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), environment,
+      buffer, ::yampi::rank(mpi_destination), send_tag,
+      ::yampi::rank(mpi_source), receive_tag);
+  }
+
+  template <typename Value>
+  inline ::yampi::status send_receive(
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), environment,
+      buffer, ::yampi::rank(mpi_destination), send_tag,
+      ::yampi::rank(mpi_source), receive_tag);
+  }
+
+
+  // ignoring status
+  template <typename SendValue, typename ReceiveValue>
+  inline void send_receive(
+    ::yampi::cartesian const& cartesian,
+    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
+    ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), ignore_status, environment,
+      send_buffer, ::yampi::rank(mpi_destination), send_tag,
+      receive_buffer, ::yampi::rank(mpi_source), receive_tag);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline void send_receive(
+    ::yampi::cartesian const& cartesian,
+    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
+    ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), ignore_status, environment,
+      send_buffer, ::yampi::rank(mpi_destination), send_tag,
+      receive_buffer, ::yampi::rank(mpi_source), receive_tag);
+  }
+
+
+  // with replacement, ignoring status
+  template <typename Value>
+  inline void send_receive(
+    ::yampi::cartesian const& cartesian,
+    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), ignore_status, environment,
+      buffer, ::yampi::rank(mpi_destination), send_tag,
+      ::yampi::rank(mpi_source), receive_tag);
+  }
+
+  template <typename Value>
+  inline void send_receive(
+    ::yampi::cartesian const& cartesian,
+    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    int const direction, int const displacement,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
+  {
+    int mpi_source;
+    int mpi_destination;
+    int const error_code
+      = MPI_Cart_shift(
+          cartesian.communicator().mpi_comm(), direction, displacement,
+          YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::send_receive", environment);
+
+    return ::yampi::send_receive(
+      cartesian.communicator(), ignore_status, environment,
+      buffer, ::yampi::rank(mpi_destination), send_tag,
+      ::yampi::rank(mpi_source), receive_tag);
   }
 }
 
