@@ -34,7 +34,7 @@ namespace yampi
         ::yampi::communicator(::yampi::world_communicator_t()),
         environment,
         ::yampi::make_buffer(io_process.mpi_rank()),
-        ::yampi::operations::minimum()));
+        ::yampi::binary_operation(::yampi::minimum_t())));
   }
 }
 

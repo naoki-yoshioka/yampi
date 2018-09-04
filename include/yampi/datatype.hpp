@@ -35,6 +35,8 @@ namespace yampi
     ~datatype() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
+    bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
+
     bool operator==(datatype const& other) const { return mpi_datatype_ == other.mpi_datatype_; }
 
     MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
