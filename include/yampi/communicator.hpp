@@ -117,7 +117,7 @@ namespace yampi
       MPI_Comm result;
       MPI_Request mpi_request;
       int const error_code
-        = MPI_Comm_dup(other.mpi_comm(), YAMPI_addressof(result), YAMPI_addressof(mpi_request));
+        = MPI_Comm_idup(other.mpi_comm(), YAMPI_addressof(result), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::communicator::duplicate", environment);
 
@@ -140,7 +140,7 @@ namespace yampi
     {
       MPI_Comm result;
       int const error_code
-        = MPI_Comm_create(
+        = MPI_Comm_create_group(
             other.mpi_comm(), group.mpi_group(), tag.mpi_tag(), YAMPI_addressof(result));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::communicator::create_group", environment);
@@ -179,6 +179,18 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::communicator::size", environment);
       return ::yampi::rank(mpi_rank);
+    }
+
+    void group(::yampi::group& group, ::yampi::environment const& environment) const
+    {
+      MPI_Group mpi_group;
+      int const error_code
+        = MPI_Comm_group(mpi_comm_, YAMPI_addressof(mpi_group));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::group", environment);
+
+      group.release(environment);
+      group.mpi_group(mpi_group);
     }
 
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
