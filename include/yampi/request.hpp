@@ -136,6 +136,18 @@ namespace yampi
       return static_cast<bool>(flag);
     }
 
+    std::pair<bool, ::yampi::status> status(::yampi::environment const& environment) const
+    {
+      int flag;
+      MPI_Status mpi_status;
+      int const error_code
+        = MPI_Request_get_status(mpi_request_, &flag, YAMPI_addressof(mpi_status));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::status", environment);
+
+      return std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status));
+    }
+
 
     MPI_Request const& mpi_request() const { return mpi_request_; }
     void mpi_request(MPI_Request const& mpi_req) { mpi_request_ = mpi_req; }
