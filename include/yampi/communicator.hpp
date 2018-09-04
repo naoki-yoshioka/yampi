@@ -90,17 +90,21 @@ namespace yampi
       : mpi_comm_(duplicate(other, environment))
     { }
 
+# if MPI_VERSION >= 3
     communicator(communicator const& other, ::yampi::request& request, ::yampi::environment const& environment)
       : mpi_comm_(duplicate(other, request, environment))
     { }
+# endif
 
     communicator(communicator const& other, ::yampi::group const& group, ::yampi::environment const& environment)
       : mpi_comm_(create(other, group, environment))
     { }
 
+# if MPI_VERSION >= 3
     communicator(communicator const& other, ::yampi::group const& group, ::yampi::tag const tag, ::yampi::environment const& environment)
       : mpi_comm_(create_group(other, group, tag, environment))
     { }
+# endif
 
    private:
     MPI_Comm duplicate(communicator const& other, ::yampi::environment const& environment) const
@@ -112,6 +116,7 @@ namespace yampi
       return result;
     }
 
+# if MPI_VERSION >= 3
     MPI_Comm duplicate(communicator const& other, ::yampi::request& request, ::yampi::environment const& environment) const
     {
       MPI_Comm result;
@@ -124,6 +129,7 @@ namespace yampi
       request.mpi_request(mpi_request);
       return result;
     }
+# endif
 
     MPI_Comm create(communicator const& other, ::yampi::group const& group, ::yampi::environment const& environment) const
     {
@@ -135,6 +141,7 @@ namespace yampi
       return result;
     }
 
+# if MPI_VERSION >= 3
     MPI_Comm create_group(
       communicator const& other, ::yampi::group const& group, ::yampi::tag const tag, ::yampi::environment const& environment) const
     {
@@ -146,6 +153,7 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::communicator::create_group", environment);
       return result;
     }
+# endif
 
     // TODO: Implement MPI_Comm_split/MPI_Comm_split_type constructors
 
