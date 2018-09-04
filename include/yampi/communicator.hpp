@@ -32,8 +32,6 @@ namespace yampi
   struct world_communicator_t { };
   struct self_communicator_t { };
 
-  struct duplicate_t { };
-
   class communicator
   {
     MPI_Comm mpi_comm_;
@@ -88,24 +86,24 @@ namespace yampi
     { }
 
     // TODO: Implement duplicate with MPI_Info
-    communicator(::yampi::duplicate_t const, communicator const& other)
-      : mpi_comm_(duplicate(other))
+    communicator(communicator const& other, ::yampi::environment const& environment)
+      : mpi_comm_(duplicate(other, environment))
     { }
 
-    communicator(::yampi::duplicate_t const, communicator const& other, ::yampi::request& request)
-      : mpi_comm_(duplicate(other, request))
+    communicator(communicator const& other, ::yampi::request& request, ::yampi::environment const& environment)
+      : mpi_comm_(duplicate(other, request, environment))
     { }
 
-    communicator(communicator const& other, ::yampi::group const& group)
-      : mpi_comm_(create(other, group))
+    communicator(communicator const& other, ::yampi::group const& group, ::yampi::environment const& environment)
+      : mpi_comm_(create(other, group, environment))
     { }
 
-    communicator(communicator const& other, ::yampi::group const& group, ::yampi::tag const tag)
-      : mpi_comm_(create_group(other, group, tag))
+    communicator(communicator const& other, ::yampi::group const& group, ::yampi::tag const tag, ::yampi::environment const& environment)
+      : mpi_comm_(create_group(other, group, tag, environment))
     { }
 
    private:
-    MPI_Comm duplicate(communicator const& other) const
+    MPI_Comm duplicate(communicator const& other, ::yampi::environment const& environment) const
     {
       MPI_Comm result;
       int const error_code = MPI_Comm_dup(other.mpi_comm(), YAMPI_addressof(result));
@@ -114,7 +112,7 @@ namespace yampi
       return result;
     }
 
-    MPI_Comm duplicate(communicator const& other, ::yampi::request& request) const
+    MPI_Comm duplicate(communicator const& other, ::yampi::request& request, ::yampi::environment const& environment) const
     {
       MPI_Comm result;
       MPI_Request mpi_request;
@@ -127,7 +125,7 @@ namespace yampi
       return result;
     }
 
-    MPI_Comm create(communicator const& other, ::yampi::group const& group) const
+    MPI_Comm create(communicator const& other, ::yampi::group const& group, ::yampi::environment const& environment) const
     {
       MPI_Comm result;
       int const error_code
@@ -138,7 +136,7 @@ namespace yampi
     }
 
     MPI_Comm create_group(
-      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag) const
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag, ::yampi::environment const& environment) const
     {
       MPI_Comm result;
       int const error_code
