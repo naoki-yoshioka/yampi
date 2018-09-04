@@ -79,6 +79,8 @@ namespace yampi
     }
 
 
+    bool is_null() const { return mpi_request_ == MPI_REQUEST_NULL; }
+
     bool operator==(request const& other) const
     { return mpi_request_ == other.mpi_request_; }
 
@@ -156,10 +158,6 @@ namespace yampi
   inline void swap(::yampi::request& lhs, ::yampi::request& rhs)
     BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::request >::value ))
   { lhs.swap(rhs); }
-
-
-  inline bool is_valid_request(::yampi::request const& self)
-  { return self != ::yampi::request(); }
 }
 
 
