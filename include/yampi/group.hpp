@@ -256,7 +256,7 @@ namespace yampi
 
       int const error_code = MPI_Group_free(&mpi_group_);
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::size", environment);
+        throw ::yampi::error(error_code, "yampi::group::~group", environment);
     }
 
 
@@ -298,7 +298,7 @@ namespace yampi
   template <typename ContiguousIterator1, typename ContiguousIterator2>
   inline void translate_ranks(
     ::yampi::group const& old_group, ContiguousIterator1 const first, ContiguousIterator1 const last,
-    ::yampi::gropu const& new_group, ContiguousIterator2 out, ::yampi::environment const& environment) const
+    ::yampi::group const& new_group, ContiguousIterator2 out, ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -325,10 +325,19 @@ namespace yampi
   template <typename ContiguousRange, typename ContiguousIterator>
   inline void translate_ranks(
     ::yampi::group const& old_group, ContiguousRange const& old_ranks,
-    ::yampi::gropu const& new_group, ContiguousIterator out,
-    ::yampi::environment const& environment) const
+    ::yampi::group const& new_group, ContiguousIterator out,
+    ::yampi::environment const& environment)
   { translate(old_group, boost::begin(old_ranks), boost::end(old_ranks), new_group, out, environment); }
 }
+
+
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   undef static_assert
+# endif
+# undef YAMPI_addressof
+# undef YAMPI_remove_cv
+# undef YAMPI_remove_volatile
+# undef YAMPI_is_same
 
 
 #endif
