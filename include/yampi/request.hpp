@@ -12,6 +12,8 @@
 
 # include <mpi.h>
 
+# include <yampi/status.hpp>
+# include <yampi/error.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -89,6 +91,51 @@ namespace yampi
 
     bool operator==(request const& other) const
     { return mpi_request_ == other.mpi_request_; }
+
+    ::yampi::status wait(::yampi::environment const& environment)
+    {
+      MPI_Status mpi_status;
+      int const error_code
+        = MPI_Wait(YAMPI_addressof(mpi_request_), YAMPI_addressof(mpi_status));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::wait", environment);
+
+      return ::yampi::status(mpi_status);
+    }
+
+    void wait(::yampi::ignore_status_t const, ::yampi::environment const& environment)
+    {
+      int const error_code
+        = MPI_Wait(YAMPI_addressof(mpi_request_), MPI_STATUS_IGNORE);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::wait", environment);
+    }
+
+    std::pair<bool, ::yampi::status> test(::yampi::environment const& environment)
+    {
+      int flag;
+      MPI_Status mpi_status;
+      int const error_code
+        = MPI_Test(
+            YAMPI_addressof(mpi_request_), &flag, YAMPI_addressof(mpi_status));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::test", environment);
+
+      return std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status));
+    }
+
+    bool test(::yampi::ignore_status_t const, ::yampi::environment const& environment)
+    {
+      int flag;
+      int const error_code
+        = MPI_Test(
+            YAMPI_addressof(mpi_request_), &flag, MPI_STATUS_IGNORE);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::test", environment);
+
+      return static_cast<bool>(flag);
+    }
+
 
     MPI_Request const& mpi_request() const { return mpi_request_; }
     void mpi_request(MPI_Request const& mpi_req) { mpi_request_ = mpi_req; }
