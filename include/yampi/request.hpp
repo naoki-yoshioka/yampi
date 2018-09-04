@@ -42,18 +42,19 @@ namespace yampi
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    request(request&&) = default;
-    request& operator=(request&&) = default;
-#   else // BOOST_NO_CXX11_RVALUE_REFERENCES
-    request(request&&) : mpi_request_(std::move(other.mpi_request_)) { }
-    request& operator=(request&&)
+    request(request&& other)
+      : mpi_request_(std::move(other.mpi_request_))
+    { other.mpi_request_ = MPI_REQUEST_NULL; }
+
+    request& operator=(request&& other)
     {
       if (this != YAMPI_addressof(other))
+      {
         mpi_request_ = std::move(other.mpi_request_);
+        other.mpi_request_ = MPI_REQUEST_NULL;
+      }
       return *this;
     }
-#   endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 # endif
 
     ~request() BOOST_NOEXCEPT_OR_NOTHROW

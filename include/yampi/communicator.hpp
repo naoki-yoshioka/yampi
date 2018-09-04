@@ -50,18 +50,19 @@ namespace yampi
 # endif
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    communicator(communicator&&) = default;
-    communicator& operator=(communicator&&) = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    communicator(communicator&& other) : mpi_comm_(std::move(other.mpi_comm_)) { }
+    communicator(communicator&& other)
+      : mpi_comm_(std::move(other.mpi_comm_))
+    { other.mpi_comm_ = MPI_COMM_NULL; }
+
     communicator& operator=(communicator&& other)
     {
       if (this != YAMPI_addressof(other))
+      {
         mpi_comm_ = std::move(other.mpi_comm_);
+        other.mpi_comm_ = MPI_COMM_NULL;
+      }
       return *this;
     }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     ~communicator() BOOST_NOEXCEPT_OR_NOTHROW

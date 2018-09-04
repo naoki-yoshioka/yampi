@@ -54,19 +54,20 @@ namespace yampi
 
    public:
 # endif
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    binary_operation(binary_operation&&) = default;
-    binary_operation& operator=(binary_operation&&) = default;
-#   else
-    binary_operation(binary_operation&& other) : mpi_op_(std::move(other.mpi_op_)) { }
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    binary_operation(binary_operation&& other)
+      : mpi_op_(std::move(other.mpi_op_))
+    { other.mpi_op_ = MPI_OP_NULL; }
+
     binary_operation& operator=(binary_operation&& other)
     {
       if (this != YAMPI_addressof(other))
+      {
         mpi_op_ = std::move(other.mpi_op_);
+        other.mpi_op_ = MPI_OP_NULL;
+      }
       return *this;
     }
-#   endif
 # endif
 
     ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW
