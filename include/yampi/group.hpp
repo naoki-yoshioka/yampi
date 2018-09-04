@@ -80,18 +80,19 @@ namespace yampi
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    group(group&&) = default;
-    group& operator=(group&&) = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    group(group&& other) : mpi_group_(std::move(other.mpi_group_)) { }
+    group(group&& other)
+      : mpi_group_(std::move(other.mpi_group_))
+    { other.mpi_group_ = MPI_GROUP_NULL; }
+
     group& operator=(group&& other)
     {
       if (this != YAMPI_addressof(other))
+      {
         mpi_group_ = std::move(other.mpi_group_);
+        other.mpi_group_ = MPI_GROUP_NULL;
+      }
       return *this;
     }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     ~group() BOOST_NOEXCEPT_OR_NOTHROW
