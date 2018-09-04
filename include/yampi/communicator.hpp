@@ -4,19 +4,35 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
+# include <yampi/request.hpp>
+# include <yampi/group.hpp>
+# include <yampi/tag.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
 
 
 namespace yampi
 {
   struct world_communicator_t { };
   struct self_communicator_t { };
+
+  struct duplicate_t { };
 
   class communicator
   {
@@ -71,6 +87,81 @@ namespace yampi
       : mpi_comm_(MPI_COMM_SELF)
     { }
 
+    // TODO: Implement duplicate with MPI_Info
+    communicator(::yampi::duplicate_t const, communicator const& other)
+      : mpi_comm_(duplicate(other))
+    { }
+
+    communicator(::yampi::duplicate_t const, communicator const& other, ::yampi::request& request)
+      : mpi_comm_(duplicate(other, request))
+    { }
+
+    communicator(communicator const& other, ::yampi::group const& group)
+      : mpi_comm_(create(other, group))
+    { }
+
+    communicator(communicator const& other, ::yampi::group const& group, ::yampi::tag const tag)
+      : mpi_comm_(create_group(other, group, tag))
+    { }
+
+   private:
+    MPI_Comm duplicate(communicator const& other) const
+    {
+      MPI_Comm result;
+      int const error_code = MPI_Comm_dup(other.mpi_comm(), YAMPI_addressof(result));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::duplicate", environment);
+      return result;
+    }
+
+    MPI_Comm duplicate(communicator const& other, ::yampi::request& request) const
+    {
+      MPI_Comm result;
+      MPI_Request mpi_request;
+      int const error_code
+        = MPI_Comm_dup(other.mpi_comm(), YAMPI_addressof(result), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::duplicate", environment);
+
+      request.mpi_request(mpi_request);
+      return result;
+    }
+
+    MPI_Comm create(communicator const& other, ::yampi::group const& group) const
+    {
+      MPI_Comm result;
+      int const error_code
+        = MPI_Comm_create(other.mpi_comm(), group.mpi_group(), YAMPI_addressof(result));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::create", environment);
+      return result;
+    }
+
+    MPI_Comm create_group(
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag) const
+    {
+      MPI_Comm result;
+      int const error_code
+        = MPI_Comm_create(
+            other.mpi_comm(), group.mpi_group(), tag.mpi_tag(), YAMPI_addressof(result));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::create_group", environment);
+      return result;
+    }
+
+    // TODO: Implement MPI_Comm_split/MPI_Comm_split_type constructors
+
+   public:
+    void release(::yampi::environment const& environment)
+    {
+      if (mpi_comm_ == MPI_COMM_NULL or mpi_comm_ == MPI_COMM_WORLD or mpi_comm_ == MPI_COMM_SELF)
+        return;
+
+      int const error_code = MPI_Comm_free(YAMPI_addressof(mpi_comm_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::communicator::release", environment);
+    }
+
 
     bool is_null() const { return mpi_comm_ == MPI_COMM_NULL; }
 
@@ -113,6 +204,8 @@ namespace yampi
   { return rank >= ::yampi::rank(0) and rank < ::yampi::rank(communicator.size(environment)); }
 }
 
+
+# undef YAMPI_addressof
 
 #endif
 

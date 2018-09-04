@@ -50,6 +50,7 @@ namespace yampi
     { return mpi_request_ == other.mpi_request_; }
 
     MPI_Request const& mpi_request() const { return mpi_request_; }
+    void mpi_request(MPI_Request const& mpi_req) { mpi_request_ = mpi_req; }
 
     void swap(request& other)
       BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Request>::value ))
