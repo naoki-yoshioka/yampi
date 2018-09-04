@@ -46,6 +46,7 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::nonblocking_receive", environment);
 
+    request.release(environment);
     request.mpi_request(mpi_request);
   }
 
@@ -66,6 +67,7 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::nonblocking_receive", environment);
 
+    request.release(environment);
     request.mpi_request(mpi_request);
   }
 }
