@@ -30,7 +30,6 @@
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/communicator.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
@@ -69,13 +68,16 @@ namespace yampi
     MPI_Group mpi_group_;
 
    public:
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group() = default;
+#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group() : mpi_group_() { }
+#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    group() = delete;
     group(group const&) = delete;
     group& operator=(group const&) = delete;
 # else // BOOST_NO_CXX11_DELETED_FUNCTIONS
    private:
-    group();
     group(group const&);
     group& operator=(group const&);
 
@@ -98,7 +100,7 @@ namespace yampi
 
     ~group() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
+      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY or mpi_group_ == MPI_Group())
         return;
 
       MPI_Group_free(YAMPI_addressof(mpi_group_));
@@ -110,10 +112,6 @@ namespace yampi
 
     explicit group(::yampi::empty_group_t const)
       : mpi_group_(MPI_GROUP_EMPTY)
-    { }
-
-    group(::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : mpi_group_(communicator_to_group(communicator, environment))
     { }
 
     group(::yampi::make_union_t const, group const& lhs, group const& rhs, ::yampi::environment const& environment)
@@ -162,16 +160,6 @@ namespace yampi
     { }
 
    private:
-    MPI_Group communicator_to_group(::yampi::communicator const& communicator, ::yampi::environment const& environment) const
-    {
-      MPI_Group result;
-      int const error_code
-        = MPI_Comm_group(communicator.mpi_comm(), YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::communicator_to_group", environment);
-      return result;
-    }
-
     MPI_Group make_union(group const& lhs, group const& rhs, ::yampi::environment const& environment) const
     {
       MPI_Group result;
@@ -251,7 +239,7 @@ namespace yampi
    public:
     void release(::yampi::environment const& environment)
     {
-      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
+      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY or mpi_group_ == MPI_Group())
         return;
 
       int const error_code = MPI_Group_free(&mpi_group_);
@@ -281,6 +269,7 @@ namespace yampi
     }
 
     MPI_Group const& mpi_group() const { return mpi_group_; }
+    void mpi_group(MPI_Group const& mpi_grp) { mpi_group_ = mpi_grp; }
 
     void swap(group& other)
       BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Group>::value ))
