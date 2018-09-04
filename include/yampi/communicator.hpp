@@ -37,13 +37,12 @@ namespace yampi
     MPI_Comm mpi_comm_;
 
    public:
+    communicator() : mpi_comm_(MPI_COMM_NULL) { }
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    communicator() = delete;
     communicator(communicator const&) = delete;
     communicator& operator=(communicator const&) = delete;
 # else
    private:
-    communicator();
     communicator(communicator const&);
     communicator& operator=(communicator const&);
 

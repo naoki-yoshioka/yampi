@@ -25,18 +25,12 @@
 
 namespace yampi
 {
-  class null_request_t { };
-
   class request
   {
     MPI_Request mpi_request_;
 
    public:
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    request() = default;
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    request() : mpi_request_() { }
-# endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    request() : mpi_request_(MPI_REQUEST_NULL) { }
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     request(request const&) = delete;
     request& operator=(request const&) = delete;
@@ -64,7 +58,7 @@ namespace yampi
 
     ~request() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_request_ == MPI_REQUEST_NULL or mpi_request_ == MPI_Request())
+      if (mpi_request_ == MPI_REQUEST_NULL)
         return;
 
       MPI_Request_free(YAMPI_addressof(mpi_request_));
@@ -74,13 +68,9 @@ namespace yampi
       : mpi_request_(req)
     { }
 
-    explicit request(::yampi::null_request_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_request_(MPI_REQUEST_NULL)
-    { }
-
     void release(::yampi::environment const& environment)
     {
-      if (mpi_request_ == MPI_REQUEST_NULL or mpi_request_ == MPI_Request())
+      if (mpi_request_ == MPI_REQUEST_NULL)
         return;
 
       int const error_code = MPI_Request_free(YAMPI_addressof(mpi_request_));
@@ -169,7 +159,7 @@ namespace yampi
 
 
   inline bool is_valid_request(::yampi::request const& self)
-  { return self != ::yampi::request(null_request_t()); }
+  { return self != ::yampi::request(); }
 }
 
 

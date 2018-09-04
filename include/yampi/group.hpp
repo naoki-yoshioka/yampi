@@ -68,11 +68,7 @@ namespace yampi
     MPI_Group mpi_group_;
 
    public:
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    group() = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    group() : mpi_group_() { }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    group() : mpi_group_(MPI_GROUP_NULL) { }
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     group(group const&) = delete;
     group& operator=(group const&) = delete;
@@ -100,7 +96,7 @@ namespace yampi
 
     ~group() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY or mpi_group_ == MPI_Group())
+      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
         return;
 
       MPI_Group_free(YAMPI_addressof(mpi_group_));
@@ -239,7 +235,7 @@ namespace yampi
    public:
     void release(::yampi::environment const& environment)
     {
-      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY or mpi_group_ == MPI_Group())
+      if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
         return;
 
       int const error_code = MPI_Group_free(&mpi_group_);
