@@ -256,7 +256,7 @@ namespace yampi
 
       int const error_code = MPI_Group_free(&mpi_group_);
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::~group", environment);
+        throw ::yampi::error(error_code, "yampi::group::release", environment);
     }
 
 
