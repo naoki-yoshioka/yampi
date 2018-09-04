@@ -49,43 +49,76 @@
 
 namespace yampi
 {
-  template <typename SendValue, typename ContiguousIterator>
-  inline void reduce(
-    ::yampi::communicator const& communicator, ::yampi::rank const root,
-    ::yampi::environment const& environment,
-    ::yampi::buffer<SendValue> const& send_buffer,
-    ContiguousIterator const first,
-    ::yampi::binary_operation const operation)
+  class reduce
   {
-    static_assert(
-      (YAMPI_is_same<
-         typename std::iterator_traits<ContiguousIterator>::value_type,
-         SendValue>::value),
-      "value_type of ContiguousIterator must be the same to SendValue");
+    ::yampi::communicator const& communicator_;
+    ::yampi::rank root_;
 
-    int const error_code
-      = MPI_Reduce(
-          const_cast<SendValue*>(send_buffer.data()),
-          const_cast<SendValue*>(YAMPI_addressof(*first)),
-          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-          operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::reduce", environment);
-  }
+   public:
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    reduce() = delete;
+    reduce(reduce const&) = delete;
+    reduce& operator=(reduce const&) = delete;
+# else
+   private:
+    reduce();
+    reduce(reduce const&);
+    reduce& operator=(reduce const&);
 
-  template <typename SendValue>
-  inline void reduce(
-    ::yampi::communicator const& communicator, ::yampi::rank const root,
-    ::yampi::environment const& environment,
-    ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::binary_operation const operation)
-  {
-    if (communicator.rank(environment) == root)
-      throw ::yampi::nonroot_call_on_root_error("yampi::reduce");
+   public:
+# endif
 
-    SendValue null;
-    reduce(communicator, root, environment, send_buffer, YAMPI_addressof(null), operation);
-  }
+    reduce(
+      ::yampi::communicator const& communicator, ::yampi::rank const root)
+      BOOST_NOEXCEPT_OR_NOTHROW
+      : communicator_(communicator), root_(root)
+    { }
+
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    reduce(reduce&&) = default;
+    reduce& operator=(reduce&&) = default;
+#   endif
+    ~reduce() BOOST_NOEXCEPT_OR_NOTHROW = default;
+# endif
+
+
+    template <typename SendValue, typename ContiguousIterator>
+    void call(
+      ::yampi::environment const& environment,
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ContiguousIterator const first,
+      ::yampi::binary_operation const operation) const
+    {
+      static_assert(
+        (YAMPI_is_same<
+           typename std::iterator_traits<ContiguousIterator>::value_type,
+           SendValue>::value),
+        "value_type of ContiguousIterator must be the same to SendValue");
+
+      int const error_code
+        = MPI_Reduce(
+            const_cast<SendValue*>(send_buffer.data()),
+            const_cast<SendValue*>(YAMPI_addressof(*first)),
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+    }
+
+    template <typename SendValue>
+    void call(
+      ::yampi::environment const& environment,
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const operation) const
+    {
+      if (communicator_.rank(environment) == root_)
+        throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
+
+      SendValue null;
+      call(environment, send_buffer, YAMPI_addressof(null), operation);
+    }
+  };
 }
 
 
