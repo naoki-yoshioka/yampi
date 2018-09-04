@@ -31,7 +31,7 @@ namespace yampi
 {
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
@@ -55,7 +55,7 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
@@ -82,7 +82,7 @@ namespace yampi
   // with replacement
   template <typename Value>
   inline ::yampi::status send_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::rank const source = ::yampi::any_source(),
@@ -103,7 +103,7 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status send_receive(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::rank const source = ::yampi::any_source(),
@@ -126,7 +126,7 @@ namespace yampi
   // ignoring status
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
@@ -148,7 +148,7 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
@@ -173,7 +173,7 @@ namespace yampi
   // with replacement, ignoring status
   template <typename Value>
   inline void send_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
@@ -192,7 +192,7 @@ namespace yampi
 
   template <typename Value>
   inline void send_receive(
-    ::yampi::communicator const communicator,
+    ::yampi::communicator const& communicator,
     ::yampi::ignore_status_t const, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,

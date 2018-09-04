@@ -51,7 +51,7 @@ namespace yampi
   // TODO: implement MPI_Alltoallv, MPI_Alltoallw
   template <typename SendValue, typename ReceiveValue>
   inline void all_to_all_scatter_gather(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer)
   {
@@ -68,7 +68,7 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_to_all_scatter_gather(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer)
   {

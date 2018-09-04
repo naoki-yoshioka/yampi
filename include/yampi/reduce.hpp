@@ -51,28 +51,30 @@ namespace yampi
 {
   class reduce
   {
-    ::yampi::communicator communicator_;
+    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     reduce() = delete;
+    reduce(reduce const&) = delete;
+    reduce& operator=(reduce const&) = delete;
 # else
    private:
     reduce();
+    reduce(reduce const&);
+    reduce& operator=(reduce const&);
 
    public:
 # endif
 
     reduce(
-      ::yampi::communicator const communicator, ::yampi::rank const root)
+      ::yampi::communicator const& communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    reduce(reduce const&) = default;
-    reduce& operator=(reduce const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     reduce(reduce&&) = default;
     reduce& operator=(reduce&&) = default;

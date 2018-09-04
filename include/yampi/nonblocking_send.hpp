@@ -53,10 +53,10 @@
 namespace yampi
 {
   template <typename Value>
-  inline ::yampi::request nonblocking_send(
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+  inline void nonblocking_send(
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
   {
     MPI_Request request;
     int const error_code
@@ -67,7 +67,8 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::nonblocking_send", environment);
 
-    return ::yampi::request(request);
+    request.release(environment);
+    request.mpi_request(request);
   }
 
 
@@ -80,34 +81,35 @@ namespace yampi
     struct nonblocking_send< ::yampi::mode::standard_communication >
     {
       template <typename CommunicationMode, typename Value>
-      static ::yampi::request call(
+      static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
-      { return ::yampi::nonblocking_send(communicator, environment, buffer, destination, tag); }
+        ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
+      { ::yampi::nonblocking_send(communicator, environment, buffer, request, destination, tag); }
     };
 
     template <>
     struct nonblocking_send< ::yampi::mode::buffered_communication >
     {
       template <typename CommunicationMode, typename Value>
-      static ::yampi::request call(
+      static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
       {
-        MPI_Request request;
+        MPI_Request mpi_request;
         int const error_code
           = MPI_Ibsend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(request));
+              YAMPI_addressof(mpi_request));
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::nonblocking_send", environment);
 
-        return ::yampi::request(request);
+        request.release(environment);
+        request.mpi_request(mpi_request);
       }
     };
 
@@ -115,22 +117,23 @@ namespace yampi
     struct nonblocking_send< ::yampi::mode::synchronous_communication >
     {
       template <typename CommunicationMode, typename Value>
-      static ::yampi::request call(
+      static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
       {
-        MPI_Request request;
+        MPI_Request mpi_request;
         int const error_code
           = MPI_Issend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(request));
+              YAMPI_addressof(mpi_request));
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::nonblocking_send", environment);
 
-        return ::yampi::request(request);
+        request.release(environment);
+        request.mpi_request(mpi_request);
       }
     };
 
@@ -138,37 +141,38 @@ namespace yampi
     struct nonblocking_send< ::yampi::mode::ready_communication >
     {
       template <typename CommunicationMode, typename Value>
-      static ::yampi::request call(
+      static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const communicator, ::yampi::environment const& environment,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
       {
-        MPI_Request request;
+        MPI_Request mpi_request;
         int const error_code
           = MPI_Irsend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(request));
+              YAMPI_addressof(mpi_request));
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::nonblocking_send", environment);
 
-        return ::yampi::request(request);
+        request.release(environment);
+        request.mpi_request(mpi_request);
       }
     };
   }
 
   template <typename CommunicationMode, typename Value>
-  inline ::yampi::request nonblocking_send(
+  inline void nonblocking_send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::communicator const communicator, ::yampi::environment const& environment,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::request& request, ::yampi::rank const destination, ::yampi::tag const tag)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
-    return ::yampi::nonblocking_send_detail::nonblocking_send<communication_mode_type>::call(
+    ::yampi::nonblocking_send_detail::nonblocking_send<communication_mode_type>::call(
       YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-      communicator, environment, buffer, destination, tag);
+      communicator, environment, buffer, request, destination, tag);
   }
 }
 

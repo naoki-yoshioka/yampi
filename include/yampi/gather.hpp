@@ -51,28 +51,30 @@ namespace yampi
   // TODO: implement MPI_Gatherv
   class gather
   {
-    ::yampi::communicator communicator_;
+    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     gather() = delete;
+    gather(gather const&) = delete;
+    gather& operator=(gather const&) = delete;
 # else
    private:
     gather();
+    gather(gather const&);
+    gather& operator=(gather const&);
 
    public:
 # endif
 
     gather(
-      ::yampi::communicator const communicator, ::yampi::rank const root)
+      ::yampi::communicator const& communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    gather(gather const&) = default;
-    gather& operator=(gather const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     gather(gather&&) = default;
     gather& operator=(gather&&) = default;

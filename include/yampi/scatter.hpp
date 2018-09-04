@@ -52,28 +52,30 @@ namespace yampi
   // TODO: implement MPI_Scatterv
   class scatter
   {
-    ::yampi::communicator communicator_;
+    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     scatter() = delete;
+    scatter(scatter const&) = delete;
+    scatter& operator=(scatter const&) = delete;
 # else
    private:
     scatter();
+    scatter(scatter const&);
+    scatter& operator=(scatter const&);
 
    public:
 # endif
 
     scatter(
-      ::yampi::communicator const communicator, ::yampi::rank const root)
+      ::yampi::communicator const& communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    scatter(scatter const&) = default;
-    scatter& operator=(scatter const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     scatter(scatter&&) = default;
     scatter& operator=(scatter&&) = default;

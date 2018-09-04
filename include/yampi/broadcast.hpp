@@ -18,28 +18,30 @@ namespace yampi
 {
   class broadcast
   {
-    ::yampi::communicator communicator_;
+    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     broadcast() = delete;
+    broadcast(broadcast const&) = delete;
+    broadcast& operator=(broadcast const&) = delete;
 # else
    private:
     broadcast();
+    broadcast(broadcast const&);
+    broadcast& operator=(broadcast const&);
 
    public:
 # endif
 
     broadcast(
-      ::yampi::communicator const communicator, ::yampi::rank const root)
+      ::yampi::communicator const& communicator, ::yampi::rank const root)
       BOOST_NOEXCEPT_OR_NOTHROW
       : communicator_(communicator), root_(root)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    broadcast(broadcast const&) = default;
-    broadcast& operator=(broadcast const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     broadcast(broadcast&&) = default;
     broadcast& operator=(broadcast&&) = default;
