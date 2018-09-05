@@ -11,6 +11,7 @@
 # include <yampi/is_initialized.hpp>
 # include <yampi/is_finalized.hpp>
 # include <yampi/error.hpp>
+# include <yampi/thread_support.hpp>
 
 
 namespace yampi
@@ -50,11 +51,14 @@ namespace yampi
 
   class environment
   {
+    ::YAMPI_THREAD_SUPPORT_TYPE thread_support_;
+
    public:
     BOOST_STATIC_CONSTEXPR int major_version = MPI_VERSION;
     BOOST_STATIC_CONSTEXPR int minor_version = MPI_SUBVERSION;
 
     environment()
+      : thread_support_(::yampi::thread_support::single)
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();
@@ -65,6 +69,7 @@ namespace yampi
     }
 
     environment(int argc, char* argv[])
+      : thread_support_(::yampi::thread_support::single)
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();
@@ -72,6 +77,40 @@ namespace yampi
       int const error_code = MPI_Init(&argc, &argv);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::initialization_error(error_code);
+    }
+
+    explicit environment(::YAMPI_THREAD_SUPPORT_TYPE const thread_support)
+      : thread_support_()
+    {
+      if (::yampi::is_initialized())
+        throw ::yampi::already_initialized_error();
+
+      int provided_thread_support;
+      int const error_code
+        = MPI_Init_thread(
+            NULL, NULL,
+            static_cast<int>(thread_support), &provided_thread_support);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::initialization_error(error_code);
+
+      thread_support_ = static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
+    }
+
+    environment(int argc, char* argv[], ::YAMPI_THREAD_SUPPORT_TYPE const thread_support)
+      : thread_support_()
+    {
+      if (::yampi::is_initialized())
+        throw ::yampi::already_initialized_error();
+
+      int provided_thread_support;
+      int const error_code
+        = MPI_Init_thread(
+            &argc, &argv,
+            static_cast<int>(thread_support), &provided_thread_support);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::initialization_error(error_code);
+
+      thread_support_ = static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
     }
 
     ~environment() BOOST_NOEXCEPT_OR_NOTHROW
@@ -109,6 +148,29 @@ namespace yampi
       int const error_code = MPI_Finalize();
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::environment::finalize", *this);
+    }
+
+
+    YAMPI_THREAD_SUPPORT_TYPE thread_support() const { return thread_support_; }
+
+    YAMPI_THREAD_SUPPORT_TYPE query_thread_support() const
+    {
+      int provided_thread_support;
+      int const error_code = MPI_Query_thread(&provided_thread_support);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::environment::query_thread_support", *this);
+
+      return static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
+    }
+
+    bool is_main_thread() const
+    {
+      int flag;
+      int const error_code = MPI_Is_thread_main(&flag);
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::environment::is_main_thread", *this);
+
+      return static_cast<bool>(flag);
     }
   };
 }
