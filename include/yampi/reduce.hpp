@@ -1,5 +1,5 @@
-#ifndef MPI_REDUCE_HPP
-# define MPI_REDUCE_HPP
+#ifndef YAMPI_REDUCE_HPP
+# define YAMPI_REDUCE_HPP
 
 # include <boost/config.hpp>
 
