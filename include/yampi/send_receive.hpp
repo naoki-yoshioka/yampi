@@ -127,8 +127,8 @@ namespace yampi
   // ignoring status
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::communicator const& communicator,
-    ::yampi::ignore_status_t const, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
@@ -149,8 +149,8 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::communicator const& communicator,
-    ::yampi::ignore_status_t const, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
@@ -174,8 +174,8 @@ namespace yampi
   // with replacement, ignoring status
   template <typename Value>
   inline void send_receive(
-    ::yampi::communicator const& communicator,
-    ::yampi::ignore_status_t const, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::rank const source = ::yampi::any_source(),
@@ -193,8 +193,8 @@ namespace yampi
 
   template <typename Value>
   inline void send_receive(
-    ::yampi::communicator const& communicator,
-    ::yampi::ignore_status_t const, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::rank const destination, ::yampi::tag const send_tag,
     ::yampi::rank const source = ::yampi::any_source(),
@@ -307,8 +307,8 @@ namespace yampi
   // ignoring status
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::cartesian const& cartesian,
-    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
     int const direction, int const displacement,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
@@ -323,15 +323,15 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
     return ::yampi::send_receive(
-      cartesian.communicator(), ignore_status, environment,
+      ignore_status, cartesian.communicator(), environment,
       send_buffer, ::yampi::rank(mpi_destination), send_tag,
       receive_buffer, ::yampi::rank(mpi_source), receive_tag);
   }
 
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
-    ::yampi::cartesian const& cartesian,
-    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
     int const direction, int const displacement,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::tag const receive_tag = ::yampi::any_tag())
@@ -346,7 +346,7 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
     return ::yampi::send_receive(
-      cartesian.communicator(), ignore_status, environment,
+      ignore_status, cartesian.communicator(), environment,
       send_buffer, ::yampi::rank(mpi_destination), send_tag,
       receive_buffer, ::yampi::rank(mpi_source), receive_tag);
   }
@@ -355,8 +355,8 @@ namespace yampi
   // with replacement, ignoring status
   template <typename Value>
   inline void send_receive(
-    ::yampi::cartesian const& cartesian,
-    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
     int const direction, int const displacement,
     ::yampi::buffer<Value>& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
@@ -371,15 +371,15 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
     return ::yampi::send_receive(
-      cartesian.communicator(), ignore_status, environment,
+      ignore_status, cartesian.communicator(), environment,
       buffer, ::yampi::rank(mpi_destination), send_tag,
       ::yampi::rank(mpi_source), receive_tag);
   }
 
   template <typename Value>
   inline void send_receive(
-    ::yampi::cartesian const& cartesian,
-    ::yampi::ignore_status_t const ignore_status, ::yampi::environment const& environment,
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::cartesian const& cartesian, ::yampi::environment const& environment,
     int const direction, int const displacement,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag = ::yampi::any_tag())
@@ -394,7 +394,7 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
     return ::yampi::send_receive(
-      cartesian.communicator(), ignore_status, environment,
+      ignore_status, cartesian.communicator(), environment,
       buffer, ::yampi::rank(mpi_destination), send_tag,
       ::yampi::rank(mpi_source), receive_tag);
   }
