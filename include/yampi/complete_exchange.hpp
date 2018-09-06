@@ -1,5 +1,5 @@
-#ifndef ALL_TO_ALL_SCATTER_GATHER_HPP
-# define ALL_TO_ALL_SCATTER_GATHER_HPP
+#ifndef YAMPI_COMPLETE_EXCHANGE_HPP
+# define YAMPI_COMPLETE_EXCHANGE_HPP
 
 # include <boost/config.hpp>
 
@@ -50,7 +50,7 @@ namespace yampi
 {
   // TODO: implement MPI_Alltoallv, MPI_Alltoallw
   template <typename SendValue, typename ReceiveValue>
-  inline void all_to_all_scatter_gather(
+  inline void complete_exchange(
     ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer)
@@ -63,11 +63,11 @@ namespace yampi
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           communicator.mpi_comm());
     if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::all_to_all_scatter_gather", environment);
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
   }
 
   template <typename SendValue, typename ReceiveValue>
-  inline void all_to_all_scatter_gather(
+  inline void complete_exchange(
     ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer)
@@ -80,7 +80,7 @@ namespace yampi
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           communicator.mpi_comm());
     if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::all_to_all_scatter_gather", environment);
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
   }
 }
 
