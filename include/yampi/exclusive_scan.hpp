@@ -30,6 +30,9 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
+# if MPI_VERSION >= 3
+#   include <yampi/request.hpp>
+# endif
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
@@ -85,6 +88,51 @@ namespace yampi
     ::yampi::exclusive_scan(communicator, environment, send_buffer, &result, operation);
     return result;
   }
+# if MPI_VERSION >= 3
+
+
+  template <typename SendValue, typename ContiguousIterator>
+  inline void exclusive_scan(
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ContiguousIterator const first,
+    ::yampi::request& request,
+    ::yampi::binary_operation const& operation)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename std::iterator_traits<ContiguousIterator>::value_type,
+         SendValue>::value),
+      "value_type of ContiguousIterator must be the same to SendValue");
+
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Exscan(
+          const_cast<SendValue*>(send_buffer.data()),
+          const_cast<SendValue*>(YAMPI_addressof(*first)),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::exclusive_scan", environment);
+
+    request.release(environment);
+    request.mpi_request(mpi_request);
+  }
+
+  template <typename SendValue>
+  inline SendValue exclusive_scan(
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::request& request,
+    ::yampi::binary_operation const& operation)
+  {
+    assert(send_buffer.count() == 1);
+
+    SendValue result;
+    ::yampi::exclusive_scan(communicator, environment, send_buffer, &result, request, operation);
+    return result;
+  }
+# endif
 }
 
 

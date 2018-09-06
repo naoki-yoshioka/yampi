@@ -29,6 +29,9 @@
 # include <yampi/binary_operation.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
+# if MPI_VERSION >= 3
+#   include <yampi/request.hpp>
+# endif
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
@@ -118,6 +121,52 @@ namespace yampi
       SendValue null;
       call(environment, send_buffer, YAMPI_addressof(null), operation);
     }
+# if MPI_VERSION >= 3
+
+
+    template <typename SendValue, typename ContiguousIterator>
+    void call(
+      ::yampi::environment const& environment,
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ContiguousIterator const first,
+      ::yampi::request& request,
+      ::yampi::binary_operation const& operation) const
+    {
+      static_assert(
+        (YAMPI_is_same<
+           typename std::iterator_traits<ContiguousIterator>::value_type,
+           SendValue>::value),
+        "value_type of ContiguousIterator must be the same to SendValue");
+
+      MPI_Request mpi_request;
+      int const error_code
+        = MPI_Ireduce(
+            const_cast<SendValue*>(send_buffer.data()),
+            const_cast<SendValue*>(YAMPI_addressof(*first)),
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+
+      request.release(environment);
+      request.mpi_request(mpi_request);
+    }
+
+    template <typename SendValue>
+    void call(
+      ::yampi::environment const& environment,
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::request& request,
+      ::yampi::binary_operation const& operation) const
+    {
+      if (communicator_.rank(environment) == root_)
+        throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
+
+      SendValue null;
+      call(environment, send_buffer, YAMPI_addressof(null), request, operation);
+    }
+# endif
   };
 }
 
