@@ -3,11 +3,11 @@
 
 # include <boost/config.hpp>
 
+# include <mpi.h>
+
 # if MPI_VERSION >= 2
 #   include <complex>
 # endif
-
-# include <mpi.h>
 
 # include <yampi/datatype.hpp>
 

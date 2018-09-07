@@ -28,6 +28,7 @@
 # include <yampi/allocator.hpp>
 # include <yampi/access.hpp>
 # include <yampi/address.hpp>
+# include <yampi/addressof.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -518,7 +519,7 @@ namespace yampi
   {
     ::yampi::datatype datatype_;
     int length_;
-    MPI_Aint displacement_address_;
+    ::yampi::address displacement_address_;
 
    public:
     template <typename Value, typename Base>
@@ -533,7 +534,7 @@ namespace yampi
     template <typename Value>
     displaced_typed_block(
       ::yampi::datatype const& datatype, int const length,
-      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
+      Value const& value, ::yampi::address const base_address, ::yampi::environment const& environment)
       : datatype_(datatype),
         length_(length),
         displacement_address_(displacement_address(value, base_address, environment))
@@ -541,25 +542,25 @@ namespace yampi
 
    private:
     template <typename Value>
-    MPI_Aint displacement_address(
-      Value const& value, MPI_Aint const base_address, ::yampi::environment const& environment)
-    { return ::yampi::address(value, environment) - base_address; }
+    ::yampi::address displacement_address(
+      Value const& value, ::yampi::address const base_address, ::yampi::environment const& environment)
+    { return ::yampi::addressof(value, environment) - base_address; }
 
     template <typename Value, typename Base>
-    MPI_Aint displacement_address(
+    ::yampi::address displacement_address(
       Value const& value, Base const& base, ::yampi::environment const& environment)
-    { return displacement_address(value, ::yampi::address(base, environment), environment); }
+    { return displacement_address(value, ::yampi::addressof(base, environment), environment); }
 
    public:
     ::yampi::datatype const& datatype() const { return datatype_; }
     int const& length() const { return length_; }
-    MPI_Aint const& displacement_address() const { return displacement_address_; }
+    ::yampi::address const& displacement_address() const { return displacement_address_; }
 
     void swap(displaced_typed_block& other)
       BOOST_NOEXCEPT_IF((
         ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value
         and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable<MPI_Aint>::value ))
+        and ::yampi::utility::is_nothrow_swappable<::yampi::address>::value ))
     {
       using std::swap;
       swap(datatype_, other.datatype_);
@@ -590,7 +591,7 @@ namespace yampi
   template <
     typename MpiDatatypeAllocator = ::yampi::allocator<MPI_Datatype>,
     typename BlockLengthAllocator = ::yampi::allocator<int>,
-    typename MpiAddressAllocator = ::yampi::allocator<MPI_Aint> >
+    typename MpiAddressAllocator = ::yampi::allocator< ::yampi::address > >
   class displaced_typed_blocks
   {
    public:
@@ -601,11 +602,11 @@ namespace yampi
       typename BlockLengthAllocator::template rebind<int>::other
       block_length_allocator_type;
     typedef
-      typename MpiDatatypeAllocator::template rebind<MPI_Aint>::other
+      typename MpiDatatypeAllocator::template rebind< ::yampi::address >::other
       mpi_address_allocator_type;
     typedef std::vector<MPI_Datatype, mpi_datatype_allocator_type> mpi_datatypes_type;
     typedef std::vector<int, block_length_allocator_type> block_lengths_type;
-    typedef std::vector<MPI_Aint, mpi_address_allocator_type> displacement_addresses_type;
+    typedef std::vector< ::yampi::address, mpi_address_allocator_type > displacement_addresses_type;
 
    private:
     mpi_datatypes_type mpi_datatypes_;
@@ -648,7 +649,7 @@ namespace yampi
       mpi_address_allocator_type const& displacement_address_allocator)
       : mpi_datatypes_(size, MPI_Datatype(), mpi_datatype_allocator),
         block_lengths_(size, int(), block_length_allocator),
-        displacement_addresses_(size, MPI_Aint(), displacement_address_allocator)
+        displacement_addresses_(size, ::yampi::address(), displacement_address_allocator)
     { }
 
     displaced_typed_blocks(size_type const size, ::yampi::displaced_typed_block const& block)
@@ -916,9 +917,9 @@ namespace yampi
       ::yampi::environment const& environment,
       Member const& member, Members const&... members)
     {
-      MPI_Aint value_address = ::yampi::address(value, environment);
+      ::yampi::address value_address = ::yampi::addressof(value, environment);
       YAMPI_array<int, sizeof...(Members)+2u> block_lengths;
-      YAMPI_array<MPI_Aint, sizeof...(Members)+2u> block_lengths;
+      YAMPI_array<::yampi::address, sizeof...(Members)+2u> block_lengths;
       YAMPI_array<MPI_Datatype, sizeof...(Members)+2u> block_lengths;
     }
 
@@ -954,7 +955,7 @@ namespace yampi
 
    public:
     typedef MPI_Datatype mpi_datatype_type;
-    typedef MPI_Aint mpi_address_type;
+    typedef ::yampi::address mpi_address_type;
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     derived_datatype() = default;
@@ -1165,7 +1166,7 @@ namespace yampi
         = MPI_Type_create_struct(
             static_cast<int>(blocks.size()),
             const_cast<int*>(YAMPI_addressof(blocks.block_lengths().front())),
-            const_cast<MPI_Aint*>(YAMPI_addressof(blocks.displacement_addresses().front())),
+            const_cast<MPI_Aint*>(YAMPI_addressof(blocks.displacement_addresses().front().mpi_address())),
             const_cast<MPI_Datatype*>(YAMPI_addressof(blocks.mpi_datatypes().front())),
             YAMPI_addressof(mpi_datatype));
       if (error_code != MPI_SUCCESS)
