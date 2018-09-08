@@ -65,6 +65,13 @@ namespace yampi
   YAMPI_MAKE_HAS_BASIC_DATATYPE(std::complex<long double>)
 # endif
 
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<short, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<int, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<long, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<float, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<double, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<long double, int>))
+
 # undef YAMPI_MAKE_HAS_BASIC_DATATYPE
 }
 
