@@ -3,6 +3,8 @@
 
 # include <boost/config.hpp>
 
+# include <utility>
+
 # include <mpi.h>
 
 # if MPI_VERSION >= 2
@@ -57,6 +59,13 @@ namespace yampi
   YAMPI_MAKE_BASIC_DATATYPE_OF(std::complex<double>, MPI::DOUBLE_COMPLEX)
   YAMPI_MAKE_BASIC_DATATYPE_OF(std::complex<long double>, MPI::LONG_DOUBLE_COMPLEX)
 # endif
+
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<short, int>), MPI_SHORT_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<int, int>), MPI_2INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<long, int>), MPI_LONG_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<float, int>), MPI_FLOAT_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<double, int>), MPI_DOUBLE_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<long double, int)>, MPI_LONG_DOUBLE_INT)
 
 # undef YAMPI_MAKE_BASIC_DATATYPE_OF
 }
