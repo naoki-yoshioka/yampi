@@ -25,6 +25,16 @@
 
 namespace yampi
 {
+  namespace has_basic_datatype_detail
+  {
+    typedef std::pair<short, int> short_int_type;
+    typedef std::pair<int, int> int_int_type;
+    typedef std::pair<long, int> long_int_type;
+    typedef std::pair<float, int> float_int_type;
+    typedef std::pair<double, int> double_int_type;
+    typedef std::pair<long double, int> long_double_int_type;
+  }
+
   template <typename T>
   struct has_basic_datatype : YAMPI_false_type { };
 
@@ -65,12 +75,12 @@ namespace yampi
   YAMPI_MAKE_HAS_BASIC_DATATYPE(std::complex<long double>)
 # endif
 
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<short, int>))
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<int, int>))
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<long, int>))
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<float, int>))
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<double, int>))
-  YAMPI_MAKE_HAS_BASIC_DATATYPE((std::pair<long double, int>))
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::short_int_type)
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::int_int_type)
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::long_int_type)
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::float_int_type)
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::double_int_type)
+  YAMPI_MAKE_HAS_BASIC_DATATYPE(::yampi::has_basic_datatype_detail::long_double_int_type)
 
 # undef YAMPI_MAKE_HAS_BASIC_DATATYPE
 }
