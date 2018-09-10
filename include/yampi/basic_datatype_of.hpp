@@ -16,6 +16,16 @@
 
 namespace yampi
 {
+  namespace basic_datatype_of_detail
+  {
+    typedef std::pair<short, int> short_int_type;
+    typedef std::pair<int, int> int_int_type;
+    typedef std::pair<long, int> long_int_type;
+    typedef std::pair<float, int> float_int_type;
+    typedef std::pair<double, int> double_int_type;
+    typedef std::pair<long double, int> long_double_int_type;
+  }
+
   template <typename T>
   struct basic_datatype_of;
 
@@ -60,12 +70,12 @@ namespace yampi
   YAMPI_MAKE_BASIC_DATATYPE_OF(std::complex<long double>, MPI::LONG_DOUBLE_COMPLEX)
 # endif
 
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<short, int>), MPI_SHORT_INT)
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<int, int>), MPI_2INT)
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<long, int>), MPI_LONG_INT)
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<float, int>), MPI_FLOAT_INT)
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<double, int>), MPI_DOUBLE_INT)
-  YAMPI_MAKE_BASIC_DATATYPE_OF((std::pair<long double, int)>, MPI_LONG_DOUBLE_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::short_int_type, MPI_SHORT_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::int_int_type, MPI_2INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::long_int_type, MPI_LONG_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::float_int_type, MPI_FLOAT_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::double_int_type, MPI_DOUBLE_INT)
+  YAMPI_MAKE_BASIC_DATATYPE_OF(::yampi::basic_datatype_of_detail::long_double_int_type, MPI_LONG_DOUBLE_INT)
 
 # undef YAMPI_MAKE_BASIC_DATATYPE_OF
 }

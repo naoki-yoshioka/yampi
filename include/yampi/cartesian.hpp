@@ -26,11 +26,11 @@
 #   include <boost/static_assert.hpp>
 # endif
 
+# include <yampi/topology.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
@@ -54,8 +54,9 @@
 namespace yampi
 {
   class cartesian
+    : public ::yampi::topology
   {
-    ::yampi::communicator communicator_;
+    using ::yampi::topology::communicator_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -75,7 +76,7 @@ namespace yampi
     cartesian(cartesian&&) = default;
     cartesian& operator=(cartesian&&) = default;
 #   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    cartesian(cartesian&& other) : communicator_(std::move(other.communicator_)) { }
+    cartesian(cartesian&& other) : ::yampi::topology(std::move(other)) { }
     cartesian& operator=(cartesian&& other)
     {
       if (this != YAMPI_addressof(other))
@@ -97,7 +98,7 @@ namespace yampi
       ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
       ContiguousIterator2 const is_periodic_first,
       bool const is_reorderable = true)
-      : communicator_(
+      : ::yampi::topology(
           create(
             environment, old_communicator, size_first, size_last,
             is_periodic_first, is_reorderable))
@@ -108,7 +109,7 @@ namespace yampi
       cartesian const& other,
       ContiguousIterator const remains_first, ContiguousIterator const remains_last,
       ::yampi::environment const& environment)
-      : communicator_(make_subcommunicator(other, remains_first, remains_last, environment))
+      : ::yampi::topology(make_subcommunicator(other, remains_first, remains_last, environment))
     { }
 
    private:
@@ -174,10 +175,6 @@ namespace yampi
     }
 
    public:
-    void release(::yampi::environment const& environment)
-    { communicator_.release(environment); }
-
-
     int dimension(::yampi::environment const& environment) const
     {
       int result;
@@ -271,9 +268,6 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::cartesian::coordinates", environment);
     }
 
-
-    ::yampi::communicator const& communicator() const { return communicator_; }
-
     void swap(cartesian& other)
       BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value ))
     {
@@ -283,7 +277,6 @@ namespace yampi
   };
 
   inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::cartesian >::value))
   { lhs.swap(rhs); }
 }
 
