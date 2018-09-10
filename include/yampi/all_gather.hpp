@@ -30,6 +30,7 @@
 # include <yampi/error.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
+#   include <yampi/topology.hpp>
 # endif
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
@@ -176,6 +177,138 @@ namespace yampi
           const_cast<ReceiveValue*>(receive_buffer.data()),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.release(environment);
+    request.mpi_request(mpi_request);
+  }
+
+
+  // Neighbor all_gather
+  template <typename SendValue, typename ContiguousIterator>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ContiguousIterator const first)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename std::iterator_traits<ContiguousIterator>::value_type,
+         SendValue>::value),
+      "value_type of ContiguousIterator must be the same to SendValue");
+
+    int const error_code
+      = MPI_Neighbor_allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<SendValue*>(YAMPI_addressof(*first)),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<ReceiveValue>& receive_buffer)
+  {
+    int const error_code
+      = MPI_Neighbor_allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<ReceiveValue> const& receive_buffer)
+  {
+    int const error_code
+      = MPI_Allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<ReceiveValue*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
+
+  template <typename SendValue, typename ContiguousIterator>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ContiguousIterator const first,
+    ::yampi::request& request)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename std::iterator_traits<ContiguousIterator>::value_type,
+         SendValue>::value),
+      "value_type of ContiguousIterator must be the same to SendValue");
+
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Ineighbor_allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<SendValue*>(YAMPI_addressof(*first)),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.release(environment);
+    request.mpi_request(mpi_request);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<ReceiveValue>& receive_buffer,
+    ::yampi::request& request)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Ineighbor_allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.release(environment);
+    request.mpi_request(mpi_request);
+  }
+
+  template <typename SendValue, typename ReceiveValue>
+  inline void all_gather(
+    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::request& request)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Ineighbor_allgather(
+          const_cast<SendValue*>(send_buffer.data()),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<ReceiveValue*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::all_gather", environment);
 
