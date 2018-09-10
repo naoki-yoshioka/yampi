@@ -277,7 +277,6 @@ namespace yampi
   };
 
   inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs)
-    BOOST_NOEXCEPT(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

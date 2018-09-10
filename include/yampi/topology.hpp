@@ -86,7 +86,6 @@ namespace yampi
   };
 
   inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs)
-    BOOST_NOEXCEPT(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
