@@ -157,7 +157,7 @@ namespace yampi
     MPI_Op const& mpi_op() const { return mpi_op_; }
 
     void swap(binary_operation& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Op>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Op>::value)
     {
       using std::swap;
       swap(mpi_op_, other.mpi_op_);
@@ -169,8 +169,7 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::binary_operation& lhs, ::yampi::binary_operation& rhs)
-    BOOST_NOEXCEPT_IF((
-      ::yampi::utility::is_nothrow_swappable< ::yampi::binary_operation >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::binary_operation >::value)
   { lhs.swap(rhs); }
 }
 

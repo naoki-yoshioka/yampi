@@ -146,7 +146,7 @@ namespace yampi
     void mpi_request(MPI_Request const& mpi_req) { mpi_request_ = mpi_req; }
 
     void swap(request& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Request>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Request>::value)
     {
       using std::swap;
       swap(mpi_request_, other.mpi_request_);
@@ -157,7 +157,7 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::request& lhs, ::yampi::request& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::request >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::request >::value)
   { lhs.swap(rhs); }
 }
 

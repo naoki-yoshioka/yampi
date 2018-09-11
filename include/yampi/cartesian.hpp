@@ -269,7 +269,7 @@ namespace yampi
     }
 
     void swap(cartesian& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value)
     {
       using std::swap;
       swap(communicator_, other.communicator_);
@@ -277,6 +277,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs)
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::cartesian >::value)
   { lhs.swap(rhs); }
 }
 

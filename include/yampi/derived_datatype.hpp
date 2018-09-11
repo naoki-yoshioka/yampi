@@ -325,9 +325,9 @@ namespace yampi
     }
 
     void swap(displaced_blocks& other)
-      BOOST_NOEXCEPT_IF((
+      BOOST_NOEXCEPT_IF(
         ::yampi::utility::is_nothrow_swappable<block_lengths_type>::value
-        and ::yampi::utility::is_nothrow_swappable<displacements_type>::value ))
+        and ::yampi::utility::is_nothrow_swappable<displacements_type>::value)
     {
       using std::swap;
       swap(block_lengths_, other.block_lengths_);
@@ -354,8 +354,8 @@ namespace yampi
   inline void swap(
     ::yampi::displaced_blocks<Allocator>& lhs,
     ::yampi::displaced_blocks<Allocator>& rhs)
-    BOOST_NOEXCEPT_IF((
-      ::yampi::utility::is_nothrow_swappable< ::yampi::displaced_blocks<Allocator> >::value ))
+    BOOST_NOEXCEPT_IF(
+      ::yampi::utility::is_nothrow_swappable< ::yampi::displaced_blocks<Allocator> >::value)
   { lhs.swap(rhs); }
 
 
