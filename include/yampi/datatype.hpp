@@ -42,7 +42,7 @@ namespace yampi
     MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
 
     void swap(datatype& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Datatype>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Datatype>::value)
     {
       using std::swap;
       swap(mpi_datatype_, other.mpi_datatype_);
@@ -53,7 +53,7 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::datatype& lhs, ::yampi::datatype& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value)
   { lhs.swap(rhs); }
 }
 

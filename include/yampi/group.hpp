@@ -269,7 +269,7 @@ namespace yampi
     void mpi_group(MPI_Group const& mpi_grp) { mpi_group_ = mpi_grp; }
 
     void swap(group& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Group>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Group>::value)
     {
       using std::swap;
       swap(mpi_group_, other.mpi_group_);
@@ -277,7 +277,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::group& lhs, ::yampi::group& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::group >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::group >::value)
   { lhs.swap(rhs); }
 
 

@@ -204,7 +204,7 @@ namespace yampi
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
 
     void swap(communicator& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Comm>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Comm>::value)
     {
       using std::swap;
       swap(mpi_comm_, other.mpi_comm_);
@@ -212,7 +212,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::communicator& lhs, ::yampi::communicator& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value)
   { lhs.swap(rhs); }
 
 

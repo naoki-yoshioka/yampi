@@ -163,7 +163,7 @@ namespace yampi
     BOOST_CONSTEXPR int const& mpi_tag() const { return mpi_tag_; }
 
     void swap(tag& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<int>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<int>::value)
     {
       using std::swap;
       swap(mpi_tag_, other.mpi_tag_);
@@ -213,7 +213,7 @@ namespace yampi
   { return rhs*lhs; }
 
   inline void swap(::yampi::tag& lhs, ::yampi::tag& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::tag >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::tag >::value)
   { lhs.swap(rhs); }
 
 

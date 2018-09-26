@@ -106,7 +106,7 @@ namespace yampi
     }
 
     void swap(status& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Status>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Status>::value)
     {
       using std::swap;
       swap(mpi_status_, other.mpi_status_);
@@ -114,7 +114,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::status& lhs, ::yampi::status& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::status >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::status >::value)
   { lhs.swap(rhs); }
 
 

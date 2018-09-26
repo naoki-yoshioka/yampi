@@ -48,7 +48,7 @@ namespace yampi
     MPI_Aint const& mpi_address() const { return mpi_address_; }
 
     void swap(address& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<MPI_Aint>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Aint>::value)
     {
       using std::swap;
       swap(mpi_address_, other.mpi_address_);
@@ -74,7 +74,7 @@ namespace yampi
   { lhs -= rhs; return lhs; }
 
   inline void swap(::yampi::address& lhs, ::yampi::address& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::address >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
   { lhs.swap(rhs); }
 }
 

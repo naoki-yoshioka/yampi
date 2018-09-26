@@ -99,10 +99,10 @@ namespace yampi
     ::yampi::datatype const& datatype() const { return datatype_; }
 
     void swap(buffer& other)
-      BOOST_NOEXCEPT_IF((
+      BOOST_NOEXCEPT_IF(
         ::yampi::utility::is_nothrow_swappable<T*>::value
         and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value ))
+        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value)
     {
       using std::swap;
       swap(data_, other.data_);

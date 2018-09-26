@@ -50,7 +50,7 @@ namespace yampi
     int minor() const { return minor_; }
 
     void swap(version_t& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable<int>::value ))
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<int>::value)
     {
       using std::swap;
       swap(major_, other.major_);
@@ -80,7 +80,7 @@ namespace yampi
   { return not (rhs < lhs); }
 
   inline void swap(::yampi::version_t& lhs, ::yampi::version_t& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::version_t >::value ))
+    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::version_t >::value)
   { lhs.swap(rhs); }
 
 

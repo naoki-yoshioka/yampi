@@ -76,17 +76,7 @@ namespace yampi
 
 
     ::yampi::communicator const& communicator() const { return communicator_; }
-
-    void swap(topology& other)
-      BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value ))
-    {
-      using std::swap;
-      swap(communicator_, other.communicator_);
-    }
   };
-
-  inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs)
-  { lhs.swap(rhs); }
 }
 
 
