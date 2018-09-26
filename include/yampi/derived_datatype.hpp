@@ -560,7 +560,7 @@ namespace yampi
       BOOST_NOEXCEPT_IF((
         ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value
         and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable<::yampi::address>::value ))
+        and ::yampi::utility::is_nothrow_swappable< ::yampi::address >::value ))
     {
       using std::swap;
       swap(datatype_, other.datatype_);
