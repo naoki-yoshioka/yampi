@@ -167,6 +167,8 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::information::key", environment);
       return std::string(key);
     }
+
+    MPI_Info const& mpi_info() const { return mpi_info_; }
   };
 }
 
