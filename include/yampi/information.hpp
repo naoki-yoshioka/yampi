@@ -95,6 +95,16 @@ namespace yampi
     }
 
    public:
+    void release(::yampi::environment const& environment)
+    {
+      if (mpi_info_ == MPI_INFO_NULL)
+        return;
+
+      int const error_code = MPI_Info_free(YAMPI_addressof(mpi_info_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::information::release", environment);
+    }
+
     void set(
       std::string const& key, std::string const& value,
       ::yampi::environment const& environment) const
