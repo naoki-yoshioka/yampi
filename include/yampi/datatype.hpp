@@ -4,10 +4,24 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
 # include <yampi/utility/is_nothrow_swappable.hpp>
+# include <yampi/environment.hpp>
+# include <yampi/error.hpp>
+# include <yampi/address.hpp>
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
 
 
 namespace yampi
@@ -35,6 +49,30 @@ namespace yampi
     ~datatype() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
+    // TODO: implement constructor using MPI_Type_create_resized
+
+    int size(::yampi::environment const& environment) const
+    {
+      int result;
+      int const error_code = MPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::datatype::size", environment);
+      return result;
+    }
+
+    std::pair< ::yampi::address, ::yampi::address >
+    lower_bound_extent(::yampi::environment const& environment) const
+    {
+      MPI_Aint lower_bound, extent;
+      int const error_code
+        = MPI_Type_get_extent(
+            mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(
+          error_code, "yampi::datatype::lower_bound_extent", environment);
+      return std::make_pair(::yampi::address(lower_bound), ::yampi::address(extent));
+    }
+
     bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
 
     bool operator==(datatype const& other) const { return mpi_datatype_ == other.mpi_datatype_; }
@@ -57,6 +95,8 @@ namespace yampi
   { lhs.swap(rhs); }
 }
 
+
+# undef YAMPI_addressof
 
 #endif
 

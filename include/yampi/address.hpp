@@ -3,9 +3,21 @@
 
 # include <boost/config.hpp>
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
+
 # include <mpi.h>
 
 # include <yampi/utility/is_nothrow_swappable.hpp>
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
 
 
 namespace yampi
@@ -36,14 +48,49 @@ namespace yampi
     BOOST_CONSTEXPR bool operator<(address const other) const
     { return mpi_address_ < other.mpi_address_; }
 
-    address& operator++() { ++mpi_address_; return *this; }
-    address& operator--() { --mpi_address_; return *this; }
+    address& operator++()
+    {
+# if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      mpi_address_ = MPI_Aint_add(mpi_address_, static_cast<MPI_Aint>(1));
+# else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      MPI_Get_address(static_cast<char*>(mpi_address_) + static_cast<MPI_Aint>(1), &mpi_address_);
+# endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      return *this;
+    }
+
+    address& operator--()
+    {
+# if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      mpi_address_ = MPI_Aint_diff(mpi_address_, static_cast<MPI_Aint>(1));
+# else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      MPI_Get_address(
+        static_cast<char*>(mpi_address_) - static_cast<char*>(static_cast<MPI_Aint>(1)),
+        &mpi_address_);
+# endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      return *this;
+    }
 
     address& operator+=(address const other)
-    { mpi_address_ += other.mpi_address_; return *this; }
+    {
+# if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      mpi_address_ = MPI_Aint_add(mpi_address_, other.mpi_address_);
+# else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      MPI_Get_address(static_cast<char*>(mpi_address_) + other.mpi_address_, &mpi_address_);
+# endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      return *this;
+    }
 
     address& operator-=(address const other)
-    { mpi_address_ -= other.mpi_address_; return *this; }
+    {
+# if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      mpi_address_ = MPI_Aint_diff(mpi_address_, other.mpi_address_);
+# else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      MPI_Get_address(
+        static_cast<char*>(mpi_address_) - static_cast<char*>(other.mpi_address_),
+        &mpi_address_);
+# endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+      return *this;
+    }
 
     MPI_Aint const& mpi_address() const { return mpi_address_; }
 
@@ -67,6 +114,12 @@ namespace yampi
   inline BOOST_CONSTEXPR bool operator<=(::yampi::address const lhs, ::yampi::address const rhs)
   { return not (rhs < lhs); }
 
+  inline ::yampi::address operator++(::yampi::address& self, int)
+  { ::yampi::address result = self; ++self; return result; }
+
+  inline ::yampi::address operator--(::yampi::address& self, int)
+  { ::yampi::address result = self; --self; return result; }
+
   inline ::yampi::address operator+(::yampi::address lhs, ::yampi::address const rhs)
   { lhs += rhs; return lhs; }
 
@@ -77,5 +130,8 @@ namespace yampi
     BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
   { lhs.swap(rhs); }
 }
+
+
+# undef YAMPI_addressof
 
 #endif
