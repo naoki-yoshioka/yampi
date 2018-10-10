@@ -27,6 +27,9 @@
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   include <boost/static_assert.hpp>
 # endif
+# include <boost/range/value_type.hpp>
+# include <boost/range/begin.hpp>
+# include <boost/range/end.hpp>
 
 # include <yampi/datatype.hpp>
 # include <yampi/basic_datatype_of.hpp>
@@ -254,6 +257,38 @@ namespace yampi
       result_type;
     return result_type(first, last, datatype);
   }
+
+  template <typename ContiguousRange>
+  inline
+  ::yampi::buffer<
+    typename YAMPI_remove_cv<
+      typename boost::range_value<ContiguousRange>::type>::type>
+  range_to_buffer(ContiguousRange& range)
+  { return ::yampi::make_buffer(boost::begin(range), boost::end(range)); }
+
+  template <typename ContiguousRange>
+  inline
+  ::yampi::buffer<
+    typename YAMPI_remove_cv<
+      typename boost::range_value<ContiguousRange const>::type>::type>
+  range_to_buffer(ContiguousRange const& range)
+  { return ::yampi::make_buffer(boost::begin(range), boost::end(range)); }
+
+  template <typename ContiguousRange>
+  inline
+  ::yampi::buffer<
+    typename YAMPI_remove_cv<
+      typename boost::range_value<ContiguousRange>::type>::type>
+  range_to_buffer(ContiguousRange& range, ::yampi::datatype const datatype)
+  { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
+
+  template <typename ContiguousRange>
+  inline
+  ::yampi::buffer<
+    typename YAMPI_remove_cv<
+      typename boost::range_value<ContiguousRange const>::type>::type>
+  range_to_buffer(ContiguousRange const& range, ::yampi::datatype const datatype)
+  { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
 }
 
 
