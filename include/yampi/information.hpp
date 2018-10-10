@@ -67,7 +67,7 @@ namespace yampi
     }
 
     explicit information(::yampi::environment const& environment)
-      : mpi_info_(create())
+      : mpi_info_(create(environment))
     { }
 
     information(information const& other, ::yampi::environment const& environment)
@@ -129,7 +129,7 @@ namespace yampi
       int error_code
         = MPI_Info_get_valuelen(
             mpi_info_, key.c_str(),
-            YAMPI_addressof(valuelength), YAMPI_addressof(flag));
+            YAMPI_addressof(value_length), YAMPI_addressof(flag));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::get", environment);
 
@@ -161,8 +161,8 @@ namespace yampi
 
     std::string key(int const n, ::yampi::environment const& environment) const
     {
-      char* key[MPI_MAX_INFO_KEY];
-      int const error_code = MPI_Info_get_nthkey(mpi_info_, n, YAMPI_addressof(key));
+      char key[MPI_MAX_INFO_KEY];
+      int const error_code = MPI_Info_get_nthkey(mpi_info_, n, key);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::key", environment);
       return std::string(key);

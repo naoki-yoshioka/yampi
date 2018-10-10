@@ -30,7 +30,7 @@
 # include <yampi/communicator.hpp>
 # include <yampi/addressof.hpp>
 # include <yampi/information.hpp>
-# include <yampi/is_nothrow_swappable.hpp>
+# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
@@ -213,7 +213,7 @@ namespace yampi
 
   template <typename Value>
   inline void swap(::yampi::window<Value>& lhs, ::yampi::window<Value>& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::window<T> >::value ))
+    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::window<Value> >::value ))
   { lhs.swap(rhs); }
 }
 
