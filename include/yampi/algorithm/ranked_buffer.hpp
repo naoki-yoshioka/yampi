@@ -45,32 +45,18 @@ namespace yampi
       ::yampi::rank rank_;
 
      public:
-      ranked_buffer(T& value, ::yampi::rank const rank)
-        : buffer_(value), rank_(rank)
-      { }
-
-      ranked_buffer(T const& value, ::yampi::rank const rank)
-        : buffer_(value), rank_(rank)
-      { }
-
-      ranked_buffer(T& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
+      ranked_buffer(T& value, ::yampi::datatype const& datatype, ::yampi::rank const rank)
         : buffer_(value, datatype), rank_(rank)
       { }
 
-      ranked_buffer(T const& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
+      ranked_buffer(T const& value, ::yampi::datatype const& datatype, ::yampi::rank const rank)
         : buffer_(value, datatype), rank_(rank)
-      { }
-
-      template <typename ContiguousIterator>
-      ranked_buffer(
-        ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const rank)
-        : buffer_(first, last), rank_(rank)
       { }
 
       template <typename ContiguousIterator>
       ranked_buffer(
         ContiguousIterator const first, ContiguousIterator const last,
-        ::yampi::datatype const datatype, ::yampi::rank const rank)
+        ::yampi::datatype const& datatype, ::yampi::rank const rank)
         : buffer_(first, last, datatype), rank_(rank)
       { }
 
@@ -94,14 +80,6 @@ namespace yampi
 
 
     template <typename T>
-    inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(T& value, ::yampi::rank const rank)
-    { return ::yampi::algorithm::ranked_buffer<T>(value, rank); }
-
-    template <typename T>
-    inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(T const& value, ::yampi::rank const rank)
-    { return ::yampi::algorithm::ranked_buffer<T>(value, rank); }
-
-    template <typename T>
     inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(
       T& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
     { return ::yampi::algorithm::ranked_buffer<T>(value, datatype, rank); }
@@ -110,22 +88,6 @@ namespace yampi
     inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(
       T const& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
     { return ::yampi::algorithm::ranked_buffer<T>(value, datatype, rank); }
-
-    template <typename ContiguousIterator>
-    inline
-    ::yampi::algorithm::ranked_buffer<
-      typename YAMPI_remove_cv<
-        typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-    make_ranked_buffer(
-      ContiguousIterator const first, ContiguousIterator const last, ::yampi::rank const rank)
-    {
-      typedef
-        ::yampi::algorithm::ranked_buffer<
-          typename YAMPI_remove_cv<
-            typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-        result_type;
-      return result_type(first, last, rank);
-    }
 
     template <typename ContiguousIterator>
     inline

@@ -85,7 +85,7 @@ namespace yampi
         throw ::yampi::error(mpi_status_.MPI_ERROR, "yampi::status::test_error", environment);
     }
 
-    std::size_t message_length(::yampi::datatype const datatype, ::yampi::environment const& environment) const
+    std::size_t message_length(::yampi::datatype const& datatype, ::yampi::environment const& environment) const
     {
       int count;
       int const error_code

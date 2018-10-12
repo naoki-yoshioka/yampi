@@ -24,7 +24,6 @@
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
-# include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>

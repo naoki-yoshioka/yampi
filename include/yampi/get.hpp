@@ -10,6 +10,7 @@
 # include <yampi/buffer.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
+# include <yampi/datatype.hpp>
 
 
 namespace yampi

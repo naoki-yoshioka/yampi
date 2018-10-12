@@ -32,8 +32,6 @@
 # include <boost/range/end.hpp>
 
 # include <yampi/datatype.hpp>
-# include <yampi/basic_datatype_of.hpp>
-# include <yampi/has_basic_datatype.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
@@ -63,26 +61,26 @@
 
 namespace yampi
 {
-  template <typename T, typename Enabler = void>
+  template <typename T>
   class buffer
   {
     T* data_;
     int count_;
-    ::yampi::datatype datatype_;
+    ::yampi::datatype const& datatype_;
 
    public:
-    buffer(T& value, ::yampi::datatype const datatype)
+    buffer(T& value, ::yampi::datatype const& datatype)
       : data_(YAMPI_addressof(value)), count_(1), datatype_(datatype)
     { }
 
-    buffer(T const& value, ::yampi::datatype const datatype)
+    buffer(T const& value, ::yampi::datatype const& datatype)
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1), datatype_(datatype)
     { }
 
     template <typename ContiguousIterator>
     buffer(
       ContiguousIterator const first, ContiguousIterator const last,
-      ::yampi::datatype const datatype)
+      ::yampi::datatype const& datatype)
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
         datatype_(datatype)
@@ -105,85 +103,7 @@ namespace yampi
       BOOST_NOEXCEPT_IF(
         ::yampi::utility::is_nothrow_swappable<T*>::value
         and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value)
-    {
-      using std::swap;
-      swap(data_, other.data_);
-      swap(count_, other.count_);
-      swap(datatype_, other.datatype_);
-    }
-  };
-
-  template <typename T>
-  class buffer<T, typename YAMPI_enable_if< ::yampi::has_basic_datatype<T>::value >::type>
-  {
-    T* data_;
-    int count_;
-    ::yampi::datatype datatype_;
-
-   public:
-    explicit buffer(T& value)
-      : data_(YAMPI_addressof(value)),
-        count_(1),
-        datatype_(::yampi::basic_datatype_of<T>::call())
-    { }
-
-    explicit buffer(T const& value)
-      : data_(const_cast<T*>(YAMPI_addressof(value))),
-        count_(1),
-        datatype_(::yampi::basic_datatype_of<T>::call())
-    { }
-
-    buffer(T& value, ::yampi::datatype const datatype)
-      : data_(YAMPI_addressof(value)), count_(1), datatype_(datatype)
-    { }
-
-    buffer(T const& value, ::yampi::datatype const datatype)
-      : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1), datatype_(datatype)
-    { }
-
-    template <typename ContiguousIterator>
-    buffer(ContiguousIterator const first, ContiguousIterator const last)
-      : data_(const_cast<T*>(YAMPI_addressof(*first))),
-        count_(last-first),
-        datatype_(::yampi::basic_datatype_of<T>::call())
-    {
-      static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
-             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
-      assert(last >= first);
-    }
-
-    template <typename ContiguousIterator>
-    buffer(
-      ContiguousIterator const first, ContiguousIterator const last,
-      ::yampi::datatype const datatype)
-      : data_(const_cast<T*>(YAMPI_addressof(*first))),
-        count_(last-first),
-        datatype_(datatype)
-    {
-      static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
-             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
-      assert(last >= first);
-    }
-
-    T* data() { return data_; }
-    T const* data() const { return data_; }
-    int const& count() const { return count_; }
-    ::yampi::datatype const& datatype() const { return datatype_; }
-
-    void swap(buffer& other)
-      BOOST_NOEXCEPT_IF((
-        ::yampi::utility::is_nothrow_swappable<T*>::value
-        and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value ))
+        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype const& >::value)
     {
       using std::swap;
       swap(data_, other.data_);
@@ -211,35 +131,12 @@ namespace yampi
 
 
   template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T& value)
-  { return ::yampi::buffer<T>(value); }
-
-  template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T const& value)
-  { return ::yampi::buffer<T>(value); }
-
-  template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T& value, ::yampi::datatype const datatype)
+  inline ::yampi::buffer<T> make_buffer(T& value, ::yampi::datatype const& datatype)
   { return ::yampi::buffer<T>(value, datatype); }
 
   template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T const& value, ::yampi::datatype const datatype)
+  inline ::yampi::buffer<T> make_buffer(T const& value, ::yampi::datatype const& datatype)
   { return ::yampi::buffer<T>(value, datatype); }
-
-  template <typename ContiguousIterator>
-  inline
-  ::yampi::buffer<
-    typename YAMPI_remove_cv<
-      typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-  make_buffer(ContiguousIterator const first, ContiguousIterator const last)
-  {
-    typedef
-      ::yampi::buffer<
-        typename YAMPI_remove_cv<
-          typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-      result_type;
-    return result_type(first, last);
-  }
 
   template <typename ContiguousIterator>
   inline
@@ -248,7 +145,7 @@ namespace yampi
       typename std::iterator_traits<ContiguousIterator>::value_type>::type>
   make_buffer(
     ContiguousIterator const first, ContiguousIterator const last,
-    ::yampi::datatype const datatype)
+    ::yampi::datatype const& datatype)
   {
     typedef
       ::yampi::buffer<
@@ -263,23 +160,7 @@ namespace yampi
   ::yampi::buffer<
     typename YAMPI_remove_cv<
       typename boost::range_value<ContiguousRange>::type>::type>
-  range_to_buffer(ContiguousRange& range)
-  { return ::yampi::make_buffer(boost::begin(range), boost::end(range)); }
-
-  template <typename ContiguousRange>
-  inline
-  ::yampi::buffer<
-    typename YAMPI_remove_cv<
-      typename boost::range_value<ContiguousRange const>::type>::type>
-  range_to_buffer(ContiguousRange const& range)
-  { return ::yampi::make_buffer(boost::begin(range), boost::end(range)); }
-
-  template <typename ContiguousRange>
-  inline
-  ::yampi::buffer<
-    typename YAMPI_remove_cv<
-      typename boost::range_value<ContiguousRange>::type>::type>
-  range_to_buffer(ContiguousRange& range, ::yampi::datatype const datatype)
+  range_to_buffer(ContiguousRange& range, ::yampi::datatype const& datatype)
   { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
 
   template <typename ContiguousRange>
@@ -287,7 +168,7 @@ namespace yampi
   ::yampi::buffer<
     typename YAMPI_remove_cv<
       typename boost::range_value<ContiguousRange const>::type>::type>
-  range_to_buffer(ContiguousRange const& range, ::yampi::datatype const datatype)
+  range_to_buffer(ContiguousRange const& range, ::yampi::datatype const& datatype)
   { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
 }
 

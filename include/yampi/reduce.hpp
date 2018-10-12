@@ -24,7 +24,6 @@
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
-# include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/binary_operation.hpp>
 # include <yampi/error.hpp>
