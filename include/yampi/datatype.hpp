@@ -4,6 +4,13 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+# else
+#   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/is_convertible.hpp>
+#   include <boost/utility/enable_if.hpp>
+# endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
 # else
@@ -12,15 +19,35 @@
 
 # include <mpi.h>
 
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   include <boost/static_assert.hpp>
+# endif
+
 # include <yampi/utility/is_nothrow_swappable.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/address.hpp>
+# include <yampi/uncommitted_datatype.hpp>
+# include <yampi/bounds.hpp>
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_same std::is_same
+#   define YAMPI_is_convertible std::is_convertible
+#   define YAMPI_enable_if std::enable_if
+# else
+#   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_convertible boost::is_convertible
+#   define YAMPI_enable_if boost::enable_if_c
+# endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
 # else
 #   define YAMPI_addressof boost::addressof
+# endif
+
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   define static_assert BOOST_STATIC_ASSERT_MSG
 # endif
 
 
@@ -60,7 +87,7 @@ namespace yampi
 
   namespace datatype_detail
   {
-    inline bool is_predefined_mpi_datatype(MPI_Datatype const& mpi_datatype)
+    inline bool is_basic_datatype(MPI_Datatype const& mpi_datatype)
     {
       return
         mpi_datatype == MPI_CHAR or mpi_datatype == MPI_SHORT
@@ -87,6 +114,7 @@ namespace yampi
         or mpi_datatype == MPI_FLOAT_INT or mpi_datatype == MPI_DOUBLE_INT or mpi_datatype == MPI_LONG_DOUBLE_INT;
     }
   }
+
 
   class datatype
   {
@@ -125,7 +153,7 @@ namespace yampi
 
     ~datatype() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_datatype_ == MPI_DATATYPE_NULL or ::yampi::datatype_detail::is_predefined_mpi_datatype(mpi_datatype_))
+      if (mpi_datatype_ == MPI_DATATYPE_NULL or ::yampi::datatype_detail::is_basic_datatype(mpi_datatype_))
         return;
 
       MPI_Type_free(YAPMI_addressof(mpi_datatype_));
@@ -137,7 +165,7 @@ namespace yampi
 
 # define YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(type, mpitype) \
     explicit binary_operation(::yampi:: type ## _datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW\
-      : mpi_op_(MPI_ ## mpitype )\
+      : mpi_datatype_(MPI_ ## mpitype )\
     { }
 
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(char, CHAR)
@@ -166,16 +194,16 @@ namespace yampi
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
 # elif MPI_VERSION >= 2
     explicit binary_operation(::yampi::bool_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_op_(MPI::BOOL)
+      : mpi_datatype_(MPI::BOOL)
     { }
     explicit binary_operation(::yampi::float_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_op_(MPI::COMPLEX)
+      : mpi_datatype_(MPI::COMPLEX)
     { }
     explicit binary_operation(::yampi::double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_op_(MPI::DOUBLE_COMPLEX)
+      : mpi_datatype_(MPI::DOUBLE_COMPLEX)
     { }
     explicit binary_operation(::yampi::long_double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_op_(MPI::LONG_DOUBLE_COMPLEX)
+      : mpi_datatype_(MPI::LONG_DOUBLE_COMPLEX)
     { }
 # endif
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(short_int SHORT_INT)
@@ -187,9 +215,126 @@ namespace yampi
 
 # undef YAMPI_DEFINE_DATATYPE_CONSTRUCTOR
 
-    void release(::yampi::environment const& environment)
+    datatype(
+      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(commit(uncommitted_datatype, environment))
+    { }
+
+    // TODO: implement constructor using MPI_Type_create_resized
+
+   private:
+    MPI_Datatype commit(
+      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::environment const& environment) const
     {
-      if (mpi_datatype_ == MPI_DATATYPE_NULL or ::yampi::datatype_detail::is_predefined_mpi_datatype(mpi_datatype_))
+      MPI_Datatype result = uncommitted_datatype.mpi_datatype();
+      int const error_code = MPI_Type_commit(YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
+    }
+
+   public:
+    bool operator==(datatype const& other) const
+    { return mpi_datatype_ == other.mpi_datatype_; }
+
+    bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
+
+    void reset(::yampi::environment const& environment)
+    { free(environment); }
+
+    void reset(
+      MPI_Datatype const& mpi_datatype, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = mpi_datatype;
+    }
+
+# define YAMPI_DEFINE_DATATYPE_RESET(type, mpitype) \
+    void reset(\
+      ::yampi:: type ## _datatype_t const, ::yampi::environment const& environment)\
+    {\
+      free(environment);\
+      mpi_datatype_ = MPI_ ## mpitype ;\
+    }
+
+    YAMPI_DEFINE_DATATYPE_RESET(char, CHAR)
+    YAMPI_DEFINE_DATATYPE_RESET(short, SHORT)
+    YAMPI_DEFINE_DATATYPE_RESET(int, INT)
+    YAMPI_DEFINE_DATATYPE_RESET(long, LONG)
+# ifndef BOOST_NO_LONG_LONG
+    YAMPI_DEFINE_DATATYPE_RESET(long_long, LONG_LONG)
+# endif
+    YAMPI_DEFINE_DATATYPE_RESET(signed_char, SIGNED_CHAR)
+    YAMPI_DEFINE_DATATYPE_RESET(unsigned_char, UNSIGNED_CHAR)
+    YAMPI_DEFINE_DATATYPE_RESET(unsigned_short, UNSIGNED_SHORT)
+    YAMPI_DEFINE_DATATYPE_RESET(unsigned, UNSIGNED)
+    YAMPI_DEFINE_DATATYPE_RESET(unsigned_long, UNSIGNED_LONG)
+# ifndef BOOST_NO_LONG_LONG
+    YAMPI_DEFINE_DATATYPE_RESET(unsigned_long_long, UNSIGNED_LONG_LONG)
+# endif
+    YAMPI_DEFINE_DATATYPE_RESET(float, FLOAT)
+    YAMPI_DEFINE_DATATYPE_RESET(double, DOUBLE)
+    YAMPI_DEFINE_DATATYPE_RESET(long_double, LONG_DOUBLE)
+    YAMPI_DEFINE_DATATYPE_RESET(wchar, WCHAR)
+# if MPI_VERSION >= 3 || defined(__FUJITSU)
+    YAMPI_DEFINE_DATATYPE_RESET(bool, CXX_BOOL)
+    YAMPI_DEFINE_DATATYPE_RESET(float_complex, CXX_FLOAT_COMPLEX)
+    YAMPI_DEFINE_DATATYPE_RESET(double_complex, CXX_DOUBLE_COMPLEX)
+    YAMPI_DEFINE_DATATYPE_RESET(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
+# elif MPI_VERSION >= 2
+    void reset(
+      ::yampi::bool_datatype_t const, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = MPI::BOOL;
+    }
+    void reset(
+      ::yampi::float_complex_datatype_t const, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = MPI::COMPLEX;
+    }
+    void reset(
+      ::yampi::double_complex_datatype_t const, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = MPI::DOUBLE_COMPLEX;
+    }
+    void reset(
+      ::yampi::long_double_complex_datatype_t const,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = MPI::LONG_DOUBLE_COMPLEX;
+    }
+# endif
+    YAMPI_DEFINE_DATATYPE_RESET(short_int SHORT_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(int_int 2INT)
+    YAMPI_DEFINE_DATATYPE_RESET(long_int LONG_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(float_int FLOAT_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(double_int DOUBLE_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(long_double_int LONG_DOUBLE_INT)
+
+# undef YAMPI_DEFINE_DATATYPE_RESET
+
+    void reset(
+      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+
+      mpi_datatype_ = uncommitted_datatype.mpi_datatype();
+      int const error_code = MPI_Type_commit(YAMPI_addressof(mpi_datatype_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::datatype::reset", environment);
+    }
+
+    void free(::yampi::environment const& environment)
+    {
+      if (mpi_datatype_ == MPI_DATATYPE_NULL
+          or ::yampi::datatype_detail::is_basic_datatype(mpi_datatype_))
         return;
 
       int const error_code = MPI_Type_free(YAMPI_addressof(mpi_datatype_));
@@ -197,34 +342,30 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::datatype::release", environment);
     }
 
-    // TODO: implement constructor using MPI_Type_create_resized
-
     int size(::yampi::environment const& environment) const
     {
       int result;
       int const error_code = MPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::datatype::size", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::datatype::size", environment);
     }
 
-    std::pair< ::yampi::address, ::yampi::address >
-    lower_bound_extent(::yampi::environment const& environment) const
+    ::yampi::bounds bounds(::yampi::environment const& environment) const
     {
       MPI_Aint lower_bound, extent;
       int const error_code
         = MPI_Type_get_extent(
             mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(
-          error_code, "yampi::datatype::lower_bound_extent", environment);
-      return std::make_pair(::yampi::address(lower_bound), ::yampi::address(extent));
+      return error_code == MPI_SUCCESS
+        ? ::yampi::bounds(::yampi::address(lower_bound), ::yampi::address(extent))
+        : throw ::yampi::error(
+            error_code, "yampi::uncommitted_datatype::bounds", environment);
     }
 
-    bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
-
-    bool operator==(datatype const& other) const { return mpi_datatype_ == other.mpi_datatype_; }
-
+    ::yampi::uncommitted_datatype to_uncommitted_datatype() const
+    { return ::yampi::uncommitted_datatype(mpi_datatype_); }
     MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
 
     void swap(datatype& other)
@@ -239,12 +380,18 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::datatype& lhs, ::yampi::datatype& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::datatype >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
 
+# ifdef BOOST_NO_CXX11_STATIC_ASSERT
+#   undef static_assert
+# endif
 # undef YAMPI_addressof
+# undef YAMPI_enable_if
+# undef YAMPI_is_convertible
+# undef YAMPI_is_same
 
 #endif
 
