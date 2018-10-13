@@ -53,7 +53,8 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_add(mpi_address_, static_cast<MPI_Aint>(1));
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      MPI_Get_address(static_cast<char*>(mpi_address_) + static_cast<MPI_Aint>(1), &mpi_address_);
+      mpi_address_ += static_cast<MPI_Aint>(1);
+      //MPI_Get_address(static_cast<char*>(mpi_address_) + static_cast<MPI_Aint>(1), &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
     }
@@ -63,9 +64,10 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_diff(mpi_address_, static_cast<MPI_Aint>(1));
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      MPI_Get_address(
-        static_cast<char*>(mpi_address_) - static_cast<char*>(static_cast<MPI_Aint>(1)),
-        &mpi_address_);
+      mpi_address_ -= static_cast<MPI_Aint>(1);
+      //MPI_Get_address(
+      //  static_cast<char*>(mpi_address_) - static_cast<char*>(static_cast<MPI_Aint>(1)),
+      //  &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
     }
@@ -75,7 +77,8 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_add(mpi_address_, other.mpi_address_);
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      MPI_Get_address(static_cast<char*>(mpi_address_) + other.mpi_address_, &mpi_address_);
+      mpi_address_ += other.mpi_address_;
+      //MPI_Get_address(static_cast<char*>(mpi_address_) + other.mpi_address_, &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
     }
@@ -85,9 +88,10 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_diff(mpi_address_, other.mpi_address_);
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      MPI_Get_address(
-        static_cast<char*>(mpi_address_) - static_cast<char*>(other.mpi_address_),
-        &mpi_address_);
+      mpi_address_ -= other.mpi_address_;
+      //MPI_Get_address(
+      //  static_cast<char*>(mpi_address_) - static_cast<char*>(other.mpi_address_),
+      //  &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
     }
