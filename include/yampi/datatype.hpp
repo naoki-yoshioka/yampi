@@ -241,6 +241,12 @@ namespace yampi
       : mpi_datatype_(commit(uncommitted_datatype, environment))
     { }
 
+    datatype(
+      datatype const& old_datatype,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(duplicate(old_datatype, environment))
+    { }
+
    private:
     MPI_Datatype commit(
       ::yampi::uncommitted_datatype const& uncommitted_datatype,
@@ -251,6 +257,20 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
+    }
+
+    MPI_Datatype duplicate(
+      datatype const& old_datatype,
+      ::yampi::environment const& environment)
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_dup(old_datatype.mpi_datatype_, YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::datatype::duplicate", environment);
     }
 
    public:
@@ -347,6 +367,14 @@ namespace yampi
       int const error_code = MPI_Type_commit(YAMPI_addressof(mpi_datatype_));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::datatype::reset", environment);
+    }
+
+    void reset(
+      datatype const& old_datatype,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = duplicate(old_datatype, environment);
     }
 
     void free(::yampi::environment const& environment)
