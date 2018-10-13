@@ -184,7 +184,7 @@ namespace yampi
     { }
 
 # define YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(type, mpitype) \
-    explicit binary_operation(::yampi:: type ## _datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW\
+    explicit datatype(::yampi:: type ## _datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW\
       : mpi_datatype_(MPI_ ## mpitype )\
     { }
 
@@ -213,16 +213,16 @@ namespace yampi
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_complex, CXX_DOUBLE_COMPLEX)
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
 # elif MPI_VERSION >= 2
-    explicit binary_operation(::yampi::bool_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::bool_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI::BOOL)
     { }
-    explicit binary_operation(::yampi::float_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::float_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI::COMPLEX)
     { }
-    explicit binary_operation(::yampi::double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI::DOUBLE_COMPLEX)
     { }
-    explicit binary_operation(::yampi::long_double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::long_double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI::LONG_DOUBLE_COMPLEX)
     { }
 # endif
