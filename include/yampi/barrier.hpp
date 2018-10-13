@@ -47,8 +47,7 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::barrier", environment);
 
-    request.release(environment);
-    request.mpi_request(mpi_request);
+    request.reset(mpi_request, environment);
   }
 # endif
 }
