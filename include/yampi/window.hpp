@@ -151,10 +151,9 @@ namespace yampi
       int exists_base_ptr;
       int const error_code
         = MPI_Win_get_attr(mpi_win, MPI_WIN_BASE, result, YAMPI_addressof(exists_base_ptr));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window::get_base_ptr", environment);
-
-      return static_cast<bool>(exists_base_ptr) ? result : nullptr;
+      return error_code == MPI_SUCCESS
+        ? (static_cast<bool>(exists_base_ptr) ? result : nullptr)
+        : throw ::yampi::error(error_code, "yampi::window::get_base_ptr", environment);
     }
 
     template <typename ContiguousIterator>
@@ -178,21 +177,53 @@ namespace yampi
             (::yampi::addressof(*last, environment) - ::yampi::addressof(*first, environment)).mpi_address(),
             sizeof(Value), mpi_info, communicator.mpi_comm(),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window::create", environment);
-
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::window::create", environment);
     }
 
    public:
-    void release(::yampi::environment const& environment)
+    void reset(::yampi::environment const& environment)
+    { free(environment); }
+
+    void reset(MPI_Win const mpi_win, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_win_ = mpi_win;
+      base_ptr_ = get_base_ptr(mpi_win, environment);
+    }
+
+    template <typename ContiguousIterator>
+    void reset(
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::communicator const& communicator,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_win_ = create(first, last, MPI_INFO_NULL, communicator, environment);
+      base_ptr_ = YAMPI_addressof(*first);
+    }
+
+    template <typename ContiguousIterator>
+    void reset(
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::information const& information,
+      ::yampi::communicator const& communicator,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_win_ = create(first, last, information.mpi_info(), communicator, environment);
+      base_ptr_ = YAMPI_addressof(*first);
+    }
+
+    void free(::yampi::environment const& environment)
     {
       if (mpi_win_ == MPI_WIN_NULL)
         return;
 
       int const error_code = MPI_Win_free(YAMPI_addressof(mpi_win_));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window::release", environment);
+        throw ::yampi::error(error_code, "yampi::window::free", environment);
     }
 
     // TODO: implement attributes and info

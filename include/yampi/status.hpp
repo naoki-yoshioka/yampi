@@ -121,10 +121,10 @@ namespace yampi
         = YAMPI_Get_elements(
             const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
             datatype.mpi_datatype(), &result);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::status::num_elements", environment);
 
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::status::num_elements", environment);
     }
 
     bool empty() const

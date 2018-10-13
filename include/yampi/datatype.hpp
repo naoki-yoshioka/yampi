@@ -357,7 +357,7 @@ namespace yampi
 
       int const error_code = MPI_Type_free(YAMPI_addressof(mpi_datatype_));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::datatype::release", environment);
+        throw ::yampi::error(error_code, "yampi::datatype::free", environment);
     }
 
     size_type size(::yampi::environment const& environment) const

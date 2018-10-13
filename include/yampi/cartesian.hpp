@@ -93,15 +93,27 @@ namespace yampi
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     cartesian(
-      ::yampi::environment const& environment,
       ::yampi::communicator const& old_communicator,
       ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
       ContiguousIterator2 const is_periodic_first,
-      bool const is_reorderable = true)
+      ::yampi::environment const& environment)
       : ::yampi::topology(
           create(
             environment, old_communicator, size_first, size_last,
-            is_periodic_first, is_reorderable))
+            is_periodic_first, true, environment))
+    { }
+
+    template <typename ContiguousIterator1, typename ContiguousIterator2>
+    cartesian(
+      ::yampi::communicator const& old_communicator,
+      ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
+      ContiguousIterator2 const is_periodic_first,
+      bool const is_reorderable,
+      ::yampi::environment const& environment)
+      : ::yampi::topology(
+          create(
+            old_communicator, size_first, size_last,
+            is_periodic_first, is_reorderable, environment))
     { }
 
     template <typename ContiguousIterator>
@@ -115,11 +127,11 @@ namespace yampi
    private:
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     MPI_Comm create(
-      ::yampi::environment const& environment,
       ::yampi::communicator const& old_communicator,
       ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
       ContiguousIterator2 const is_periodic_first,
-      bool const is_reorderable)
+      bool const is_reorderable,
+      ::yampi::environment const& environment)
     {
       static_assert(
         (YAMPI_is_same<
@@ -144,9 +156,9 @@ namespace yampi
             YAMPI_addressof(my_is_periodic.front()),
             static_cast<int>(is_reorderable),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::cartesian::create", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::cartesian::create", environment);
     }
 
     template <typename ContiguousIterator>
@@ -169,20 +181,65 @@ namespace yampi
         = MPI_Cart_sub(
             other.communicator().mpi_comm(), YAMPI_addressof(my_remains.front()),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::cartesian::make_subcommunicator", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::cartesian::make_subcommunicator", environment);
     }
 
    public:
+    using ::yampi::topology::reset;
+
+    template <typename ContiguousIterator1, typename ContiguousIterator2>
+    void reset(
+      ::yampi::communicator const& old_communicator,
+      ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
+      ContiguousIterator2 const is_periodic_first,
+      ::yampi::environment const& environment)
+    {
+      communicator_.free(environment);
+      communicator_.mpi_comm(
+        create(
+          old_communicator, size_first, size_last, is_periodic_first, true,
+          environment));
+    }
+
+    template <typename ContiguousIterator1, typename ContiguousIterator2>
+    void reset(
+      ::yampi::communicator const& old_communicator,
+      ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
+      ContiguousIterator2 const is_periodic_first,
+      bool const is_reorderable,
+      ::yampi::environment const& environment)
+    {
+      communicator_.free(environment);
+      communicator_.mpi_comm(
+        create(
+          old_communicator, size_first, size_last, is_periodic_first, is_reorderable,
+          environment));
+    }
+
+    template <typename ContiguousIterator>
+    void reset(
+      cartesian const& other,
+      ContiguousIterator const remains_first, ContiguousIterator const remains_last,
+      ::yampi::environment const& environment)
+    {
+      communicator_.free(environment);
+      communicator_.mpi_comm(
+        make_subcommunicator(other, remains_first, remains_last, environment));
+    }
+
+    using ::yampi::topology::free;
+
     int dimension(::yampi::environment const& environment) const
     {
       int result;
       int const error_code
         = MPI_Cartdim_get(communicator_.mpi_comm(), YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::cartesian::dimension", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::cartesian::dimension", environment);
     }
 
     template <typename ContiguousIterator1, typename ContiguousIterator2, typename ContiguousIterator3>
@@ -241,9 +298,9 @@ namespace yampi
         = MPI_Cart_rank(
             communicator_.mpi_comm(), YAMPI_addressof(*coordinates_first),
             YAMPI_addressof(mpi_rank));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::cartesian::rank", environment);
-      return ::yampi::rank(mpi_rank);
+      return error_code == MPI_SUCCESS
+        ? ::yampi::rank(mpi_rank)
+        : throw ::yampi::error(error_code, "yampi::cartesian::rank", environment);
     }
 
     template <typename ContiguousIterator>
