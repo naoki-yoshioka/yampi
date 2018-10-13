@@ -218,6 +218,25 @@ namespace yampi
             environment))
     { }
 
+    // MPI_Type_create_subarray
+    template <
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    uncommitted_datatype(
+      uncommitted_datatype const& array_element_datatype,
+      ContiguousIterator1 const array_size_first,
+      ContiguousIterator1 const array_size_last,
+      ContiguousIterator2 const array_subsize_first,
+      ContiguousIterator3 const array_start_index_first,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(
+          derive(
+            array_element_datatype,
+            array_size_first, array_size_last,
+            array_subsize_first, array_start_index_first,
+            environment))
+    { }
+
    private:
     // MPI_Type_contiguous
     MPI_Datatype derive(
@@ -445,6 +464,49 @@ namespace yampi
               YAMPI_addressof(*byte_displacement_first)),
             reinterpret_cast<MPI_Datatype const*>(YAMPI_addressof(*datatype_first)),
             YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::uncommitted_datatype::derive", environment);
+    }
+
+    // MPI_Type_create_subarray
+    template <
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    MPI_Datatype derive(
+      uncommitted_datatype const& array_element_datatype,
+      ContiguousIterator1 const array_size_first,
+      ContiguousIterator1 const array_size_last,
+      ContiguousIterator2 const array_subsize_first,
+      ContiguousIterator3 const array_start_index_first,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        YAMPI_is_convertible<
+          typename std::iterator_traits<ContiguousIterator1>::value_type,
+          int const>::value,
+        "The value type of ContiguousIterator1 must be convertible to int const");
+      static_assert(
+        YAMPI_is_convertible<
+          typename std::iterator_traits<ContiguousIterator2>::value_type,
+          int const>::value,
+        "The value type of ContiguousIterator2 must be convertible to int const");
+      static_assert(
+        YAMPI_is_convertible<
+          typename std::iterator_traits<ContiguousIterator3>::value_type,
+          int const>::value,
+        "The value type of ContiguousIterator3 must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_subarray(
+            array_size_last - array_size_first,
+            YAMPI_addressof(*array_size_first),
+            YAMPI_addressof(*array_subsize_first),
+            YAMPI_addressof(*array_start_index_first),
+            MPI_ORDER_C, array_element_datatype.mpi_datatype_, YAMPI_addressof(result));
 
       return error_code == MPI_SUCCESS
         ? result
