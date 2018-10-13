@@ -13,6 +13,8 @@
 
 # include <mpi.h>
 
+# include <boost/optional.hpp>
+
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 

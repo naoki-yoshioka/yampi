@@ -210,7 +210,7 @@ namespace yampi
     void reset(yampi::self_communicator_t const, ::yampi::environment const& environment)
     {
       free(environment);
-      mpi_comm_ = MPI_SELF_WORLD;
+      mpi_comm_ = MPI_COMM_SELF;
     }
 
     void reset(communicator const& other, ::yampi::environment const& environment)
@@ -315,15 +315,15 @@ namespace yampi
       ::yampi::information& information, ::yampi::environment const& environment) const
     {
       MPI_Info mpi_info;
-      int const error_code = MPI_Comm_get_info(mpi_comm_, YAMPI_address(mpi_info));
+      int const error_code = MPI_Comm_get_info(mpi_comm_, YAMPI_addressof(mpi_info));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(
           error_code, "yampi::communicator::get_information", environment);
-      information.reset(mpi_info)
+      information.reset(mpi_info, environment);
     }
 
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
-    mpi_comm(MPI_Comm const& comm) const { mpi_comm_ = comm; }
+    void mpi_comm(MPI_Comm const& comm) { mpi_comm_ = comm; }
 
     void swap(communicator& other)
       BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Comm>::value)

@@ -81,12 +81,12 @@ namespace yampi
 
     template <typename T>
     inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(
-      T& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
+      T& value, ::yampi::datatype const& datatype, ::yampi::rank const rank)
     { return ::yampi::algorithm::ranked_buffer<T>(value, datatype, rank); }
 
     template <typename T>
     inline ::yampi::algorithm::ranked_buffer<T> make_ranked_buffer(
-      T const& value, ::yampi::datatype const datatype, ::yampi::rank const rank)
+      T const& value, ::yampi::datatype const& datatype, ::yampi::rank const rank)
     { return ::yampi::algorithm::ranked_buffer<T>(value, datatype, rank); }
 
     template <typename ContiguousIterator>
@@ -96,7 +96,7 @@ namespace yampi
         typename std::iterator_traits<ContiguousIterator>::value_type>::type>
     make_ranked_buffer(
       ContiguousIterator const first, ContiguousIterator const last,
-      ::yampi::datatype const datatype, ::yampi::rank const rank)
+      ::yampi::datatype const& datatype, ::yampi::rank const rank)
     {
       typedef
         ::yampi::algorithm::ranked_buffer<

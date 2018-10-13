@@ -134,19 +134,19 @@ namespace yampi
 # if MPI_VERSION >= 3
     typedef MPI_Count size_type;
     typedef MPI_Count count_type;
-    typedef ::yampi::bounds<count_Type> bounds_type;
+    typedef ::yampi::bounds<count_type> bounds_type;
 # else
     typedef int size_type;
     typedef MPI_Aint count_type;
-    typedef ::yampi::bounds<count_Type> bounds_type;
+    typedef ::yampi::bounds<count_type> bounds_type;
 # endif
 
     datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    datatype(datatype const&) = delete
-    datatype& operator=(datatype const&) = delete
+    datatype(datatype const&) = delete;
+    datatype& operator=(datatype const&) = delete;
 # else
    private:
     datatype(datatype const&);
@@ -176,7 +176,7 @@ namespace yampi
       if (mpi_datatype_ == MPI_DATATYPE_NULL or ::yampi::datatype_detail::is_basic_datatype(mpi_datatype_))
         return;
 
-      MPI_Type_free(YAPMI_addressof(mpi_datatype_));
+      MPI_Type_free(YAMPI_addressof(mpi_datatype_));
     }
 
     explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
@@ -226,12 +226,12 @@ namespace yampi
       : mpi_datatype_(MPI::LONG_DOUBLE_COMPLEX)
     { }
 # endif
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(short_int SHORT_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(int_int 2INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_int LONG_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(float_int FLOAT_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_int DOUBLE_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_int LONG_DOUBLE_INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(short_int, SHORT_INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(int_int, 2INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_int, LONG_INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(float_int, FLOAT_INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_int, DOUBLE_INT)
+    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_int, LONG_DOUBLE_INT)
 
 # undef YAMPI_DEFINE_DATATYPE_CONSTRUCTOR
 
@@ -328,12 +328,12 @@ namespace yampi
       mpi_datatype_ = MPI::LONG_DOUBLE_COMPLEX;
     }
 # endif
-    YAMPI_DEFINE_DATATYPE_RESET(short_int SHORT_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(int_int 2INT)
-    YAMPI_DEFINE_DATATYPE_RESET(long_int LONG_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(float_int FLOAT_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(double_int DOUBLE_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(long_double_int LONG_DOUBLE_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(short_int, SHORT_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(int_int, 2INT)
+    YAMPI_DEFINE_DATATYPE_RESET(long_int, LONG_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(float_int, FLOAT_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(double_int, DOUBLE_INT)
+    YAMPI_DEFINE_DATATYPE_RESET(long_double_int, LONG_DOUBLE_INT)
 
 # undef YAMPI_DEFINE_DATATYPE_RESET
 

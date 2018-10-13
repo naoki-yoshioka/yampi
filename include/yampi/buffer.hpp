@@ -99,6 +99,7 @@ namespace yampi
     int const& count() const { return count_; }
     ::yampi::datatype const& datatype() const { return datatype_; }
 
+    /*
     void swap(buffer& other)
       BOOST_NOEXCEPT_IF(
         ::yampi::utility::is_nothrow_swappable<T*>::value
@@ -110,6 +111,7 @@ namespace yampi
       swap(count_, other.count_);
       swap(datatype_, other.datatype_);
     }
+    */
   };
 
 
@@ -124,10 +126,12 @@ namespace yampi
   inline bool operator!=(::yampi::buffer<T> const& lhs, ::yampi::buffer<T> const& rhs)
   { return not (lhs == rhs); }
 
+  /*
   template <typename T>
   inline void swap(::yampi::buffer<T>& lhs, ::yampi::buffer<T>& rhs)
     BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::buffer<T> >::value ))
   { lhs.swap(rhs); }
+  */
 
 
   template <typename T>

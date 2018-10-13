@@ -145,11 +145,11 @@ namespace yampi
 # if MPI_VERSION >= 3
     typedef MPI_Count size_type;
     typedef MPI_Count count_type;
-    typedef ::yampi::bounds<count_Type> bounds_type;
+    typedef ::yampi::bounds<count_type> bounds_type;
 # else
     typedef int size_type;
     typedef MPI_Aint count_type;
-    typedef ::yampi::bounds<count_Type> bounds_type;
+    typedef ::yampi::bounds<count_type> bounds_type;
 # endif
 
     uncommitted_datatype() BOOST_NOEXCEPT_OR_NOTHROW
@@ -327,7 +327,7 @@ namespace yampi
       MPI_Datatype result;
       int const error_code
         = MPI_Type_create_hvector(
-            count, block.length(), block.stride_bytes(),
+            count, block.length(), block.stride_bytes().mpi_address(),
             base_datatype.mpi_datatype_, YAMPI_addressof(result));
 
       return error_code == MPI_SUCCESS
@@ -351,14 +351,14 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator1>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator1 must be convertible to int const");
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator2>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator2 must be convertible to int const");
 
       MPI_Datatype result;
@@ -390,15 +390,15 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator2>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator2 must be convertible to int const");
 
       MPI_Datatype result;
       int const error_code
         = MPI_Type_create_hindexed(
-            displacement_byte_last - displacement_byte_first,
+            byte_displacement_last - byte_displacement_first,
             YAMPI_addressof(*block_length_first),
             reinterpret_cast<MPI_Aint const*>(
               YAMPI_addressof(*byte_displacement_first)),
@@ -425,9 +425,9 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator must be convertible to int const");
 
       MPI_Datatype result;
@@ -460,7 +460,7 @@ namespace yampi
       MPI_Datatype result;
       int const error_code
         = MPI_Type_create_hindexed_block(
-            displacement_byte_last - displacement_byte_first,
+            byte_displacement_last - byte_displacement_first,
             block_length,
             reinterpret_cast<MPI_Aint const*>(
               YAMPI_addressof(*byte_displacement_first)),
@@ -484,21 +484,21 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator1>::value_type,
-          uncommitted_datatype const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           uncommitted_datatype const>::value),
         "The value type of ContiguousIterator1 must be convertible to"
         " yampi::uncommitted_datatype const");
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator2>::value_type,
-          ::yampi::address const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           ::yampi::address const>::value),
         "The value type of ContiguousIterator2 must be convertible to"
         " yampi::address const");
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator3>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator3>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator3 must be convertible to int const");
 
       MPI_Datatype result;
@@ -530,19 +530,19 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator1>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator1 must be convertible to int const");
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator2>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator2 must be convertible to int const");
       static_assert(
-        YAMPI_is_convertible<
-          typename std::iterator_traits<ContiguousIterator3>::value_type,
-          int const>::value,
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator3>::value_type,
+           int const>::value),
         "The value type of ContiguousIterator3 must be convertible to int const");
 
       MPI_Datatype result;
@@ -567,7 +567,7 @@ namespace yampi
     {
       MPI_Datatype result;
       int const error_code
-        = YAMPI_Type_create_resized(
+        = MPI_Type_create_resized(
             old_datatype.mpi_datatype_,
             static_cast<MPI_Aint>(new_bounds.lower_bound()),
             static_cast<MPI_Aint>(new_bounds.extent()),

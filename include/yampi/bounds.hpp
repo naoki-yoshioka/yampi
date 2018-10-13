@@ -23,7 +23,7 @@ namespace yampi
       : lower_bound_(lower_bound), extent_(extent)
     { }
 
-    bool operator==(::yampi::bounds const& other) const
+    bool operator==(bounds const& other) const
     { return lower_bound_ == other.lower_bound_ and extent_ == other.extent_; }
 
     Count const& lower_bound() const { return lower_bound_; }
@@ -35,7 +35,7 @@ namespace yampi
     Count const& extent() const { return extent_; }
     void extent(Count const ex) { extent_ = ex; }
 
-    void swap(::yampi::bounds& other)
+    void swap(bounds& other)
       BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<Count>::value)
     {
       using std::swap;
@@ -44,10 +44,13 @@ namespace yampi
     }
   };
 
-  inline bool operator!=(::yampi::bounds const& lhs, ::yampi::bounds const& rhs)
+  template <typename Count>
+  inline bool operator!=(
+    ::yampi::bounds<Count> const& lhs, ::yampi::bounds<Count> const& rhs)
   { return not (lhs == rhs); }
 
-  inline void swap(::yampi::bounds& lhs, ::yampi::bounds& rhs)
+  template <typename Count>
+  inline void swap(::yampi::bounds<Count>& lhs, ::yampi::bounds<Count>& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
