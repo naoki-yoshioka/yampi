@@ -69,14 +69,23 @@ namespace yampi
       : mpi_request_(req)
     { }
 
-    void release(::yampi::environment const& environment)
+    void reset(::yampi::environment const& environment)
+    { free(environment); }
+
+    void reset(MPI_Request const& req, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_request_ = req;
+    }
+
+    void free(::yampi::environment const& environment)
     {
       if (mpi_request_ == MPI_REQUEST_NULL)
         return;
 
       int const error_code = MPI_Request_free(YAMPI_addressof(mpi_request_));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::request::release", environment);
+        throw ::yampi::error(error_code, "yampi::request::free", environment);
     }
 
 
@@ -90,10 +99,10 @@ namespace yampi
       MPI_Status mpi_status;
       int const error_code
         = MPI_Wait(YAMPI_addressof(mpi_request_), YAMPI_addressof(mpi_status));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::request::wait", environment);
 
-      return ::yampi::status(mpi_status);
+      return error_code == MPI_SUCCESS
+        ? ::yampi::status(mpi_status)
+        : throw ::yampi::error(error_code, "yampi::request::wait", environment);
     }
 
     void wait(::yampi::ignore_status_t const, ::yampi::environment const& environment)
@@ -111,10 +120,11 @@ namespace yampi
       int const error_code
         = MPI_Test(
             YAMPI_addressof(mpi_request_), &flag, YAMPI_addressof(mpi_status));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::request::test", environment);
 
-      return std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status));
+      return error_code == MPI_SUCCESS
+        ? std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status))
+        : throw ::yampi::error(error_code, "yampi::request::test", environment);
+
     }
 
     bool test(::yampi::ignore_status_t const, ::yampi::environment const& environment)
@@ -123,10 +133,10 @@ namespace yampi
       int const error_code
         = MPI_Test(
             YAMPI_addressof(mpi_request_), &flag, MPI_STATUS_IGNORE);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::request::test", environment);
 
-      return static_cast<bool>(flag);
+      return error_code == MPI_SUCCESS
+        ? static_cast<bool>(flag)
+        : throw ::yampi::error(error_code, "yampi::request::test", environment);
     }
 
     std::pair<bool, ::yampi::status> status(::yampi::environment const& environment) const
@@ -135,10 +145,10 @@ namespace yampi
       MPI_Status mpi_status;
       int const error_code
         = MPI_Request_get_status(mpi_request_, &flag, YAMPI_addressof(mpi_status));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::request::status", environment);
 
-      return std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status));
+      return error_code == MPI_SUCCESS
+        ? std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status))
+        : throw ::yampi::error(error_code, "yampi::request::status", environment);
     }
 
 

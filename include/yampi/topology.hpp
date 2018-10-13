@@ -71,8 +71,11 @@ namespace yampi
     { }
 
    public:
-    void release(::yampi::environment const& environment)
-    { communicator_.release(environment); }
+    void reset(MPI_Comm const mpi_comm, ::yampi::environment const& environment)
+    { communicator_.reset(mpi_comm, environment); }
+
+    void free(::yampi::environment const& environment)
+    { communicator_.free(environment); }
 
 
     ::yampi::communicator const& communicator() const { return communicator_; }

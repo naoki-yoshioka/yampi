@@ -125,14 +125,54 @@ namespace yampi
         = MPI_Op_create(
             mpi_user_function, static_cast<int>(is_commutative),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::binary_operation::create", environment);
-
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::binary_operation::create", environment);
     }
 
    public:
-    void release(::yampi::environment const& environment)
+    void reset(::yampi::environment const& environment)
+    { free(environment); }
+
+    void reset(MPI_Op const& mpi_op, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_op_ = mpi_op;
+    }
+
+# define YAMPI_DEFINE_OPERATION_RESET(op, mpiop) \
+    void reset(::yampi:: op ## _t const, ::yampi::environment const& environment)\
+    {\
+      free(environment);\
+      mpi_op_ = MPI_ ## mpiop ;\
+    }
+
+    YAMPI_DEFINE_OPERATION_RESET(maximum, MAX)
+    YAMPI_DEFINE_OPERATION_RESET(minimum, MIN)
+    YAMPI_DEFINE_OPERATION_RESET(plus, SUM)
+    YAMPI_DEFINE_OPERATION_RESET(multiplies, PROD)
+    YAMPI_DEFINE_OPERATION_RESET(logical_and, LAND)
+    YAMPI_DEFINE_OPERATION_RESET(bit_and, BAND)
+    YAMPI_DEFINE_OPERATION_RESET(logical_or, LOR)
+    YAMPI_DEFINE_OPERATION_RESET(bit_or, BOR)
+    YAMPI_DEFINE_OPERATION_RESET(logical_xor, LXOR)
+    YAMPI_DEFINE_OPERATION_RESET(bit_xor, BXOR)
+    YAMPI_DEFINE_OPERATION_RESET(maximum_location, MAXLOC)
+    YAMPI_DEFINE_OPERATION_RESET(minimum_location, MINLOC)
+
+# undef YAMPI_DEFINE_OPERATION_RESET
+
+    // TODO: Implement something like yampi::function
+    void reset(
+      MPI_User_function* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_op_ = create(mpi_user_function, is_commutative, environment);
+    }
+
+    void free(::yampi::environment const& environment)
     {
       if (mpi_op_ == MPI_OP_NULL
           or mpi_op_ == MPI_MAX or mpi_op_ == MPI_MIN
@@ -145,7 +185,7 @@ namespace yampi
 
       int const error_code = MPI_Op_free(YAMPI_addressof(mpi_op_));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::binary_operation::release", environment);
+        throw ::yampi::error(error_code, "yampi::binary_operation::free", environment);
     }
 
 

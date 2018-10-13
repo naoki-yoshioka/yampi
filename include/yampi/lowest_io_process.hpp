@@ -14,6 +14,7 @@
 # include <yampi/buffer.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
+# include <yampi/datatype.hpp>
 
 
 namespace yampi
@@ -33,7 +34,8 @@ namespace yampi
       ::yampi::all_reduce(
         ::yampi::communicator(::yampi::world_communicator_t()),
         environment,
-        ::yampi::make_buffer(io_process.mpi_rank()),
+        ::yampi::make_buffer(
+          io_process.mpi_rank(), ::yampi::datatype(::yampi::int_datatype_t())),
         ::yampi::binary_operation(::yampi::minimum_t())));
   }
 }

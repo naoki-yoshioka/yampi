@@ -36,6 +36,12 @@
 #   define YAMPI_addressof boost::addressof
 # endif
 
+# if MPI_VERSION >= 3
+#   define YAMPI_Get_elements MPI_Get_elements_x
+# else
+#   define YAMPI_Get_elements MPI_Get_elements
+# endif
+
 
 namespace yampi
 {
@@ -53,6 +59,12 @@ namespace yampi
     MPI_Status mpi_status_;
 
    public:
+# if MPI_VERSION >= 3
+    typedef MPI_Count num_elements_type;
+# else
+    typedef int num_elements_type;
+# endif
+
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     status() = delete;
 # else
@@ -85,17 +97,34 @@ namespace yampi
         throw ::yampi::error(mpi_status_.MPI_ERROR, "yampi::status::test_error", environment);
     }
 
-    std::size_t message_length(::yampi::datatype const datatype, ::yampi::environment const& environment) const
+    int message_length(
+      ::yampi::datatype const& datatype, ::yampi::environment const& environment) const
     {
       int count;
       int const error_code
-        = MPI_Get_count(const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)), datatype.mpi_datatype(), &count);
+        = MPI_Get_count(
+            const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
+            datatype.mpi_datatype(), &count);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::status::message_length", environment);
       if (count == MPI_UNDEFINED)
         throw ::yampi::count_value_undefined_error();
 
       return count;
+    }
+
+    num_elements_type num_elements(
+      ::yampi::datatype const& datatype, ::yampi::environment const& environment) const
+    {
+      num_elements_type result;
+      int const error_code
+        = YAMPI_Get_elements(
+            const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
+            datatype.mpi_datatype(), &result);
+
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::status::num_elements", environment);
     }
 
     bool empty() const

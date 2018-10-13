@@ -123,7 +123,6 @@ namespace yampi
       : mpi_group_(make_difference(lhs, rhs, environment))
     { }
 
-    // TODO: Implement range versions
     template <typename ContiguousIterator>
     group(
       ::yampi::make_inclusive_t const,
@@ -156,40 +155,53 @@ namespace yampi
       : mpi_group_(make_exclusive(original_group, boost::begin(ranks), boost::end(ranks), environment))
     { }
 
+    // TODO: implement MPI_Group_range_incl, MPI_Group_range_excl
+
    private:
-    MPI_Group make_union(group const& lhs, group const& rhs, ::yampi::environment const& environment) const
+    MPI_Group make_union(
+      group const& lhs, group const& rhs,
+      ::yampi::environment const& environment) const
     {
       MPI_Group result;
       int const error_code
         = MPI_Group_union(lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::make_union", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::group::make_union", environment);
     }
 
-    MPI_Group make_intersection(group const& lhs, group const& rhs, ::yampi::environment const& environment) const
+    MPI_Group make_intersection(
+      group const& lhs, group const& rhs,
+      ::yampi::environment const& environment) const
     {
       MPI_Group result;
       int const error_code
-        = MPI_Group_intersection(lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::make_intersection", environment);
-      return result;
+        = MPI_Group_intersection(
+            lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_intersection", environment);
     }
 
-    MPI_Group make_difference(group const& lhs, group const& rhs, ::yampi::environment const& environment) const
+    MPI_Group make_difference(
+      group const& lhs, group const& rhs,
+      ::yampi::environment const& environment) const
     {
       MPI_Group result;
       int const error_code
-        = MPI_Group_difference(lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::make_difference", environment);
-      return result;
+        = MPI_Group_difference(
+            lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_difference", environment);
     }
 
     template <typename ContiguousIterator>
     MPI_Group make_inclusive(
-      group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
+      group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
     {
       static_assert(
@@ -205,14 +217,16 @@ namespace yampi
             original_group.mpi_group(), last-first,
             reinterpret_cast<int const*>(YAMPI_addressof(*first)),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::make_inclusive", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_inclusive", environment);
     }
 
     template <typename ContiguousIterator>
     MPI_Group make_exclusive(
-      group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
+      group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
     {
       static_assert(
@@ -228,20 +242,106 @@ namespace yampi
             original_group.mpi_group(), last-first,
             reinterpret_cast<int const*>(YAMPI_addressof(*first)),
             YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::make_exclusive", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_exclusive", environment);
     }
 
    public:
-    void release(::yampi::environment const& environment)
+    void reset(::yampi::environment const& environment)
+    { free(environment); }
+
+    void reset(MPI_Group const mpi_group, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = mpi_group;
+    }
+
+    void reset(::yampi::empty_group_t const, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = MPI_GROUP_EMPTY;
+    }
+
+    void reset(
+      ::yampi::make_union_t const, group const& lhs, group const& rhs,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = make_union(lhs, rhs, environment);
+    }
+
+    void reset(
+      ::yampi::make_intersection_t const, group const& lhs, group const& rhs,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = make_intersection(lhs, rhs, environment);
+    }
+
+    void reset(
+      ::yampi::make_difference_t const, group const& lhs, group const& rhs,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = make_difference(lhs, rhs, environment);
+    }
+
+    template <typename ContiguousIterator>
+    void reset(
+      ::yampi::make_inclusive_t const, group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = make_inclusive(original_group, first, last, environment);
+    }
+
+    template <typename ContiguousRange>
+    void reset(
+      ::yampi::make_inclusive_t const,
+      group const& original_group, ContiguousRange const& ranks,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_
+        = make_inclusive(
+            original_group, boost::begin(ranks), boost::end(ranks), environment);
+    }
+
+    template <typename ContiguousIterator>
+    void reset(
+      ::yampi::make_exclusive_t const, group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = make_exclusive(original_group, first, last, environment);
+    }
+
+    template <typename ContiguousRange>
+    void reset(
+      ::yampi::make_exclusive_t const,
+      group const& original_group, ContiguousRange const& ranks,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_
+        = make_exclusive(
+            original_group, boost::begin(ranks), boost::end(ranks), environment);
+    }
+
+    // TODO: implement MPI_Group_range_incl, MPI_Group_range_excl
+
+    void free(::yampi::environment const& environment)
     {
       if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
         return;
 
       int const error_code = MPI_Group_free(&mpi_group_);
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::release", environment);
+        throw ::yampi::error(error_code, "yampi::group::free", environment);
     }
 
 
@@ -251,18 +351,18 @@ namespace yampi
     {
       int result;
       int const error_code = MPI_Group_size(mpi_group_, YAMPI_addressof(result));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::size", environment);
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::group::size", environment);
     }
 
     ::yampi::rank rank(::yampi::environment const& environment) const
     {
       int mpi_rank;
       int const error_code = MPI_Group_rank(mpi_group_, YAMPI_addressof(mpi_rank));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::group::rank", environment);
-      return ::yampi::rank(mpi_rank);
+      return error_code == MPI_SUCCESS
+        ? ::yampi::rank(mpi_rank)
+        : throw ::yampi::error(error_code, "yampi::group::rank", environment);
     }
 
     MPI_Group const& mpi_group() const { return mpi_group_; }
