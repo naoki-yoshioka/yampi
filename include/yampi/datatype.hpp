@@ -50,6 +50,16 @@
 #   define static_assert BOOST_STATIC_ASSERT_MSG
 # endif
 
+# if MPI_VERSION >= 3
+#   define YAMPI_Type_size MPI_Type_size_x
+#   define YAMPI_Type_get_extent MPI_Type_get_extent_x
+#   define YAMPI_Type_get_true_extent MPI_Type_get_true_extent_x
+# else
+#   define YAMPI_Type_size MPI_Type_size
+#   define YAMPI_Type_get_extent MPI_Type_get_extent
+#   define YAMPI_Type_get_true_extent MPI_Type_get_true_extent
+# endif
+
 
 namespace yampi
 {
@@ -121,6 +131,16 @@ namespace yampi
     MPI_Datatype mpi_datatype_;
 
    public:
+# if MPI_VERSION >= 3
+    typedef MPI_Count size_type;
+    typedef MPI_Count count_type;
+    typedef ::yampi::bounds<count_Type> bounds_type;
+# else
+    typedef int size_type;
+    typedef MPI_Aint count_type;
+    typedef ::yampi::bounds<count_Type> bounds_type;
+# endif
+
     datatype() BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
@@ -220,8 +240,6 @@ namespace yampi
       ::yampi::environment const& environment)
       : mpi_datatype_(commit(uncommitted_datatype, environment))
     { }
-
-    // TODO: implement constructor using MPI_Type_create_resized
 
    private:
     MPI_Datatype commit(
@@ -342,26 +360,38 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::datatype::release", environment);
     }
 
-    int size(::yampi::environment const& environment) const
+    size_type size(::yampi::environment const& environment) const
     {
-      int result;
-      int const error_code = MPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
+      size_type result;
+      int const error_code = YAMPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
             error_code, "yampi::datatype::size", environment);
     }
 
-    ::yampi::bounds bounds(::yampi::environment const& environment) const
+    bounds_type bounds(::yampi::environment const& environment) const
     {
-      MPI_Aint lower_bound, extent;
+      count_type lower_bound, extent;
       int const error_code
-        = MPI_Type_get_extent(
+        = YAMPI_Type_get_extent(
             mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
       return error_code == MPI_SUCCESS
-        ? ::yampi::bounds(::yampi::address(lower_bound), ::yampi::address(extent))
+        ? ::yampi::make_bounds(lower_bound, extent)
         : throw ::yampi::error(
             error_code, "yampi::uncommitted_datatype::bounds", environment);
+    }
+
+    bounds_type true_bounds(::yampi::environment const& environment) const
+    {
+      count_type lower_bound, extent;
+      int const error_code
+        = YAMPI_Type_get_true_extent(
+            mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+      return error_code == MPI_SUCCESS
+        ? ::yampi::make_bounds(lower_bound, extent)
+        : throw ::yampi::error(
+            error_code, "yampi::uncommitted_datatype::true_bounds", environment);
     }
 
     ::yampi::uncommitted_datatype to_uncommitted_datatype() const
@@ -385,6 +415,9 @@ namespace yampi
 }
 
 
+# undef YAMPI_Type_get_true_extent
+# undef YAMPI_Type_get_extent
+# undef YAMPI_Type_size
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   undef static_assert
 # endif

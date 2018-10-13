@@ -5,32 +5,38 @@
 
 # include <utility>
 
-# include <yampi/address.hpp>
 # include <yampi/utility/is_nothrow_swappable.hpp>
 
 
 namespace yampi
 {
+  template <typename Count>
   class bounds
   {
-    ::yampi::address lower_bound_;
-    ::yampi::address extent_;
+    Count lower_bound_;
+    Count extent_;
 
    public:
-    bounds(::yampi::address const lower_bound, ::yampi::address const extent)
+    typedef Count count_type;
+
+    bounds(Count const lower_bound, Count const extent)
       : lower_bound_(lower_bound), extent_(extent)
     { }
 
     bool operator==(::yampi::bounds const& other) const
     { return lower_bound_ == other.lower_bound_ and extent_ == other.extent_; }
 
-    ::yampi::address const& lower_bound() const { return lower_bound_; }
-    ::yampi::address const& upper_bound() const { return lower_bound_ + extent_; }
-    ::yampi::address const& extent() const { return extent_; }
+    Count const& lower_bound() const { return lower_bound_; }
+    void lower_bound(Count const lb) { lower_bound_ = lb; }
+
+    Count const& upper_bound() const { return lower_bound_ + extent_; }
+    void upper_bound(Count const ub) { extent_ = ub - lower_bound_; }
+
+    Count const& extent() const { return extent_; }
+    void extent(Count const ex) { extent_ = ex; }
 
     void swap(::yampi::bounds& other)
-      BOOST_NOEXCEPT_IF(
-        ::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
+      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<Count>::value)
     {
       using std::swap;
       swap(lower_bound_, other.lower_bound_);
@@ -44,6 +50,10 @@ namespace yampi
   inline void swap(::yampi::bounds& lhs, ::yampi::bounds& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
+
+  template <typename Count>
+  inline ::yampi::bounds<Count> make_bounds(Count const lower_bound, Count const extent)
+  { return ::yampi::bounds<Count>(lower_bound, extent); }
 }
 
 
