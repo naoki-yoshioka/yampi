@@ -133,14 +133,24 @@ namespace yampi
       std::string const& key, std::string const& value,
       ::yampi::environment const& environment) const
     {
+# if MPI_VERSION >= 3
       int const error_code = MPI_Info_set(mpi_info_, key.c_str(), value.c_str());
+# else
+      int const error_code
+        = MPI_Info_set(
+            mpi_info_, const_cast<char*>(key.c_str()), const_cast<char*>(value.c_str()));
+# endif
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::insert", environment);
     }
 
     void erase(std::string const& key, ::yampi::environment const& environment) const
     {
+# if MPI_VERSION >= 3
       int const error_code = MPI_Info_delete(mpi_info_, key.c_str());
+# else
+      int const error_code = MPI_Info_delete(mpi_info_, const_cast<char*>(key.c_str()));
+# endif
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::erase", environment);
     }
@@ -150,10 +160,17 @@ namespace yampi
     {
       int value_length;
       int flag;
+# if MPI_VERSION >= 3
       int error_code
         = MPI_Info_get_valuelen(
             mpi_info_, key.c_str(),
             YAMPI_addressof(value_length), YAMPI_addressof(flag));
+# else
+      int error_code
+        = MPI_Info_get_valuelen(
+            mpi_info_, const_cast<char*>(key.c_str()),
+            YAMPI_addressof(value_length), YAMPI_addressof(flag));
+# endif
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::get", environment);
 
@@ -161,10 +178,17 @@ namespace yampi
         return boost::none;
 
       std::string result(value_length, ' ');
+# if MPI_VERSION >= 3
       error_code
         = MPI_Info_get(
             mpi_info_, key.c_str(),
             value_length, const_cast<char*>(result.c_str()), YAMPI_addressof(flag));
+# else
+      error_code
+        = MPI_Info_get(
+            mpi_info_, const_cast<char*>(key.c_str()),
+            value_length, const_cast<char*>(result.c_str()), YAMPI_addressof(flag));
+# endif
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::get", environment);
 

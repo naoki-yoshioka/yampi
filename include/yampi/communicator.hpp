@@ -301,6 +301,7 @@ namespace yampi
       group.reset(mpi_group, environment);
     }
 
+# if MPI_VERSION >= 3
     void set_information(
       ::yampi::information const& information,
       ::yampi::environment const& environment) const
@@ -321,6 +322,7 @@ namespace yampi
           error_code, "yampi::communicator::get_information", environment);
       information.reset(mpi_info, environment);
     }
+# endif
 
     MPI_Comm const& mpi_comm() const { return mpi_comm_; }
     void mpi_comm(MPI_Comm const& comm) { mpi_comm_ = comm; }
