@@ -36,87 +36,95 @@ namespace yampi
   {
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> none_of(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       bool result
         = std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype bool_datatype(::yampi::bool_datatype_t());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
-          ::yampi::binary_operation(::yampi::logical_and_t()));
+          ::yampi::make_buffer(result, bool_datatype), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::logical_and_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
-        ::yampi::binary_operation(::yampi::logical_and_t()));
+        ::yampi::make_buffer(result, bool_datatype),
+        ::yampi::binary_operation(::yampi::logical_and_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline bool none_of(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
         ::yampi::make_buffer(
-          std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
-        ::yampi::binary_operation(::yampi::logical_and_t()));
+          std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate),
+          ::yampi::datatype(::yampi::bool_datatype_t())),
+        ::yampi::binary_operation(::yampi::logical_and_t()),
+        communicator, environment);
     }
 # if MPI_VERSION >= 3
 
 
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> none_of(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       bool result
         = std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype bool_datatype(::yampi::bool_datatype_t());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
           request,
-          ::yampi::binary_operation(::yampi::logical_and_t()));
+          ::yampi::make_buffer(result, bool_datatype), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::logical_and_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
         request,
-        ::yampi::binary_operation(::yampi::logical_and_t()));
+        ::yampi::make_buffer(result, bool_datatype),
+        ::yampi::binary_operation(::yampi::logical_and_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline bool none_of(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
-        ::yampi::make_buffer(
-          std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
         request,
-        ::yampi::binary_operation(::yampi::logical_and_t()));
+        ::yampi::make_buffer(
+          std::none_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate),
+          ::yampi::datatype(::yampi::bool_datatype_t())),
+        ::yampi::binary_operation(::yampi::logical_and_t()),
+        communicator, environment);
     }
 # endif
   }

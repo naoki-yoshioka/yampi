@@ -54,9 +54,10 @@ namespace yampi
   // TODO: implement MPI_Alltoallv, MPI_Alltoallw
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue>& receive_buffer)
+    ::yampi::buffer<ReceiveValue>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Alltoall(
@@ -71,9 +72,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue> const& receive_buffer)
+    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Alltoall(
@@ -90,10 +92,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -111,10 +114,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Ialltoall(
@@ -132,9 +136,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue>& receive_buffer)
+    ::yampi::buffer<ReceiveValue>& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Neighbor_alltoall(
@@ -149,9 +154,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue> const& receive_buffer)
+    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Neighbor_alltoall(
@@ -167,10 +173,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -188,10 +195,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Ineighor_alltoall(

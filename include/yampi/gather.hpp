@@ -53,8 +53,8 @@ namespace yampi
   // TODO: implement MPI_Gatherv
   class gather
   {
-    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
+    ::yampi::communicator const& communicator_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -71,9 +71,9 @@ namespace yampi
 # endif
 
     gather(
-      ::yampi::communicator const& communicator, ::yampi::rank const root)
+      ::yampi::rank const root, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_OR_NOTHROW
-      : communicator_(communicator), root_(root)
+      : root_(root), communicator_(communicator)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
@@ -87,9 +87,9 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
-      ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ContiguousIterator const first) const
+      ContiguousIterator const first,
+      ::yampi::environment const& environment) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -110,9 +110,9 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     void call(
-      ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue>& receive_buffer) const
+      ::yampi::buffer<ReceiveValue>& receive_buffer,
+      ::yampi::environment const& environment) const
     {
       int const error_code
         = MPI_Gather(
@@ -127,9 +127,9 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     void call(
-      ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer) const
+      ::yampi::buffer<ReceiveValue> const& receive_buffer,
+      ::yampi::environment const& environment) const
     {
       int const error_code
         = MPI_Gather(
@@ -144,24 +144,24 @@ namespace yampi
 
     template <typename SendValue>
     void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer) const
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
 
       SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null));
+      call(send_buffer, YAMPI_addressof(null), environment);
     }
 # if MPI_VERSION >= 3
 
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
-      ::yampi::environment const& environment,
+      ::yampi::request& request,
       ::yampi::buffer<SendValue> const& send_buffer,
       ContiguousIterator const first,
-      ::yampi::request& request) const
+      ::yampi::environment const& environment) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -185,10 +185,10 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     void call(
-      ::yampi::environment const& environment,
+      ::yampi::request& request,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::request& request) const
+      ::yampi::environment const& environment) const
     {
       MPI_Request mpi_request;
       int const error_code
@@ -206,10 +206,10 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     void call(
-      ::yampi::environment const& environment,
+      ::yampi::request& request,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::request& request) const
+      ::yampi::environment const& environment) const
     {
       MPI_Request mpi_request;
       int const error_code
@@ -227,15 +227,15 @@ namespace yampi
 
     template <typename SendValue>
     void call(
-      ::yampi::environment const& environment,
+      ::yampi::request& request,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::request& request) const
+      ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
 
       SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null), request);
+      call(request, send_buffer, YAMPI_addressof(null), environment);
     }
 # endif
   };

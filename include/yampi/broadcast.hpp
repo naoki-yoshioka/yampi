@@ -36,8 +36,8 @@ namespace yampi
 {
   class broadcast
   {
-    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
+    ::yampi::communicator const& communicator_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -54,9 +54,9 @@ namespace yampi
 # endif
 
     broadcast(
-      ::yampi::communicator const& communicator, ::yampi::rank const root)
+      ::yampi::rank const root, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_OR_NOTHROW
-      : communicator_(communicator), root_(root)
+      : root_(root), communicator_(communicator)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
@@ -69,7 +69,7 @@ namespace yampi
 
 
     template <typename Value>
-    void call(::yampi::environment const& environment, ::yampi::buffer<Value>& buffer) const
+    void call(::yampi::buffer<Value>& buffer, ::yampi::environment const& environment) const
     {
       int const error_code
         = MPI_Bcast(
@@ -80,7 +80,7 @@ namespace yampi
     }
 
     template <typename Value>
-    void call(::yampi::environment const& environment, ::yampi::buffer<Value> const& buffer) const
+    void call(::yampi::buffer<Value> const& buffer, ::yampi::environment const& environment) const
     {
       int const error_code
         = MPI_Bcast(
@@ -93,8 +93,8 @@ namespace yampi
 
     template <typename Value>
     void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<Value>& buffer, ::yampi::request& request) const
+      ::yampi::request& request, ::yampi::buffer<Value>& buffer,
+      ::yampi::environment const& environment) const
     {
       MPI_Request mpi_request;
       int const error_code
@@ -109,8 +109,8 @@ namespace yampi
 
     template <typename Value>
     void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer, ::yampi::request& request) const
+      ::yampi::request& request, ::yampi::buffer<Value> const& buffer,
+      ::yampi::environment const& environment) const
     {
       MPI_Request mpi_request;
       int const error_code

@@ -20,6 +20,8 @@
 # include <yampi/reduce.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
+# include <yampi/datatype.hpp>
+# include <yampi/basic_datatype_tag_of.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -39,43 +41,46 @@ namespace yampi
     inline
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count_if(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
         = std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype count_datatype(::yampi::basic_datatype_tag_of<count_type>::call());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
-          ::yampi::binary_operation(::yampi::plus_t()));
+          ::yampi::make_buffer(result, count_datatype), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::plus_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
-        ::yampi::binary_operation(::yampi::plus_t()));
+        ::yampi::make_buffer(result, count_datatype),
+        ::yampi::binary_operation(::yampi::plus_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline typename std::iterator_traits<Value const*>::difference_type
     count_if(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
         ::yampi::make_buffer(
-          std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate)),
-        ::yampi::binary_operation(::yampi::plus_t()));
+          std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate),
+          ::yampi::datatype(::yampi::basic_datatype_tag_of<count_type>::call())),
+        ::yampi::binary_operation(::yampi::plus_t()),
+        communicator, environment);
     }
 # if MPI_VERSION >= 3
 
@@ -84,48 +89,51 @@ namespace yampi
     inline
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count_if(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
         = std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype count_datatype(::yampi::basic_datatype_tag_of<count_type>::call());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
           request,
-          ::yampi::binary_operation(::yampi::plus_t()));
+          ::yampi::make_buffer(result, count_datatype), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::plus_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
         request,
-        ::yampi::binary_operation(::yampi::plus_t()));
+        ::yampi::make_buffer(result, count_datatype),
+        ::yampi::binary_operation(::yampi::plus_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline typename std::iterator_traits<Value const*>::difference_type
     count_if(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
-        ::yampi::make_buffer(
-          std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate)),
         request,
-        ::yampi::binary_operation(::yampi::plus_t()));
+        ::yampi::make_buffer(
+          std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate),
+          ::yampi::datatype(::yampi::basic_datatype_tag_of<count_type>::call())),
+        ::yampi::binary_operation(::yampi::plus_t()),
+        communicator, environment);
     }
 # endif
   }

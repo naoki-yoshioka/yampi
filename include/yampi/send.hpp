@@ -53,9 +53,10 @@ namespace yampi
 {
   template <typename Value>
   inline void send(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Send(
@@ -67,9 +68,11 @@ namespace yampi
 
   template <typename Value>
   inline void send(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-    ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -95,17 +98,20 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
 
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-        ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request,
+        ::yampi::buffer<Value> const& buffer,
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, request, destination, tag); }
     };
 
@@ -115,9 +121,10 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         int const error_code
           = MPI_Bsend(
@@ -130,9 +137,11 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-        ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request,
+        ::yampi::buffer<Value> const& buffer,
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
         int const error_code
@@ -153,9 +162,10 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         int const error_code
           = MPI_Ssend(
@@ -168,9 +178,11 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-        ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request,
+        ::yampi::buffer<Value> const& buffer,
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
         int const error_code
@@ -191,9 +203,10 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         int const error_code
           = MPI_Rsend(
@@ -206,9 +219,11 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-        ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-        ::yampi::rank const destination, ::yampi::tag const tag)
+        ::yampi::request& request,
+        ::yampi::buffer<Value> const& buffer,
+        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator const& communicator,
+        ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
         int const error_code
@@ -228,9 +243,10 @@ namespace yampi
   template <typename CommunicationMode, typename Value>
   inline void send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(
@@ -241,9 +257,11 @@ namespace yampi
   template <typename CommunicationMode, typename Value>
   inline void send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-    ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-    ::yampi::rank const destination, ::yampi::tag const tag)
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(

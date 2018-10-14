@@ -39,7 +39,8 @@ namespace yampi
   }
 # if MPI_VERSION >= 3
 
-  inline void barrier(::yampi::communicator const& communicator, ::yampi::environment const& environment, ::yampi::request& request)
+  inline void barrier(
+    ::yampi::request& request, ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code

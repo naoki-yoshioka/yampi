@@ -32,11 +32,11 @@ namespace yampi
 
     return static_cast< ::yampi::rank >(
       ::yampi::all_reduce(
-        ::yampi::communicator(::yampi::world_communicator_t()),
-        environment,
         ::yampi::make_buffer(
           io_process.mpi_rank(), ::yampi::datatype(::yampi::int_datatype_t())),
-        ::yampi::binary_operation(::yampi::minimum_t())));
+        ::yampi::binary_operation(::yampi::minimum_t()),
+        ::yampi::communicator(::yampi::world_communicator_t()),
+        environment));
   }
 }
 
