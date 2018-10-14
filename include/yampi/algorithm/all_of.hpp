@@ -19,6 +19,7 @@
 # include <yampi/reduce.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
+# include <yampi/datatype.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -47,16 +48,17 @@ namespace yampi
 
       ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype bool_datatype(::yampi::bool_datatype_t());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result, bool_datatype), YAMPI_addressof(result),
           ::yampi::binary_operation(::yampi::logical_and_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        ::yampi::make_buffer(result),
+        ::yampi::make_buffer(result, bool_datatype),
         ::yampi::binary_operation(::yampi::logical_and_t()), environment);
       return boost::none;
     }
@@ -70,7 +72,8 @@ namespace yampi
     {
       return ::yampi::all_reduce(
         ::yampi::make_buffer(
-          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
+          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate),
+          ::yampi::datatype(::yampi::bool_datatype_t())),
         ::yampi::binary_operation(::yampi::logical_and_t()),
         communicator, environment);
     }
@@ -91,18 +94,19 @@ namespace yampi
 
       ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype bool_datatype(::yampi::bool_datatype_t());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
           request,
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result, bool_datatype), YAMPI_addressof(result),
           ::yampi::binary_operation(::yampi::logical_and_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
         request,
-        ::yampi::make_buffer(result),
+        ::yampi::make_buffer(result, bool_datatype),
         ::yampi::binary_operation(::yampi::logical_and_t()), environment);
       return boost::none;
     }
@@ -118,7 +122,8 @@ namespace yampi
       return ::yampi::all_reduce(
         request,
         ::yampi::make_buffer(
-          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
+          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate),
+          ::yampi::datatype(::yampi::bool_datatype_t())),
         ::yampi::binary_operation(::yampi::logical_and_t()),
         communicator, environment);
     }

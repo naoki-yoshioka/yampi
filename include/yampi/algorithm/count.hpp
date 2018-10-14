@@ -20,6 +20,8 @@
 # include <yampi/reduce.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
+# include <yampi/datatype.hpp>
+# include <yampi/basic_datatype_tag_of.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -51,16 +53,17 @@ namespace yampi
 
       ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype count_datatype(::yampi::basic_datatype_tag_of<count_type>::call());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result, count_datatype), YAMPI_addressof(result),
           ::yampi::binary_operation(::yampi::plus_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        ::yampi::make_buffer(result),
+        ::yampi::make_buffer(result, count_datatype),
         ::yampi::binary_operation(::yampi::plus_t()), environment);
       return boost::none;
     }
@@ -73,7 +76,8 @@ namespace yampi
     {
       return ::yampi::all_reduce(
         ::yampi::make_buffer(
-          std::count(buffer.data(), buffer.data() + buffer.count(), value)),
+          std::count(buffer.data(), buffer.data() + buffer.count(), value),
+          ::yampi::datatype(::yampi::basic_datatype_tag_of<count_type>::call())),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
@@ -97,18 +101,19 @@ namespace yampi
 
       ::yampi::reduce const reducer(root, communicator);
 
+      ::yampi::datatype count_datatype(::yampi::basic_datatype_tag_of<count_type>::call());
       if (communicator.rank(environment) == root)
       {
         reducer.call(
           request,
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result, count_datatype), YAMPI_addressof(result),
           ::yampi::binary_operation(::yampi::plus_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
         request,
-        ::yampi::make_buffer(result),
+        ::yampi::make_buffer(result, count_datatype),
         ::yampi::binary_operation(::yampi::plus_t()), environment);
       return boost::none;
     }
@@ -123,7 +128,8 @@ namespace yampi
       return ::yampi::all_reduce(
         request,
         ::yampi::make_buffer(
-          std::count(buffer.data(), buffer.data() + buffer.count(), value)),
+          std::count(buffer.data(), buffer.data() + buffer.count(), value),
+          ::yampi::datatype(::yampi::basic_datatype_tag_of<count_type>::call())),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
