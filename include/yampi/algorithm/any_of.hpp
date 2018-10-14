@@ -36,87 +36,91 @@ namespace yampi
   {
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> any_of(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       bool result
         = std::any_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
-          ::yampi::binary_operation(::yampi::logical_or_t()));
+          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::logical_or_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
-        ::yampi::binary_operation(::yampi::logical_or_t()));
+        ::yampi::make_buffer(result),
+        ::yampi::binary_operation(::yampi::logical_or_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline bool any_of(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
       ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate)
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
         ::yampi::make_buffer(
           std::any_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
-        ::yampi::binary_operation(::yampi::logical_or_t()));
+        ::yampi::binary_operation(::yampi::logical_or_t()),
+        communicator, environment);
     }
 # if MPI_VERSION >= 3
 
 
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> any_of(
-      ::yampi:communicator const& communicator, ::yampi::rank const root,
-      ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      ::yampi::rank const root,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       bool result
         = std::any_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
 
-      ::yampi::reduce const reducer(communicator, root);
+      ::yampi::reduce const reducer(root, communicator);
 
       if (communicator.rank(environment) == root)
       {
         reducer.call(
-          environment, ::yampi::make_buffer(result), YAMPI_addressof(result),
           request,
-          ::yampi::binary_operation(::yampi::logical_or_t()));
+          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::binary_operation(::yampi::logical_or_t()), environment);
         return boost::make_optional(result);
       }
 
       reducer.call(
-        environment, ::yampi::make_buffer(result),
         request,
-        ::yampi::binary_operation(::yampi::logical_or_t()));
+        ::yampi::make_buffer(result),
+        ::yampi::binary_operation(::yampi::logical_or_t()), environment);
       return boost::none;
     }
 
     template <typename Value, typename UnaryPredicate>
     inline bool any_of(
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment,
-      ::yampi::buffer<Value> const& buffer,
       ::yampi::request& request,
-      UnaryPredicate unary_predicate)
+      ::yampi::buffer<Value> const& buffer,
+      UnaryPredicate unary_predicate,
+      ::yampi:communicator const& communicator,
+      ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        communicator, environment,
+        request,
         ::yampi::make_buffer(
           std::any_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
-        request,
-        ::yampi::binary_operation(::yampi::logical_or_t()));
+        ::yampi::binary_operation(::yampi::logical_or_t()),
+        communicator, environment);
     }
 # endif
   }

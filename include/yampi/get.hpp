@@ -17,10 +17,11 @@ namespace yampi
 {
   template <typename Value, typename ContiguousIterator>
   inline void get(
-    ::yampi::window<Value> const& window, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& origin_buffer,
     ::yampi::rank const target, int const target_index,
-    ::yampi::datatype const& target_datatype, int const target_count)
+    ::yampi::datatype const& target_datatype, int const target_count,
+    ::yampi::window<Value> const& window,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Put(
@@ -34,25 +35,27 @@ namespace yampi
 
   template <typename Value, typename ContiguousIterator>
   inline void get(
-    ::yampi::window<Value> const& window, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& origin_buffer,
     ::yampi::rank const target, int const target_index,
-    ::yampi::datatype const& target_datatype)
+    ::yampi::datatype const& target_datatype,
+    ::yampi::window<Value> const& window,
+    ::yampi::environment const& environment)
   {
     ::yampi::get(
-      window, environment,
-      origin_buffer, target, target_index, target_datatype, origin_buffer.count());
+      origin_buffer, target, target_index, target_datatype, origin_buffer.count(),
+      window, environment);
   }
 
   template <typename Value, typename ContiguousIterator>
   inline void get(
-    ::yampi::window<Value> const& window, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& origin_buffer,
-    ::yampi::rank const target, int const target_index)
+    ::yampi::rank const target, int const target_index,
+    ::yampi::window<Value> const& window,
+    ::yampi::environment const& environment)
   {
     ::yampi::get(
-      window, environment,
-      origin_buffer, target, target_index, origin_buffer.datatype(), origin_buffer.count());
+      origin_buffer, target, target_index, origin_buffer.datatype(), origin_buffer.count(),
+      window, environment);
   }
 }
 

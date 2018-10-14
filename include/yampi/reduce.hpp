@@ -53,8 +53,8 @@ namespace yampi
 {
   class reduce
   {
-    ::yampi::communicator const& communicator_;
     ::yampi::rank root_;
+    ::yampi::communicator const& communicator_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -71,9 +71,9 @@ namespace yampi
 # endif
 
     reduce(
-      ::yampi::communicator const& communicator, ::yampi::rank const root)
+      ::yampi::rank const root, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_OR_NOTHROW
-      : communicator_(communicator), root_(root)
+      : root_(root), communicator_(communicator)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
@@ -87,10 +87,10 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
-      ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
       ContiguousIterator const first,
-      ::yampi::binary_operation const& operation) const
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -110,26 +110,26 @@ namespace yampi
 
     template <typename SendValue>
     void call(
-      ::yampi::environment const& environment,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::binary_operation const& operation) const
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
 
       SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null), operation);
+      call(send_buffer, YAMPI_addressof(null), operation, environment);
     }
 # if MPI_VERSION >= 3
 
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
-      ::yampi::environment const& environment,
+      ::yampi::request& request,
       ::yampi::buffer<SendValue> const& send_buffer,
       ContiguousIterator const first,
-      ::yampi::request& request,
-      ::yampi::binary_operation const& operation) const
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
     {
       static_assert(
         (YAMPI_is_same<
@@ -153,16 +153,16 @@ namespace yampi
 
     template <typename SendValue>
     void call(
-      ::yampi::environment const& environment,
-      ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::request& request,
-      ::yampi::binary_operation const& operation) const
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
         throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
 
       SendValue null;
-      call(environment, send_buffer, YAMPI_addressof(null), request, operation);
+      call(request, send_buffer, YAMPI_addressof(null), operation, environment);
     }
 # endif
   };

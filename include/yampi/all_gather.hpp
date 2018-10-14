@@ -54,9 +54,10 @@ namespace yampi
   // TODO: implement MPI_Allgatherv
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ContiguousIterator const first)
+    ContiguousIterator const first,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -77,9 +78,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue>& receive_buffer)
+    ::yampi::buffer<ReceiveValue>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Allgather(
@@ -94,9 +96,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue> const& receive_buffer)
+    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Allgather(
@@ -113,10 +116,11 @@ namespace yampi
 
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
-    ::yampi::request& request)
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -140,10 +144,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -161,10 +166,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -184,9 +190,10 @@ namespace yampi
   // Neighbor all_gather
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ContiguousIterator const first)
+    ContiguousIterator const first,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -207,9 +214,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue>& receive_buffer)
+    ::yampi::buffer<ReceiveValue>& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Neighbor_allgather(
@@ -224,9 +232,10 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue> const& receive_buffer)
+    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Allgather(
@@ -242,10 +251,11 @@ namespace yampi
 
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
-    ::yampi::request& request)
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -269,10 +279,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -290,10 +301,11 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline void all_gather(
-    ::yampi::topology const& topology, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
-    ::yampi::request& request)
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code

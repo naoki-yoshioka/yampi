@@ -54,10 +54,11 @@ namespace yampi
 {
   template <typename SendValue, typename ContiguousIterator>
   inline void all_reduce(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
-    ::yampi::binary_operation const& operation)
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -77,14 +78,15 @@ namespace yampi
 
   template <typename SendValue>
   inline SendValue all_reduce(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::binary_operation const& operation)
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     assert(send_buffer.count() == 1);
 
     SendValue result;
-    ::yampi::all_reduce(communicator, environment, send_buffer, &result, operation);
+    ::yampi::all_reduce(send_buffer, &result, operation, communicator, environment);
     return result;
   }
 # if MPI_VERSION >= 3
@@ -92,11 +94,12 @@ namespace yampi
 
   template <typename SendValue, typename ContiguousIterator>
   inline void all_reduce(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::request& request,
     ::yampi::buffer<SendValue> const& send_buffer,
     ContiguousIterator const first,
-    ::yampi::request& request,
-    ::yampi::binary_operation const& operation)
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -119,15 +122,16 @@ namespace yampi
 
   template <typename SendValue>
   inline SendValue all_reduce(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-    ::yampi::buffer<SendValue> const& send_buffer,
     ::yampi::request& request,
-    ::yampi::binary_operation const& operation)
+    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     assert(send_buffer.count() == 1);
 
     SendValue result;
-    ::yampi::all_reduce(communicator, environment, send_buffer, &result, request, operation);
+    ::yampi::all_reduce(request, send_buffer, &result, operation, communicator, environment);
     return result;
   }
 # endif

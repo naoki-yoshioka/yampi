@@ -32,10 +32,10 @@ namespace yampi
   // Blocking receive
   template <typename Value>
   inline ::yampi::status receive(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Status stat;
     int const error_code
@@ -50,10 +50,25 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status receive(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { return ::yampi::receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline ::yampi::status receive(
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { return ::yampi::receive(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline ::yampi::status receive(
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Status stat;
     int const error_code
@@ -66,14 +81,29 @@ namespace yampi
     return ::yampi::status(stat);
   }
 
+  template <typename Value>
+  inline ::yampi::status receive(
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { return ::yampi::receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline ::yampi::status receive(
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { return ::yampi::receive(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+
   // Blocking receive (ignoring status)
   template <typename Value>
   inline void receive(
     ::yampi::ignore_status_t const,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Recv(
@@ -82,14 +112,31 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::receive", environment);
   }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(ignore_status, buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(ignore_status, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 
   template <typename Value>
   inline void receive(
     ::yampi::ignore_status_t const,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Recv(
@@ -99,13 +146,31 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::receive", environment);
   }
 
+  template <typename Value>
+  inline void receive(
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(ignore_status, buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::ignore_status_t const ignore_status,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(ignore_status, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+
   // Nonblocking receive
   template <typename Value>
   inline void receive(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-    ::yampi::buffer<Value>& buffer, ::yampi::request& request,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -121,10 +186,28 @@ namespace yampi
 
   template <typename Value>
   inline void receive(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment,
-    ::yampi::buffer<Value> const& buffer, ::yampi::request& request,
-    ::yampi::rank const source = ::yampi::any_source(),
-    ::yampi::tag const tag = ::yampi::any_tag())
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(request, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -137,6 +220,23 @@ namespace yampi
 
     request.reset(mpi_request, environment);
   }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::rank const source,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
+
+  template <typename Value>
+  inline void receive(
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  { ::yampi::receive(request, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 }
 
 
