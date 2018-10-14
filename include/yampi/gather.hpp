@@ -71,7 +71,7 @@ namespace yampi
 # endif
 
     gather(
-      ::yampi::rank const root, ::yampi::communicator const& communicator0
+      ::yampi::rank const root, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_OR_NOTHROW
       : root_(root), communicator_(communicator)
     { }

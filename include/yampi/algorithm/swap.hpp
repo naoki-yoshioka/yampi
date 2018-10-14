@@ -173,7 +173,7 @@ namespace yampi
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
-      ::yampi::algrithm::swap(
+      ::yampi::algorithm::swap(
         ignore_status, send_buffer, receive_buffer, swap_rank, ::yampi::tag(0), communicator, environment);
     }
 

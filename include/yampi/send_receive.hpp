@@ -667,7 +667,7 @@ namespace yampi
     ::yampi::send_receive(
       ignore_status, direction, displacement,
       send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
-      cartesian, communicator);
+      cartesian, environment);
   }
 
 
