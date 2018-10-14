@@ -167,7 +167,7 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::request& lhs, ::yampi::request& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::request >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

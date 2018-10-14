@@ -55,7 +55,8 @@ namespace yampi
   { lhs.swap(rhs); }
 
   template <typename Count>
-  inline ::yampi::bounds<Count> make_bounds(Count const lower_bound, Count const extent)
+  inline ::yampi::bounds<Count> make_bounds(
+    Count const lower_bound, Count const extent)
   { return ::yampi::bounds<Count>(lower_bound, extent); }
 }
 

@@ -80,7 +80,7 @@ namespace yampi
   { return not (rhs < lhs); }
 
   inline void swap(::yampi::version_t& lhs, ::yampi::version_t& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::version_t >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 

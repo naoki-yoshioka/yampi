@@ -244,7 +244,7 @@ namespace yampi
 
   template <typename Value>
   inline void swap(::yampi::window<Value>& lhs, ::yampi::window<Value>& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::window<Value> >::value ))
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

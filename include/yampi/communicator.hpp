@@ -336,7 +336,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::communicator& lhs, ::yampi::communicator& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 

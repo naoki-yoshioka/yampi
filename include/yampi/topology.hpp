@@ -14,7 +14,6 @@
 
 # include <yampi/communicator.hpp>
 # include <yampi/environment.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof

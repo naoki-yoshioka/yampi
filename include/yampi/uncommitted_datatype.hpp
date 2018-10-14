@@ -109,7 +109,9 @@ namespace yampi
     int const& length() const { return length_; }
     ::yampi::address const& stride_bytes() const { return stride_bytes_; }
 
-    void swap(heterogeneous_strided_block& other) BOOST_NOEXCEPT_OR_NOTHROW
+    void swap(heterogeneous_strided_block& other)
+      BOOST_NOEXCEPT_IF(
+        ::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
     {
       using std::swap;
       swap(length_, other.length_);
@@ -133,7 +135,7 @@ namespace yampi
   inline void swap(
     ::yampi::heterogeneous_strided_block& lhs,
     ::yampi::heterogeneous_strided_block& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 
@@ -635,8 +637,7 @@ namespace yampi
 
   inline void swap(
     ::yampi::uncommitted_datatype& lhs, ::yampi::uncommitted_datatype& rhs)
-    BOOST_NOEXCEPT_IF(
-      ::yampi::utility::is_nothrow_swappable< ::yampi::uncommitted_datatype >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

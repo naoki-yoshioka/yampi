@@ -131,7 +131,7 @@ namespace yampi
   { lhs -= rhs; return lhs; }
 
   inline void swap(::yampi::address& lhs, ::yampi::address& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

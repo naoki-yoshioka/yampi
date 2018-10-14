@@ -209,7 +209,7 @@ namespace yampi
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::binary_operation& lhs, ::yampi::binary_operation& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::binary_operation >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 

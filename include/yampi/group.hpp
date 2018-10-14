@@ -377,7 +377,7 @@ namespace yampi
   };
 
   inline void swap(::yampi::group& lhs, ::yampi::group& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::group >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 

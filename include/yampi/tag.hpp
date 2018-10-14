@@ -213,7 +213,7 @@ namespace yampi
   { return rhs*lhs; }
 
   inline void swap(::yampi::tag& lhs, ::yampi::tag& rhs)
-    BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::tag >::value)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 
