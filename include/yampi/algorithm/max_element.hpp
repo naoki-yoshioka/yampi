@@ -31,8 +31,8 @@
 # include <yampi/datatype.hpp>
 # include <yampi/exits_basic_datatype_tag.hpp>
 # include <yampi/basic_datatype_tag_of.hpp>
+# include <yampi/message_envelope.hpp>
 # include <yampi/algorithm/copy.hpp>
-# include <yampi/algorithm/ranked_buffer.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_enable_if std::enable_if
@@ -87,9 +87,10 @@ namespace yampi
       if (result_rank != root)
         ::yampi::copy(
           ::yampi::ignore_status(),
-          ::yampi::make_ranked_buffer(index, int_datatype, result_rank),
-          ::yampi::make_ranked_buffer(index, int_datatype, root_rank),
-          communicator, environment);
+          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::message_envelope(result_rank, root, communicator),
+          environment);
 
       if (present_rank == root)
         return boost::make_optional(std::make_pair(root, index));
@@ -130,9 +131,10 @@ namespace yampi
       if (result_rank != root)
         ::yampi::copy(
           ::yampi::ignore_status(),
-          ::yampi::make_ranked_buffer(index, int_datatype, result_rank),
-          ::yampi::make_ranked_buffer(index, int_datatype, root_rank),
-          communicator, environment);
+          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::message_envelope(result_rank, root, communicator),
+          environment);
 
       if (present_rank == root)
         return boost::make_optional(std::make_pair(root, index));
