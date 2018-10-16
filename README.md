@@ -10,6 +10,7 @@
 
 #include <yampi/environment.hpp>
 #include <yampi/communicator.hpp>
+#include <yampi/rank_io.hpp>
 
 int main(int argc, char* argv[])
 {
