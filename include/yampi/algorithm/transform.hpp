@@ -17,7 +17,8 @@
 # include <yampi/receive.hpp>
 # include <yampi/allocator.hpp>
 # include <yampi/environment.hpp>
-# include <yampi/algorithm/ranked_buffer.hpp>
+# include <yampi/buffer.hpp>
+# include <yampi/message_envelope.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
@@ -37,700 +38,448 @@ namespace yampi
 {
   namespace algorithm
   {
-    template <typename Value, typename Allocator, typename UnaryFunction>
+    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return boost::none;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer.buffer(), send_buffer.rank(), tag, communicator, environment));
-      else if (present_rank == send_buffer.rank())
+            receive_buffer, present_rank, message_envelope.tag(),
+            message_envelope.communicator(), environment));
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
 
       return boost::none;
     }
 
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename Value, typename UnaryFunction>
     inline boost::optional< ::yampi::status >
     transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction>
+    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return boost::none;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer.buffer(), send_buffer.rank(), tag, communicator, environment));
-      else if (present_rank == send_buffer.rank())
+            receive_buffer, present_rank, message_envelope.tag(),
+            message_envelope.communicator(), environment));
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
 
       return boost::none;
     }
 
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename Value, typename UnaryFunction>
     inline boost::optional< ::yampi::status >
     transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     transform(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return boost::none;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer.buffer(), send_buffer.rank(), tag, communicator, environment));
-      else if (present_rank == send_buffer.rank())
+            receive_buffer, present_rank, message_envelope.tag(),
+            message_envelope.communicator(), environment));
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
 
       return boost::none;
     }
 
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename CommunicationMode, typename Value, typename UnaryFunction>
     inline boost::optional< ::yampi::status >
     transform(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       return ::yampi::algorithm::transform(
         YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     transform(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return boost::none;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer.buffer(), send_buffer.rank(), tag, communicator, environment));
-      else if (present_rank == send_buffer.rank())
+            receive_buffer, present_rank, message_envelope.tag(),
+            message_envelope.communicator(), environment));
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
 
       return boost::none;
     }
 
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename CommunicationMode, typename Value, typename UnaryFunction>
     inline boost::optional< ::yampi::status >
     transform(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       return ::yampi::algorithm::transform(
         YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
-    inline boost::optional< ::yampi::status >
-    transform(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      return ::yampi::algorithm::transform(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
 
     // ignoring status
-    template <typename Value, typename Allocator, typename UnaryFunction>
+    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer.buffer(), send_buffer.rank(), tag,
-          communicator, environment);
-      else if (present_rank == send_buffer.rank())
+          receive_buffer, present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
     }
 
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename Value, typename UnaryFunction>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       ::yampi::algorithm::transform(
         ignore_status,
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction>
+    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer.buffer(), send_buffer.rank(), tag,
-          communicator, environment);
-      else if (present_rank == send_buffer.rank())
+          receive_buffer, present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
     }
 
-    template <typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename Value, typename UnaryFunction>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       ::yampi::algorithm::transform(
         ignore_status,
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer.buffer(), send_buffer.rank(), tag,
-          communicator, environment);
-      else if (present_rank == send_buffer.rank())
+          receive_buffer, present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
     }
 
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename CommunicationMode, typename Value, typename UnaryFunction>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value>& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       ::yampi::algorithm::transform(
         ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      ::yampi::tag const tag,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ContiguousIterator const transform_buffer_first,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (send_buffer.rank() == receive_buffer.rank())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
-      ::yampi::rank const present_rank = communicator.rank(environment);
+      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
 
-      if (present_rank == receive_buffer.rank())
+      if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer.buffer(), send_buffer.rank(), tag,
-          communicator, environment);
-      else if (present_rank == send_buffer.rank())
+          receive_buffer, present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
+      else if (present_rank == message_envelope.source())
       {
-        transform_buffer.clear();
-        transform_buffer.reserve(send_buffer.count());
         std::transform(
-          send_buffer.data(), send_buffer.data()+send_buffer.count(),
-          std::back_inserter(transform_buffer), unary_function);
+          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          transform_buffer_first, unary_function);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            boost::begin(transform_buffer), boost::end(transform_buffer), send_buffer.datatype()),
-          receive_buffer.rank(), tag,
-          communicator, environment);
+            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            send_buffer.datatype()),
+          present_rank, message_envelope.tag(),
+          message_envelope.communicator(), environment);
       }
     }
 
-    template <typename CommunicationMode, typename Value, typename Allocator, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      std::vector<Value, Allocator>& transform_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, ::yampi::tag(0), unary_function, communicator, environment);
-    }
-
     template <typename CommunicationMode, typename Value, typename UnaryFunction>
     inline void transform(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::buffer<Value> const& receive_buffer,
       UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
+      ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer;
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
       ::yampi::algorithm::transform(
         ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, transform_buffer, tag, unary_function,
-        communicator, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
-    inline void transform(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::algorithm::ranked_buffer<Value> const& send_buffer,
-      ::yampi::algorithm::ranked_buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-    {
-      ::yampi::algorithm::transform(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, ::yampi::tag(0), unary_function, communicator, environment);
+        send_buffer, receive_buffer, unary_function,
+        transform_buffer.begin(), message_envelope, environment);
     }
   }
 }

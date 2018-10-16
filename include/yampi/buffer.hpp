@@ -66,16 +66,45 @@ namespace yampi
   {
     T* data_;
     int count_;
-    ::yampi::datatype const& datatype_;
+    ::yampi::datatype& datatype_;
 
    public:
+    buffer(T& value, ::yampi::datatype& datatype)
+      : data_(YAMPI_addressof(value)), count_(1),
+        datatype_(datatype)
+    { }
+
     buffer(T& value, ::yampi::datatype const& datatype)
-      : data_(YAMPI_addressof(value)), count_(1), datatype_(datatype)
+      : data_(YAMPI_addressof(value)), count_(1),
+        datatype_(const_cast< ::yampi::datatype& >(datatype))
+    { }
+
+    buffer(T const& value, ::yampi::datatype& datatype)
+      : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
+        datatype_(datatype)
     { }
 
     buffer(T const& value, ::yampi::datatype const& datatype)
-      : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1), datatype_(datatype)
+      : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
+        datatype_(const_cast< ::yampi::datatype& >(datatype))
     { }
+
+    template <typename ContiguousIterator>
+    buffer(
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::datatype& datatype)
+      : data_(const_cast<T*>(YAMPI_addressof(*first))),
+        count_(last-first),
+        datatype_(datatype)
+    {
+      static_assert(
+        (YAMPI_is_same<
+           typename YAMPI_remove_cv<
+             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+           T>::value),
+        "T must be tha same to value_type of ContiguousIterator");
+      assert(last >= first);
+    }
 
     template <typename ContiguousIterator>
     buffer(
@@ -83,7 +112,7 @@ namespace yampi
       ::yampi::datatype const& datatype)
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
-        datatype_(datatype)
+        datatype_(const_cast< ::yampi::datatype& >(datatype))
     {
       static_assert(
         (YAMPI_is_same<
@@ -99,19 +128,17 @@ namespace yampi
     int const& count() const { return count_; }
     ::yampi::datatype const& datatype() const { return datatype_; }
 
-    /*
     void swap(buffer& other)
       BOOST_NOEXCEPT_IF(
         ::yampi::utility::is_nothrow_swappable<T*>::value
         and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype const& >::value)
+        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype& >::value)
     {
       using std::swap;
       swap(data_, other.data_);
       swap(count_, other.count_);
       swap(datatype_, other.datatype_);
     }
-    */
   };
 
 
@@ -126,12 +153,10 @@ namespace yampi
   inline bool operator!=(::yampi::buffer<T> const& lhs, ::yampi::buffer<T> const& rhs)
   { return not (lhs == rhs); }
 
-  /*
   template <typename T>
   inline void swap(::yampi::buffer<T>& lhs, ::yampi::buffer<T>& rhs)
-    BOOST_NOEXCEPT_IF(( ::yampi::utility::is_nothrow_swappable< ::yampi::buffer<T> >::value ))
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
-  */
 
 
   template <typename T>
