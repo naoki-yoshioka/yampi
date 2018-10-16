@@ -139,9 +139,13 @@ namespace yampi
   { lhs.swap(rhs); }
 
 
+  class datatype;
+
   class uncommitted_datatype
   {
     MPI_Datatype mpi_datatype_;
+    bool is_committed_;
+    friend class ::yampi::datatype;
 
    public:
 # if MPI_VERSION >= 3
@@ -155,7 +159,7 @@ namespace yampi
 # endif
 
     uncommitted_datatype() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_datatype_(MPI_DATATYPE_NULL)
+      : mpi_datatype_(MPI_DATATYPE_NULL), is_committed_(false)
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
@@ -168,21 +172,22 @@ namespace yampi
     ~uncommitted_datatype() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    explicit uncommitted_datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_datatype_(mpi_datatype)
+    uncommitted_datatype(MPI_Datatype const& mpi_datatype, bool const is_committed)
+      BOOST_NOEXCEPT_OR_NOTHROW
+      : mpi_datatype_(mpi_datatype), is_committed_(is_committed)
     { }
 
     uncommitted_datatype(
       uncommitted_datatype const& old_datatype,
       ::yampi::environment const& environment)
-      : mpi_datatype_(duplicate(old_datatype, environment))
+      : mpi_datatype_(duplicate(old_datatype, environment)), is_committed_(false)
     { }
 
     // MPI_Type_contiguous
     uncommitted_datatype(
       uncommitted_datatype const& base_datatype, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, count, environment))
+      : mpi_datatype_(derive(base_datatype, count, environment)), is_committed_(false)
     { }
 
     // MPI_Type_vector
@@ -190,7 +195,7 @@ namespace yampi
       uncommitted_datatype const& base_datatype,
       ::yampi::strided_block const& block, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, block, count, environment))
+      : mpi_datatype_(derive(base_datatype, block, count, environment)), is_committed_(false)
     { }
 
     // MPI_Type_create_hvector
@@ -198,7 +203,7 @@ namespace yampi
       uncommitted_datatype const& base_datatype,
       ::yampi::heterogeneous_strided_block const& block, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, block, count, environment))
+      : mpi_datatype_(derive(base_datatype, block, count, environment)), is_committed_(false)
     { }
 
     // MPI_Type_indexed, MPI_Type_create_hindexed
@@ -212,7 +217,8 @@ namespace yampi
       : mpi_datatype_(
           derive(
             base_datatype, displacement_first, displacement_last, block_length_first,
-            environment))
+            environment)),
+        is_committed_(false)
     { }
 
     // MPI_Type_create_indexed_block, MPI_Type_create_hindexed_block
@@ -226,7 +232,8 @@ namespace yampi
       : mpi_datatype_(
           derive(
             base_datatype, displacement_first, displacement_last, block_length,
-            environment))
+            environment)),
+        is_committed_(false)
     { }
 
     // MPI_Type_create_struct
@@ -242,7 +249,8 @@ namespace yampi
       : mpi_datatype_(
           derive(
             datatype_first, datatype_last, byte_displacement_first, block_length_first,
-            environment))
+            environment)),
+        is_committed_(false)
     { }
 
     // MPI_Type_create_subarray
@@ -261,14 +269,15 @@ namespace yampi
             array_element_datatype,
             array_size_first, array_size_last,
             array_subsize_first, array_start_index_first,
-            environment))
+            environment)),
+        is_committed_(false)
     { }
 
     uncommitted_datatype(
       uncommitted_datatype const& old_datatype,
       ::yampi::bounds<count_type> const& new_bounds,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(old_datatype, new_bounds, environment))
+      : mpi_datatype_(derive(old_datatype, new_bounds, environment)), is_committed_(false)
     { }
 
    private:

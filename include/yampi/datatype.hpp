@@ -4,6 +4,7 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# include <stdexcept>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
 # else
@@ -126,6 +127,16 @@ namespace yampi
   }
 
 
+  class uncommitted_datatype_has_been_committed_error
+    : public std::logic_error
+  {
+   public:
+    uncommitted_datatype_has_been_committed_error()
+      : std::logic_error("MPI datatype given by uncommitted_datatype has already been committed by MPI_Type_commit")
+    { }
+  };
+
+
   class datatype
   {
     MPI_Datatype mpi_datatype_;
@@ -236,7 +247,7 @@ namespace yampi
 # undef YAMPI_DEFINE_DATATYPE_CONSTRUCTOR
 
     datatype(
-      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::uncommitted_datatype& uncommitted_datatype,
       ::yampi::environment const& environment)
       : mpi_datatype_(commit(uncommitted_datatype, environment))
     { }
@@ -249,14 +260,20 @@ namespace yampi
 
    private:
     MPI_Datatype commit(
-      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::uncommitted_datatype& uncommitted_datatype,
       ::yampi::environment const& environment) const
     {
+      if (uncommitted_datatype.is_committed_)
+        throw ::yampi::uncommitted_datatype_has_been_committed_error();
+
       MPI_Datatype result = uncommitted_datatype.mpi_datatype();
       int const error_code = MPI_Type_commit(YAMPI_addressof(result));
-      return error_code == MPI_SUCCESS
-        ? result
-        : throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
+
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
+
+      uncommitted_datatype.is_committed_ = true;
+      return result;
     }
 
     MPI_Datatype duplicate(
@@ -358,15 +375,20 @@ namespace yampi
 # undef YAMPI_DEFINE_DATATYPE_RESET
 
     void reset(
-      ::yampi::uncommitted_datatype const& uncommitted_datatype,
+      ::yampi::uncommitted_datatype& uncommitted_datatype,
       ::yampi::environment const& environment)
     {
+      if (uncommitted_datatype.is_committed_)
+        throw ::yampi::uncommitted_datatype_has_been_committed_error();
+
       free(environment);
 
       mpi_datatype_ = uncommitted_datatype.mpi_datatype();
       int const error_code = MPI_Type_commit(YAMPI_addressof(mpi_datatype_));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::datatype::reset", environment);
+
+      uncommitted_datatype.is_committed_ = true;
     }
 
     void reset(
@@ -407,7 +429,7 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? ::yampi::make_bounds(lower_bound, extent)
         : throw ::yampi::error(
-            error_code, "yampi::uncommitted_datatype::bounds", environment);
+            error_code, "yampi::datatype::bounds", environment);
     }
 
     bounds_type true_bounds(::yampi::environment const& environment) const
@@ -419,11 +441,11 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? ::yampi::make_bounds(lower_bound, extent)
         : throw ::yampi::error(
-            error_code, "yampi::uncommitted_datatype::true_bounds", environment);
+            error_code, "yampi::datatype::true_bounds", environment);
     }
 
     ::yampi::uncommitted_datatype to_uncommitted_datatype() const
-    { return ::yampi::uncommitted_datatype(mpi_datatype_); }
+    { return ::yampi::uncommitted_datatype(mpi_datatype_, true); }
     MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
 
     void swap(datatype& other)
