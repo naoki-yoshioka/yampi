@@ -5,6 +5,18 @@
 
 # include <string>
 # include <utility>
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
+# else
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+#   include <boost/type_traits/has_nothrow_assign.hpp>
+#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
+# endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
 # else
@@ -17,6 +29,24 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
+#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
+# else
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
+#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
+# endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
@@ -32,7 +62,11 @@ namespace yampi
     MPI_Info mpi_info_;
 
    public:
-    information() : mpi_info_(MPI_INFO_NULL) { }
+    information()
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Info>::value)
+      : mpi_info_(MPI_INFO_NULL)
+    { }
+
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     information(information const&) = delete;
     information& operator=(information const&) = delete;
@@ -46,10 +80,16 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     information(information&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_constructible<MPI_Info>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Info>::value)
       : mpi_info_(std::move(other.mpi_info_))
     { other.mpi_info_ = MPI_INFO_NULL; }
 
     information& operator=(information&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_assignable<MPI_Info>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Info>::value)
     {
       if (this != YAMPI_addressof(other))
       {
@@ -69,6 +109,7 @@ namespace yampi
     }
 
     explicit information(MPI_Info const& mpi_info)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_info_(mpi_info)
     { }
 
@@ -128,6 +169,11 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::free", environment);
     }
+
+
+    bool is_null() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_info_ == MPI_INFO_NULL))
+    { return mpi_info_ == MPI_INFO_NULL; }
 
     void insert(
       std::string const& key, std::string const& value,
@@ -216,13 +262,31 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::information::key", environment);
     }
 
-    MPI_Info const& mpi_info() const { return mpi_info_; }
-    void mpi_info(MPI_Info const& info) { mpi_info_ = info; }
+    MPI_Info const& mpi_info() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_info_; }
+    void mpi_info(MPI_Info const& info)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<MPI_Info>::value)
+    { mpi_info_ = info; }
+
+    void swap(information& other)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Info>::value)
+    {
+      using std::swap;
+      swap(mpi_info_, other.mpi_info_);
+    }
   };
+
+  inline void swap(::yampi::information& lhs, ::yampi::information& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  { lhs.swap(rhs); }
 }
 
 
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_nothrow_move_assignable
+# undef YAMPI_is_nothrow_move_constructible
+# undef YAMPI_is_nothrow_copy_assignable
+# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

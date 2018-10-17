@@ -4,6 +4,11 @@
 # include <boost/config.hpp>
 
 # include <utility>
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+# else
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+# endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
 # else
@@ -14,6 +19,12 @@
 
 # include <yampi/communicator.hpp>
 # include <yampi/environment.hpp>
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+# else
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+# endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
@@ -66,6 +77,7 @@ namespace yampi
 
    public:
     explicit topology(MPI_Comm const mpi_comm)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
       : communicator_(mpi_comm)
     { }
 
@@ -77,12 +89,13 @@ namespace yampi
     { communicator_.free(environment); }
 
 
-    ::yampi::communicator const& communicator() const { return communicator_; }
+    ::yampi::communicator const& communicator() const BOOST_NOEXCEPT_OR_NOTHROW { return communicator_; }
   };
 }
 
 
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

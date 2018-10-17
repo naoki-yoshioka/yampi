@@ -3,9 +3,19 @@
 
 # include <boost/config.hpp>
 
+# if __cplusplus >= 201703L
+#   include <type_traits>
+# else
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
+# endif
+
 # include <mpi.h>
 
-# include <yampi/utility/is_nothrow_swappable.hpp>
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
+# endif
 
 
 namespace yampi
@@ -46,11 +56,10 @@ namespace yampi
       : major_(major), minor_(minor)
     { }
 
-    int major() const { return major_; }
-    int minor() const { return minor_; }
+    int major() const BOOST_NOEXCEPT_OR_NOTHROW { return major_; }
+    int minor() const BOOST_NOEXCEPT_OR_NOTHROW { return minor_; }
 
-    void swap(version_t& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<int>::value)
+    void swap(version_t& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
       using std::swap;
       swap(major_, other.major_);
@@ -59,28 +68,34 @@ namespace yampi
   };
 
   inline bool operator==(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return lhs.major() == rhs.major() and lhs.minor() == rhs.minor(); }
 
   inline bool operator!=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
   inline bool operator<(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   {
     return lhs.major() < rhs.major()
       or (lhs.major() == rhs.major() and lhs.minor() < rhs.minor());
   }
 
   inline bool operator>=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs < rhs); }
 
   inline bool operator>(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs < lhs; }
 
   inline bool operator<=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (rhs < lhs); }
 
   inline void swap(::yampi::version_t& lhs, ::yampi::version_t& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+    BOOST_NOEXCEPT_OR_NOTHROW
   { lhs.swap(rhs); }
 
 
@@ -95,6 +110,8 @@ namespace yampi
   }
 }
 
+
+# undef YAMPI_is_nothrow_swappable
 
 #endif
 

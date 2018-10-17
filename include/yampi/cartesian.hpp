@@ -9,10 +9,16 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/remove_cv.hpp>
 #   include <boost/type_traits/remove_volatile.hpp>
 #   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -35,9 +41,19 @@
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
 #   define YAMPI_is_same std::is_same
+#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
 # else
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -76,8 +92,13 @@ namespace yampi
     cartesian(cartesian&&) = default;
     cartesian& operator=(cartesian&&) = default;
 #   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    cartesian(cartesian&& other) : ::yampi::topology(std::move(other)) { }
+    cartesian(cartesian&& other)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_move_constructible< ::yampi::topology >::value)
+      : ::yampi::topology(std::move(other))
+    { }
+
     cartesian& operator=(cartesian&& other)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_move_assignable< ::yampi::communicator >::value)
     {
       if (this != YAMPI_addressof(other))
         communicator_ = std::move(other.communicator_);
@@ -326,7 +347,7 @@ namespace yampi
     }
 
     void swap(cartesian& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable< ::yampi::communicator >::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable< ::yampi::communicator >::value)
     {
       using std::swap;
       swap(communicator_, other.communicator_);
@@ -343,6 +364,9 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_nothrow_move_assignable
+# undef YAMPI_is_nothrow_move_constructible
 # undef YAMPI_remove_cv
 # undef YAMPI_is_same
 

@@ -9,9 +9,17 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/remove_cv.hpp>
 #   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+#   include <boost/type_traits/has_nothrow_assign.hpp>
+#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -30,14 +38,27 @@
 # include <yampi/communicator.hpp>
 # include <yampi/addressof.hpp>
 # include <yampi/information.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
 #   define YAMPI_is_same std::is_same
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
+#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
 # else
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
+#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -64,7 +85,11 @@ namespace yampi
     Value* base_ptr_;
 
    public:
-    window() : mpi_win_(MPI_WIN_NULL), base_ptr_(nullptr) { }
+    window()
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Win>::value)
+      : mpi_win_(MPI_WIN_NULL), base_ptr_(nullptr)
+    { }
+
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     window(window const&) = delete;
     window& operator=(window const&) = delete;
@@ -78,11 +103,17 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     window(window&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_constructible<MPI_Win>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Win>::value)
       : mpi_win_(std::move(other.mpi_win_)),
         base_ptr_(std::move(other.base_ptr_))
     { other.mpi_win_ = MPI_WIN_NULL; other.base_ptr_ = nullptr; }
 
     window& operator=(window&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_assignable<MPI_Win>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Win>::value)
     {
       if (this != YAMPI_addressof(other))
       {
@@ -228,13 +259,18 @@ namespace yampi
 
     // TODO: implement attributes and info
 
-    MPI_Win const& mpi_win() const { return mpi_win_; }
-    Value const* base() const { return base_ptr_; }
+
+    bool is_null() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_win_ == MPI_WIN_NULL))
+    { return mpi_win_ == MPI_WIN_NULL; }
+
+    MPI_Win const& mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_win_; }
+    Value const* base() const BOOST_NOEXCEPT_OR_NOTHROW { return base_ptr_; }
 
     void swap(window& other)
       BOOST_NOEXCEPT_IF(
-        ::yampi::utility::is_nothrow_swappable<MPI_Win>::value
-        and ::yampi::utility::is_nothrow_swappable<Value*>::value)
+        YAMPI_is_nothrow_swappable<MPI_Win>::value
+        and YAMPI_is_nothrow_swappable<Value*>::value)
     {
       using std::swap;
       swap(mpi_win_, other.mpi_win_);
@@ -256,6 +292,11 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_nothrow_move_assignable
+# undef YAMPI_is_nothrow_move_constructible
+# undef YAMPI_is_nothrow_copy_assignable
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_is_same
 # undef YAMPI_remove_cv
 

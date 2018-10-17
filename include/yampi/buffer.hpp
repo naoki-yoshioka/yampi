@@ -11,10 +11,14 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/remove_cv.hpp>
 #   include <boost/type_traits/is_same.hpp>
 #   include <boost/utility/enable_if.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -32,7 +36,6 @@
 # include <boost/range/end.hpp>
 
 # include <yampi/datatype.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
@@ -42,6 +45,12 @@
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_is_same boost::is_same
 #   define YAMPI_enable_if boost::enable_if_c
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -69,22 +78,22 @@ namespace yampi
     ::yampi::datatype& datatype_;
 
    public:
-    buffer(T& value, ::yampi::datatype& datatype)
+    buffer(T& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(YAMPI_addressof(value)), count_(1),
         datatype_(datatype)
     { }
 
-    buffer(T& value, ::yampi::datatype const& datatype)
+    buffer(T& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(YAMPI_addressof(value)), count_(1),
         datatype_(const_cast< ::yampi::datatype& >(datatype))
     { }
 
-    buffer(T const& value, ::yampi::datatype& datatype)
+    buffer(T const& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
         datatype_(datatype)
     { }
 
-    buffer(T const& value, ::yampi::datatype const& datatype)
+    buffer(T const& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
         datatype_(const_cast< ::yampi::datatype& >(datatype))
     { }
@@ -93,6 +102,7 @@ namespace yampi
     buffer(
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype& datatype)
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
         datatype_(datatype)
@@ -110,6 +120,7 @@ namespace yampi
     buffer(
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype const& datatype)
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
         datatype_(const_cast< ::yampi::datatype& >(datatype))
@@ -123,16 +134,16 @@ namespace yampi
       assert(last >= first);
     }
 
-    T* data() { return data_; }
-    T const* data() const { return data_; }
-    int const& count() const { return count_; }
-    ::yampi::datatype const& datatype() const { return datatype_; }
+    T* data() BOOST_NOEXCEPT_OR_NOTHROW { return data_; }
+    T const* data() const BOOST_NOEXCEPT_OR_NOTHROW { return data_; }
+    int const& count() const BOOST_NOEXCEPT_OR_NOTHROW { return count_; }
+    ::yampi::datatype const& datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return datatype_; }
 
     void swap(buffer& other)
       BOOST_NOEXCEPT_IF(
-        ::yampi::utility::is_nothrow_swappable<T*>::value
-        and ::yampi::utility::is_nothrow_swappable<int>::value
-        and ::yampi::utility::is_nothrow_swappable< ::yampi::datatype& >::value)
+        YAMPI_is_nothrow_swappable<T*>::value
+        and YAMPI_is_nothrow_swappable<int>::value
+        and YAMPI_is_nothrow_swappable< ::yampi::datatype& >::value)
     {
       using std::swap;
       swap(data_, other.data_);
@@ -144,6 +155,7 @@ namespace yampi
 
   template <typename T>
   inline bool operator==(::yampi::buffer<T> const& lhs, ::yampi::buffer<T> const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.datatype() == rhs.datatype()))
   {
     return lhs.data() == rhs.data() and lhs.count() == rhs.count()
       and lhs.datatype() == rhs.datatype();
@@ -151,6 +163,7 @@ namespace yampi
 
   template <typename T>
   inline bool operator!=(::yampi::buffer<T> const& lhs, ::yampi::buffer<T> const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
   template <typename T>
@@ -161,10 +174,12 @@ namespace yampi
 
   template <typename T>
   inline ::yampi::buffer<T> make_buffer(T& value, ::yampi::datatype const& datatype)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::buffer<T>(value, datatype)))
   { return ::yampi::buffer<T>(value, datatype); }
 
   template <typename T>
   inline ::yampi::buffer<T> make_buffer(T const& value, ::yampi::datatype const& datatype)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::buffer<T>(value, datatype)))
   { return ::yampi::buffer<T>(value, datatype); }
 
   template <typename ContiguousIterator>
@@ -175,6 +190,12 @@ namespace yampi
   make_buffer(
     ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::datatype const& datatype)
+    BOOST_NOEXCEPT_IF(
+      BOOST_NOEXCEPT_EXPR(
+        ::yampi::buffer<
+          typename YAMPI_remove_cv<
+            typename std::iterator_traits<ContiguousIterator>::value_type>::type>(
+          first, last, datatype)))
   {
     typedef
       ::yampi::buffer<
@@ -190,6 +211,9 @@ namespace yampi
     typename YAMPI_remove_cv<
       typename boost::range_value<ContiguousRange>::type>::type>
   range_to_buffer(ContiguousRange& range, ::yampi::datatype const& datatype)
+    BOOST_NOEXCEPT_IF(
+      BOOST_NOEXCEPT_EXPR(
+        ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype)))
   { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
 
   template <typename ContiguousRange>
@@ -198,6 +222,9 @@ namespace yampi
     typename YAMPI_remove_cv<
       typename boost::range_value<ContiguousRange const>::type>::type>
   range_to_buffer(ContiguousRange const& range, ::yampi::datatype const& datatype)
+    BOOST_NOEXCEPT_IF(
+      BOOST_NOEXCEPT_EXPR(
+        ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype)))
   { return ::yampi::make_buffer(boost::begin(range), boost::end(range), datatype); }
 }
 
@@ -209,6 +236,7 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
 # undef YAMPI_enable_if
 # undef YAMPI_is_same
 # undef YAMPI_remove_cv

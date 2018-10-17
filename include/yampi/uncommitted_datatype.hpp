@@ -6,10 +6,15 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/is_same.hpp>
 #   include <boost/type_traits/is_convertible.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
 #   include <boost/utility/enable_if.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -23,7 +28,6 @@
 #   include <boost/static_assert.hpp>
 # endif
 
-# include <yampi/utility/is_nothrow_swappable.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/address.hpp>
@@ -32,11 +36,19 @@
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
 #   define YAMPI_is_convertible std::is_convertible
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 #   define YAMPI_enable_if std::enable_if
 # else
 #   define YAMPI_is_same boost::is_same
 #   define YAMPI_is_convertible boost::is_convertible
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
 #   define YAMPI_enable_if boost::enable_if_c
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -68,12 +80,12 @@ namespace yampi
     int stride_;
 
    public:
-    strided_block(int const length, int const stride)
+    BOOST_CONSTEXPR strided_block(int const length, int const stride) BOOST_NOEXCEPT_OR_NOTHROW
       : length_(length), stride_(stride)
     { }
 
-    int const& length() const { return length_; }
-    int const& stride() const { return stride_; }
+    BOOST_CONSTEXPR int const& length() const BOOST_NOEXCEPT_OR_NOTHROW { return length_; }
+    BOOST_CONSTEXPR int const& stride() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_; }
 
     void swap(strided_block& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
@@ -83,12 +95,14 @@ namespace yampi
     }
   };
 
-  inline bool operator==(
+  BOOST_CONSTEXPR inline bool operator==(
     ::yampi::strided_block const& lhs, ::yampi::strided_block const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return lhs.length() == rhs.length() and lhs.stride() == rhs.stride(); }
 
-  inline bool operator!=(
+  BOOST_CONSTEXPR inline bool operator!=(
     ::yampi::strided_block const& lhs, ::yampi::strided_block const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::strided_block& lhs, ::yampi::strided_block& rhs)
@@ -102,16 +116,17 @@ namespace yampi
     ::yampi::address stride_bytes_;
 
    public:
-    heterogeneous_strided_block(int const length, ::yampi::address const stride_bytes)
+    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::address const stride_bytes)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::address >::value)
       : length_(length), stride_bytes_(stride_bytes)
     { }
 
-    int const& length() const { return length_; }
-    ::yampi::address const& stride_bytes() const { return stride_bytes_; }
+    BOOST_CONSTEXPR int const& length() const BOOST_NOEXCEPT_OR_NOTHROW { return length_; }
+    BOOST_CONSTEXPR ::yampi::address const& stride_bytes() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_bytes_; }
 
     void swap(heterogeneous_strided_block& other)
       BOOST_NOEXCEPT_IF(
-        ::yampi::utility::is_nothrow_swappable< ::yampi::address >::value)
+        YAMPI_is_nothrow_swappable< ::yampi::address >::value)
     {
       using std::swap;
       swap(length_, other.length_);
@@ -119,17 +134,19 @@ namespace yampi
     }
   };
 
-  inline bool operator==(
+  BOOST_CONSTEXPR inline bool operator==(
     ::yampi::heterogeneous_strided_block const& lhs,
     ::yampi::heterogeneous_strided_block const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.stride_bytes() == rhs.stride_bytes()))
   {
     return
       lhs.length() == rhs.length() and lhs.stride_bytes() == rhs.stride_bytes();
   }
 
-  inline bool operator!=(
+  BOOST_CONSTEXPR inline bool operator!=(
     ::yampi::heterogeneous_strided_block const& lhs,
     ::yampi::heterogeneous_strided_block const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
   inline void swap(
@@ -158,7 +175,8 @@ namespace yampi
     typedef ::yampi::bounds<count_type> bounds_type;
 # endif
 
-    uncommitted_datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    uncommitted_datatype()
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI_DATATYPE_NULL), is_committed_(false)
     { }
 
@@ -173,7 +191,7 @@ namespace yampi
 # endif
 
     uncommitted_datatype(MPI_Datatype const& mpi_datatype, bool const is_committed)
-      BOOST_NOEXCEPT_OR_NOTHROW
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(mpi_datatype), is_committed_(is_committed)
     { }
 
@@ -592,9 +610,12 @@ namespace yampi
 
    public:
     bool operator==(uncommitted_datatype const& other) const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == other.mpi_datatype_))
     { return mpi_datatype_ == other.mpi_datatype_; }
 
-    bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
+    bool is_null() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == MPI_DATATYPE_NULL))
+    { return mpi_datatype_ == MPI_DATATYPE_NULL; }
 
     size_type size(::yampi::environment const& environment) const
     {
@@ -630,10 +651,10 @@ namespace yampi
             error_code, "yampi::uncommitted_datatype::true_bounds", environment);
     }
 
-    MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
+    MPI_Datatype const& mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_datatype_; }
 
     void swap(uncommitted_datatype& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Datatype>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Datatype>::value)
     {
       using std::swap;
       swap(mpi_datatype_, other.mpi_datatype_);
@@ -642,6 +663,7 @@ namespace yampi
 
   inline bool operator!=(
     ::yampi::uncommitted_datatype const& lhs, ::yampi::uncommitted_datatype const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
   inline void swap(
@@ -658,7 +680,9 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
 # undef YAMPI_enable_if
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_is_convertible
 # undef YAMPI_is_same
 

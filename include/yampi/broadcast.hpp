@@ -5,6 +5,11 @@
 
 # include <mpi.h>
 
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   include <type_traits>
+# else
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+# endif
 # if MPI_VERSION >= 3
 #   ifndef BOOST_NO_CXX11_ADDRESSOF
 #     include <memory>
@@ -21,6 +26,12 @@
 # include <yampi/error.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
+# endif
+
+# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+# else
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
 # endif
 
 # if MPI_VERSION >= 3
@@ -53,12 +64,6 @@ namespace yampi
    public:
 # endif
 
-    broadcast(
-      ::yampi::rank const root, ::yampi::communicator const& communicator)
-      BOOST_NOEXCEPT_OR_NOTHROW
-      : root_(root), communicator_(communicator)
-    { }
-
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     broadcast(broadcast&&) = default;
@@ -66,6 +71,12 @@ namespace yampi
 #   endif
     ~broadcast() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
+
+    broadcast(
+      ::yampi::rank const root, ::yampi::communicator const& communicator)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value)
+      : root_(root), communicator_(communicator)
+    { }
 
 
     template <typename Value>
@@ -130,6 +141,7 @@ namespace yampi
 # if MPI_VERSION >= 3
 #   undef YAMPI_addressof
 # endif
+# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

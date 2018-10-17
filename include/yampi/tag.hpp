@@ -8,16 +8,19 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/utility/enable_if.hpp>
 #   include <boost/type_traits/is_integral.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # include <stdexcept>
 
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_enable_if std::enable_if
@@ -25,6 +28,12 @@
 # else
 #   define YAMPI_enable_if boost::enable_if_c
 #   define YAMPI_is_integral boost::is_integral
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 
@@ -78,24 +87,24 @@ namespace yampi
     ~tag() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    BOOST_CONSTEXPR bool operator==(tag const other) const
+    BOOST_CONSTEXPR bool operator==(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_tag_ == other.mpi_tag_; }
 
-    bool operator<(tag const other) const
+    bool operator<(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       assert(other.mpi_tag_ >= 0);
       return mpi_tag_ < other.mpi_tag_;
     }
 
-    tag& operator++()
+    tag& operator++() BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       ++mpi_tag_;
       return *this;
     }
 
-    tag& operator--()
+    tag& operator--() BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       --mpi_tag_;
@@ -107,7 +116,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_integral<Integer>::value,
       tag&>::type
-    operator+=(Integer const n)
+    operator+=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       mpi_tag_ += n;
@@ -119,7 +128,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_integral<Integer>::value,
       tag&>::type
-    operator-=(Integer const n)
+    operator-=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       mpi_tag_ -= n;
@@ -131,7 +140,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_integral<Integer>::value,
       tag&>::type
-    operator*=(Integer const n)
+    operator*=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       assert(n >= static_cast<Integer>(0));
@@ -144,7 +153,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_integral<Integer>::value,
       tag&>::type
-    operator/=(Integer const n)
+    operator/=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       assert(n > static_cast<Integer>(0));
@@ -153,17 +162,17 @@ namespace yampi
       return *this;
     }
 
-    int operator-(tag const other) const
+    int operator-(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       assert(other.mpi_tag_ >= 0);
       return mpi_tag_-other.mpi_tag_;
     }
 
-    BOOST_CONSTEXPR int const& mpi_tag() const { return mpi_tag_; }
+    BOOST_CONSTEXPR int const& mpi_tag() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_tag_; }
 
     void swap(tag& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<int>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<int>::value)
     {
       using std::swap;
       swap(mpi_tag_, other.mpi_tag_);
@@ -171,45 +180,57 @@ namespace yampi
   };
 
   inline BOOST_CONSTEXPR bool operator!=(::yampi::tag const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
   inline bool operator>=(::yampi::tag const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs < rhs); }
 
   inline bool operator>(::yampi::tag const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs < lhs; }
 
   inline bool operator<=(::yampi::tag const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return not (rhs < lhs); }
 
   inline ::yampi::tag operator++(::yampi::tag& lhs, int)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { ::yampi::tag result = lhs; ++lhs; return result; }
 
   inline ::yampi::tag operator--(::yampi::tag& lhs, int)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { ::yampi::tag result = lhs; --lhs; return result; }
 
   template <typename Integral>
   inline ::yampi::tag operator+(::yampi::tag lhs, Integral const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { lhs += rhs; return lhs; }
 
   template <typename Integral>
   inline ::yampi::tag operator-(::yampi::tag lhs, Integral const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { lhs -= rhs; return lhs; }
 
   template <typename Integral>
   inline ::yampi::tag operator*(::yampi::tag lhs, Integral const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { lhs *= rhs; return lhs; }
 
   template <typename Integral>
   inline ::yampi::tag operator/(::yampi::tag lhs, Integral const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { lhs /= rhs; return lhs; }
 
   template <typename Integral>
   inline ::yampi::tag operator+(Integral const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
   template <typename Integral>
   inline ::yampi::tag operator*(Integral const lhs, ::yampi::tag const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 
   inline void swap(::yampi::tag& lhs, ::yampi::tag& rhs)
@@ -217,7 +238,7 @@ namespace yampi
   { lhs.swap(rhs); }
 
 
-  inline BOOST_CONSTEXPR ::yampi::tag any_tag()
+  inline BOOST_CONSTEXPR ::yampi::tag any_tag() BOOST_NOEXCEPT_OR_NOTHROW
   { return tag(::yampi::any_tag_t()); }
 
   inline ::yampi::tag tag_upper_bound(::yampi::environment const& environment)
@@ -230,6 +251,10 @@ namespace yampi
   }
 }
 
+
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_integral
+# undef YAMPI_enable_if
 
 #endif
 

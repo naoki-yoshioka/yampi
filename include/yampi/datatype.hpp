@@ -7,10 +7,17 @@
 # include <stdexcept>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/is_same.hpp>
 #   include <boost/type_traits/is_convertible.hpp>
-#   include <boost/utility/enable_if.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+#   include <boost/type_traits/has_nothrow_assign.hpp>
+#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -24,7 +31,6 @@
 #   include <boost/static_assert.hpp>
 # endif
 
-# include <yampi/utility/is_nothrow_swappable.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/address.hpp>
@@ -34,11 +40,23 @@
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
 #   define YAMPI_is_convertible std::is_convertible
-#   define YAMPI_enable_if std::enable_if
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
+#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
 # else
 #   define YAMPI_is_same boost::is_same
 #   define YAMPI_is_convertible boost::is_convertible
-#   define YAMPI_enable_if boost::enable_if_c
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
+#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -152,9 +170,11 @@ namespace yampi
     typedef ::yampi::bounds<count_type> bounds_type;
 # endif
 
-    datatype() BOOST_NOEXCEPT_OR_NOTHROW
+    datatype()
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI_DATATYPE_NULL)
     { }
+
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     datatype(datatype const&) = delete;
     datatype& operator=(datatype const&) = delete;
@@ -168,10 +188,16 @@ namespace yampi
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     datatype(datatype&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_constructible<MPI_Datatype>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Datatype>::value)
       : mpi_datatype_(std::move(other.mpi_datatype_))
     { other.mpi_datatype_ = MPI_DATATYPE_NULL; }
 
     datatype& operator=(datatype&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_assignable<MPI_Datatype>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Datatype>::value)
     {
       if (this != YAMPI_addressof(other))
       {
@@ -190,12 +216,14 @@ namespace yampi
       MPI_Type_free(YAMPI_addressof(mpi_datatype_));
     }
 
-    explicit datatype(MPI_Datatype const& mpi_datatype) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(MPI_Datatype const& mpi_datatype)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(mpi_datatype)
     { }
 
 # define YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(type, mpitype) \
-    explicit datatype(::yampi:: type ## _datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW\
+    explicit datatype(::yampi:: type ## _datatype_t const)\
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)\
       : mpi_datatype_(MPI_ ## mpitype )\
     { }
 
@@ -224,16 +252,20 @@ namespace yampi
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_complex, CXX_DOUBLE_COMPLEX)
     YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
 # elif MPI_VERSION >= 2
-    explicit datatype(::yampi::bool_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::bool_datatype_t const)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI::BOOL)
     { }
-    explicit datatype(::yampi::float_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::float_complex_datatype_t const)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI::COMPLEX)
     { }
-    explicit datatype(::yampi::double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::double_complex_datatype_t const)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI::DOUBLE_COMPLEX)
     { }
-    explicit datatype(::yampi::long_double_complex_datatype_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit datatype(::yampi::long_double_complex_datatype_t const)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI::LONG_DOUBLE_COMPLEX)
     { }
 # endif
@@ -292,9 +324,12 @@ namespace yampi
 
    public:
     bool operator==(datatype const& other) const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == other.mpi_datatype_))
     { return mpi_datatype_ == other.mpi_datatype_; }
 
-    bool is_null() const { return mpi_datatype_ == MPI_DATATYPE_NULL; }
+    bool is_null() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == MPI_DATATYPE_NULL))
+    { return mpi_datatype_ == MPI_DATATYPE_NULL; }
 
     void reset(::yampi::environment const& environment)
     { free(environment); }
@@ -445,11 +480,12 @@ namespace yampi
     }
 
     ::yampi::uncommitted_datatype to_uncommitted_datatype() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::uncommitted_datatype(mpi_datatype_, true)))
     { return ::yampi::uncommitted_datatype(mpi_datatype_, true); }
-    MPI_Datatype const& mpi_datatype() const { return mpi_datatype_; }
+    MPI_Datatype const& mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_datatype_; }
 
     void swap(datatype& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Datatype>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Datatype>::value)
     {
       using std::swap;
       swap(mpi_datatype_, other.mpi_datatype_);
@@ -457,6 +493,7 @@ namespace yampi
   };
 
   inline bool operator!=(::yampi::datatype const& lhs, ::yampi::datatype const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::datatype& lhs, ::yampi::datatype& rhs)
@@ -472,7 +509,11 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
-# undef YAMPI_enable_if
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_nothrow_move_assignable
+# undef YAMPI_is_nothrow_move_constructible
+# undef YAMPI_is_nothrow_copy_assignable
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_is_convertible
 # undef YAMPI_is_same
 

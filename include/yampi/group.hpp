@@ -7,10 +7,18 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/remove_cv.hpp>
 #   include <boost/type_traits/remove_volatile.hpp>
 #   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
+#   include <boost/type_traits/has_nothrow_assign.hpp>
+#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
+#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -30,16 +38,29 @@
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
 #   define YAMPI_remove_volatile std::remove_volatile
 #   define YAMPI_is_same std::is_same
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
+#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
+#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
 # else
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_remove_volatile boost::remove_volatile
 #   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
+#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
+#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -68,7 +89,11 @@ namespace yampi
     MPI_Group mpi_group_;
 
    public:
-    group() : mpi_group_(MPI_GROUP_NULL) { }
+    group()
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
+      : mpi_group_(MPI_GROUP_NULL)
+    { }
+
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     group(group const&) = delete;
     group& operator=(group const&) = delete;
@@ -81,10 +106,16 @@ namespace yampi
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     group(group&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_constructible<MPI_Group>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
       : mpi_group_(std::move(other.mpi_group_))
     { other.mpi_group_ = MPI_GROUP_NULL; }
 
     group& operator=(group&& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_move_assignable<MPI_Group>::value
+        and YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
     {
       if (this != YAMPI_addressof(other))
       {
@@ -104,10 +135,12 @@ namespace yampi
     }
 
     explicit group(MPI_Group const mpi_group)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(mpi_group)
     { }
 
     explicit group(::yampi::empty_group_t const)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(MPI_GROUP_EMPTY)
     { }
 
@@ -345,7 +378,9 @@ namespace yampi
     }
 
 
-    bool is_null() const { return mpi_group_ == MPI_GROUP_NULL; }
+    bool is_null() const
+      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_group_ == MPI_GROUP_NULL))
+    { return mpi_group_ == MPI_GROUP_NULL; }
 
     int size(::yampi::environment const& environment) const
     {
@@ -365,11 +400,13 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::group::rank", environment);
     }
 
-    MPI_Group const& mpi_group() const { return mpi_group_; }
-    void mpi_group(MPI_Group const& mpi_grp) { mpi_group_ = mpi_grp; }
+    MPI_Group const& mpi_group() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_group_; }
+    void mpi_group(MPI_Group const& mpi_grp)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
+    { mpi_group_ = mpi_grp; }
 
     void swap(group& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Group>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Group>::value)
     {
       using std::swap;
       swap(mpi_group_, other.mpi_group_);
@@ -382,7 +419,7 @@ namespace yampi
 
 
   template <typename ContiguousIterator1, typename ContiguousIterator2>
-  inline void translate_ranks(
+  inline void translate(
     ::yampi::group const& old_group, ContiguousIterator1 const first, ContiguousIterator1 const last,
     ::yampi::group const& new_group, ContiguousIterator2 out, ::yampi::environment const& environment)
   {
@@ -405,11 +442,11 @@ namespace yampi
           reinterpret_cast<int const*>(YAMPI_addressof(*first)),
           new_group.mpi_group(), reinterpret_cast<int*>(YAMPI_addressof(*out)));
     if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::translate_ranks", environment);
+      throw ::yampi::error(error_code, "yampi::translate", environment);
   }
 
   template <typename ContiguousRange, typename ContiguousIterator>
-  inline void translate_ranks(
+  inline void translate(
     ::yampi::group const& old_group, ContiguousRange const& old_ranks,
     ::yampi::group const& new_group, ContiguousIterator out,
     ::yampi::environment const& environment)
@@ -421,6 +458,11 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
+# undef YAMPI_is_nothrow_move_assignable
+# undef YAMPI_is_nothrow_move_constructible
+# undef YAMPI_is_nothrow_copy_assignable
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_remove_cv
 # undef YAMPI_remove_volatile
 # undef YAMPI_is_same

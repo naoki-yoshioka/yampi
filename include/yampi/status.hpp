@@ -7,8 +7,13 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
+#   include <boost/type_traits/has_nothrow_copy.hpp>
 #   include <boost/utility/enable_if.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -22,12 +27,19 @@
 # include <yampi/datatype.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
-# include <yampi/utility/is_nothrow_swappable.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 #   define YAMPI_enable_if std::enable_if
 # else
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
 #   define YAMPI_enable_if boost::enable_if_c
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -74,7 +86,10 @@ namespace yampi
    public:
 # endif
 
-    explicit status(MPI_Status const& stat) BOOST_NOEXCEPT_OR_NOTHROW : mpi_status_(stat) { }
+    explicit status(MPI_Status const& stat)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Status>::value)
+      : mpi_status_(stat)
+    { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     status(status const&) = default;
@@ -86,9 +101,12 @@ namespace yampi
     ~status() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    ::yampi::rank source() const BOOST_NOEXCEPT_OR_NOTHROW
+    ::yampi::rank source() const
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value)
     { return ::yampi::rank(mpi_status_.MPI_SOURCE); }
-    ::yampi::tag tag() const BOOST_NOEXCEPT_OR_NOTHROW
+
+    ::yampi::tag tag() const
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::tag >::value)
     { return ::yampi::tag(mpi_status_.MPI_TAG); }
 
     void test_error(::yampi::environment const& environment) const
@@ -128,6 +146,10 @@ namespace yampi
     }
 
     bool empty() const
+      BOOST_NOEXCEPT_IF(
+        BOOST_NOEXCEPT_EXPR(mpi_status_.MPI_TAG == MPI_ANY_TAG)
+        and BOOST_NOEXCEPT_EXPR(mpi_status_.MPI_SOURCE == MPI_ANY_SOURCE)
+        and BOOST_NOEXCEPT_EXPR(mpi_status_.MPI_ERROR == MPI_SUCCESS))
     {
       return mpi_status_.MPI_TAG == MPI_ANY_TAG
         and mpi_status_.MPI_SOURCE == MPI_ANY_SOURCE
@@ -135,7 +157,7 @@ namespace yampi
     }
 
     void swap(status& other)
-      BOOST_NOEXCEPT_IF(::yampi::utility::is_nothrow_swappable<MPI_Status>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Status>::value)
     {
       using std::swap;
       swap(mpi_status_, other.mpi_status_);
@@ -149,13 +171,15 @@ namespace yampi
 
   class ignore_status_t { };
 
-  inline BOOST_CONSTEXPR ::yampi::ignore_status_t ignore_status()
+  inline BOOST_CONSTEXPR ::yampi::ignore_status_t ignore_status() BOOST_NOEXCEPT_OR_NOTHROW
   { return ::yampi::ignore_status_t(); }
 }
 
 
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
 # undef YAMPI_enable_if
+# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

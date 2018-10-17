@@ -151,7 +151,8 @@ namespace yampi
     }
 
 
-    YAMPI_THREAD_SUPPORT_TYPE thread_support() const { return thread_support_; }
+    YAMPI_THREAD_SUPPORT_TYPE thread_support() const BOOST_NOEXCEPT_OR_NOTHROW
+    { return thread_support_; }
 
     YAMPI_THREAD_SUPPORT_TYPE query_thread_support() const
     {
@@ -160,7 +161,6 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support)
         : throw ::yampi::error(error_code, "yampi::environment::query_thread_support", *this);
-
     }
 
     bool is_main_thread() const
@@ -170,7 +170,6 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? static_cast<bool>(flag)
         : throw ::yampi::error(error_code, "yampi::environment::is_main_thread", *this);
-
     }
   };
 }

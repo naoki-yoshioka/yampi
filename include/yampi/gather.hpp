@@ -7,6 +7,7 @@
 #   include <type_traits>
 # else
 #   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
 # endif
 # include <iterator>
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -33,8 +34,10 @@
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 # else
 #   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -72,7 +75,7 @@ namespace yampi
 
     gather(
       ::yampi::rank const root, ::yampi::communicator const& communicator)
-      BOOST_NOEXCEPT_OR_NOTHROW
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value)
       : root_(root), communicator_(communicator)
     { }
 
@@ -246,6 +249,7 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_is_same
 
 #endif
