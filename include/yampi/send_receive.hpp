@@ -47,10 +47,10 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }
 
   template <typename SendValue, typename ReceiveValue>
@@ -101,10 +101,10 @@ namespace yampi
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }
 
   template <typename SendValue, typename ReceiveValue>
@@ -153,10 +153,10 @@ namespace yampi
           destination.mpi_rank(), send_tag.mpi_tag(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }
 
   template <typename Value>
@@ -199,10 +199,10 @@ namespace yampi
           destination.mpi_rank(), send_tag.mpi_tag(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::send_receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }
 
   template <typename Value>

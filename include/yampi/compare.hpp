@@ -60,9 +60,9 @@ namespace yampi
   {
     int result;
     int const error_code = MPI_Comm_compare(lhs.mpi_comm(), rhs.mpi_comm(), &result);
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::compare", environment);
-    return static_cast<YAMPI_COMMUNICATORS_ARE>(result);
+    return error_code == MPI_SUCCESS
+      ? static_cast<YAMPI_COMMUNICATORS_ARE>(result)
+      : throw ::yampi::error(error_code, "yampi::compare", environment);
   }
 
   inline YAMPI_GROUPS_ARE compare(
@@ -71,9 +71,9 @@ namespace yampi
   {
     int result;
     int const error_code = MPI_Group_compare(lhs.mpi_group(), rhs.mpi_group(), &result);
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::compare", environment);
-    return static_cast<YAMPI_GROUPS_ARE>(result);
+    return error_code == MPI_SUCCESS
+      ? static_cast<YAMPI_GROUPS_ARE>(result)
+      : throw ::yampi::error(error_code, "yampi::compare", environment);
   }
 
 # undef YAMPI_COMMUNICATORS_ARE

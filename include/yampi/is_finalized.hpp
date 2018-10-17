@@ -28,10 +28,9 @@ namespace yampi
     int result;
     int const error_code = MPI_Finalized(&result);
 
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::is_finalized_error(error_code);
-
-    return result;
+    return error_code == MPI_SUCCESS
+      ? result
+      : throw ::yampi::is_finalized_error(error_code);
   }
 }
 

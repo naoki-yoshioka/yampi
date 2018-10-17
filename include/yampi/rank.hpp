@@ -65,10 +65,10 @@ namespace yampi
       int* result;
       int flag;
       int const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::rank::inquire_environment", environment);
 
-      return *result;
+      return error_code == MPI_SUCCESS
+        ? *result
+        : throw ::yampi::error(error_code, "yampi::rank::inquire_environment", environment);
     }
 
    public:

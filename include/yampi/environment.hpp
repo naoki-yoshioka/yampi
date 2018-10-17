@@ -157,20 +157,20 @@ namespace yampi
     {
       int provided_thread_support;
       int const error_code = MPI_Query_thread(&provided_thread_support);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::environment::query_thread_support", *this);
+      return error_code == MPI_SUCCESS
+        ? static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support)
+        : throw ::yampi::error(error_code, "yampi::environment::query_thread_support", *this);
 
-      return static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
     }
 
     bool is_main_thread() const
     {
       int flag;
       int const error_code = MPI_Is_thread_main(&flag);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::environment::is_main_thread", *this);
+      return error_code == MPI_SUCCESS
+        ? static_cast<bool>(flag)
+        : throw ::yampi::error(error_code, "yampi::environment::is_main_thread", *this);
 
-      return static_cast<bool>(flag);
     }
   };
 }

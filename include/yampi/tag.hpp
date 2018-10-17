@@ -61,10 +61,10 @@ namespace yampi
       int result, flag;
       int const error_code
         = MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &result, &flag);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::tag::inquire_upper_bound", environment);
 
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::tag::inquire_upper_bound", environment);
     }
 
    public:

@@ -44,10 +44,9 @@ namespace yampi
       int error_class;
       int const error_class_error_code = MPI_Error_class(error_code, &error_class);
 
-      if (error_class_error_code != MPI_SUCCESS)
-        throw ::yampi::error_in_error(where);
-
-      return error_class;
+      return error_class_error_code == MPI_SUCCESS
+        ? error_class
+        : throw ::yampi::error_in_error(where);
     }
 
     std::string generate_what_string(
@@ -57,10 +56,9 @@ namespace yampi
       int length;
       int const error_string_error_code = MPI_Error_string(error_code, error, &length);
 
-      if (error_string_error_code != MPI_SUCCESS)
-        throw ::yampi::error_in_error(where);
-
-      return std::string("In ") + where + ": " + std::string(error);
+      return error_string_error_code == MPI_SUCCESS
+        ? std::string("In ") + where + ": " + std::string(error)
+        : throw ::yampi::error_in_error(where);
     }
   };
 }

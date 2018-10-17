@@ -42,10 +42,10 @@ namespace yampi
       = MPI_Recv(
           buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::receive", environment);
   }
 
   template <typename Value>
@@ -75,10 +75,10 @@ namespace yampi
       = MPI_Recv(
           const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), YAMPI_addressof(stat));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
 
-    return ::yampi::status(stat);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::status(stat)
+      : throw ::yampi::error(error_code, "yampi::receive", environment);
   }
 
   template <typename Value>

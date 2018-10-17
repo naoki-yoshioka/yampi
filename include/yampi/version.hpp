@@ -88,10 +88,10 @@ namespace yampi
   {
     int major, minor;
     int const error_code = MPI_Get_version(&major, &minor);
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::version_error(error_code);
 
-    return ::yampi::version_t(major, minor);
+    return error_code == MPI_SUCCESS
+      ? ::yampi::version_t(major, minor)
+      : throw ::yampi::version_error(error_code);
   }
 }
 

@@ -78,10 +78,10 @@ namespace yampi
           last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
           YAMPI_addressof(flag),
           reinterpret_cast<MPI_Status*>(YAMPI_addressof(*out)));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::test_all", environment);
 
-    return static_cast<bool>(flag);
+    return error_code == MPI_SUCCESS
+      ? static_cast<bool>(flag)
+      : throw ::yampi::error(error_code, "yampi::test_all", environment);
   }
 
   template <typename ContiguousRange, typename ContiguousIterator>

@@ -18,10 +18,9 @@ namespace yampi
     char name[MPI_MAX_PROCESSOR_NAME];
     int length;
     int const error_code = MPI_Get_processor_name(name, &length);
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::environment::processor_name", environment);
-
-    return name;
+    return error_code == MPI_SUCCESS
+      ? name
+      : throw ::yampi::error(error_code, "yampi::environment::processor_name", environment);
   }
 }
 

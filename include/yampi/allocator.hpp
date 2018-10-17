@@ -136,10 +136,9 @@ namespace yampi
       pointer result;
       int const error_code
         = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::allocate_error(error_code);
-
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::allocate_error(error_code);
     }
 
     void deallocate(pointer ptr, std::size_t const)
@@ -189,11 +188,16 @@ namespace yampi
     struct rebind
     { typedef allocator<U> other; };
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# else
-    BOOST_CONSTEXPR allocator() BOOST_NOEXCEPT_OR_NOTHROW { }
-# endif
+    allocator()
+    {
+      if (not ::yampi::is_initialized())
+        throw ::yampi::not_yet_initialized_error();
+
+      if (::yampi::is_finalized())
+        throw ::yampi::already_finalized_error(); // defined in environment.hpp
+    }
+
+    explicit allocator(::yampi::environment const&) BOOST_NOEXCEPT_OR_NOTHROW { }
 
     allocator(allocator const& other) BOOST_NOEXCEPT_OR_NOTHROW
     { }
@@ -212,10 +216,9 @@ namespace yampi
       pointer result;
       int const error_code
         = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T_)), MPI_INFO_NULL, &result);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::allocate_error(error_code);
-
-      return result;
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::allocate_error(error_code);
     }
 
     void deallocate(pointer ptr, std::size_t const)
