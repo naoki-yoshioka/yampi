@@ -41,6 +41,7 @@ namespace yampi
   struct host_process_t { };
   struct io_process_t { };
   struct any_source_t { };
+  struct null_process_t { };
 
   class rank
   {
@@ -57,6 +58,10 @@ namespace yampi
 
     explicit BOOST_CONSTEXPR rank(::yampi::any_source_t const) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_rank_(MPI_ANY_SOURCE)
+    { }
+
+    explicit BOOST_CONSTEXPR rank(::yampi::null_process_t const) BOOST_NOEXCEPT_OR_NOTHROW
+      : mpi_rank_(MPI_PROC_NULL)
     { }
 
     explicit rank(::yampi::host_process_t const, ::yampi::environment const& environment)
