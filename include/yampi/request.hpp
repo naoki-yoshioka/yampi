@@ -24,6 +24,8 @@
 
 # include <mpi.h>
 
+# include <boost/optional.hpp>
+
 # include <yampi/status.hpp>
 # include <yampi/error.hpp>
 
@@ -156,7 +158,7 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::request::wait", environment);
     }
 
-    std::pair<bool, ::yampi::status> test(::yampi::environment const& environment)
+    boost::optional< ::yampi::status >  test(::yampi::environment const& environment)
     {
       int flag;
       MPI_Status mpi_status;
@@ -165,7 +167,9 @@ namespace yampi
             YAMPI_addressof(mpi_request_), &flag, YAMPI_addressof(mpi_status));
 
       return error_code == MPI_SUCCESS
-        ? std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status))
+        ? static_cast<bool>(flag)
+          ? boost::make_optional(::yampi::status(mpi_status))
+          : boost::none
         : throw ::yampi::error(error_code, "yampi::request::test", environment);
 
     }
@@ -182,7 +186,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::request::test", environment);
     }
 
-    std::pair<bool, ::yampi::status> status(::yampi::environment const& environment) const
+    boost::optional< ::yampi::status > status(::yampi::environment const& environment) const
     {
       int flag;
       MPI_Status mpi_status;
@@ -190,7 +194,9 @@ namespace yampi
         = MPI_Request_get_status(mpi_request_, &flag, YAMPI_addressof(mpi_status));
 
       return error_code == MPI_SUCCESS
-        ? std::make_pair(static_cast<bool>(flag), ::yampi::status(mpi_status))
+        ? static_cast<bool>(flag)
+          ? boost::make_optional(::yampi::status(mpi_status))
+          : boost::none
         : throw ::yampi::error(error_code, "yampi::request::status", environment);
     }
 
