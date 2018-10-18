@@ -200,6 +200,17 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::request::status", environment);
     }
 
+    bool exists_status(::yampi::environment const& environment) const
+    {
+      int flag;
+      int const error_code
+        = MPI_Request_get_status(mpi_request_, &flag, MPI_STATUS_IGNORE);
+
+      return error_code == MPI_SUCCESS
+        ? static_cast<bool>(flag)
+        : throw ::yampi::error(error_code, "yampi::request::status", environment);
+    }
+
 
     MPI_Request const& mpi_request() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_request_; }
     void mpi_request(MPI_Request const& mpi_req)
