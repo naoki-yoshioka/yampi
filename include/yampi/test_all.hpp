@@ -74,7 +74,7 @@ namespace yampi
 
     int flag;
     int const error_code
-      = MPI_Waitall(
+      = MPI_Testall(
           last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
           YAMPI_addressof(flag),
           reinterpret_cast<MPI_Status*>(YAMPI_addressof(*out)));
@@ -89,6 +89,34 @@ namespace yampi
     ContiguousRange const& requests, ContiguousIterator const out,
     ::yampi::environment const& environment)
   { return ::yampi::test_all(boost::begin(requests), boost::end(requests), out, environment); }
+
+  template <typename ContiguousIterator>
+  inline bool test_all(
+    ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::environment const& environment)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename YAMPI_remove_cv<
+           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+         ::yampi::request>::value),
+      "Value type of ContiguousIterator must be the same to ::yampi::request");
+
+    int flag;
+    int const error_code
+      = MPI_Testall(
+          last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
+          YAMPI_addressof(flag), MPI_STATUSES_IGNORE);
+
+    return error_code == MPI_SUCCESS
+      ? static_cast<bool>(flag)
+      : throw ::yampi::error(error_code, "yampi::test_all", environment);
+  }
+
+  template <typename ContiguousRange>
+  inline bool test_all(
+    ContiguousRange const& requests, ::yampi::environment const& environment)
+  { return ::yampi::test_all(boost::begin(requests), boost::end(requests), environment); }
 }
 
 
