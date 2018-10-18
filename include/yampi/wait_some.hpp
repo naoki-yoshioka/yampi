@@ -83,7 +83,11 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::wait_some", environment);
 
     if (num_completed_requests == MPI_UNDEFINED)
+    {
+      indices.clear();
+      statuses.clear();
       return false;
+    }
 
     indices.resize(num_completed_requests);
     statuses.resize(num_completed_requests);
@@ -96,6 +100,49 @@ namespace yampi
     std::vector<int>& indices, std::vector< ::yampi::status >& statuses,
     ::yampi::environment const& environment)
   { return ::yampi::wait_some(boost::begin(requests), boost::end(requests), indices, statuses, environment); }
+
+  template <typename ContiguousIterator>
+  inline bool wait_some(
+    ContiguousIterator const first, ContiguousIterator const last,
+    std::vector<int>& indices, ::yampi::environment const& environment)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename YAMPI_remove_cv<
+           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+         ::yampi::request>::value),
+      "Value type of ContiguousIterator must be the same to ::yampi::request");
+
+    int const size = last-first;
+    indices.resize(size);
+
+    int num_completed_requests;
+    int const error_code
+      = MPI_Waitsome(
+          size, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
+          YAMPI_addressof(num_completed_requests),
+          YAMPI_addressof(indices.front()),
+          MPI_STATUSES_IGNORE);
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::wait_some", environment);
+
+    if (num_completed_requests == MPI_UNDEFINED)
+    {
+      indices.clear();
+      statuses.clear();
+      return false;
+    }
+
+    indices.resize(num_completed_requests);
+    statuses.resize(num_completed_requests);
+    return true;
+  }
+
+  template <typename ContiguousRange>
+  inline bool wait_some(
+    ContiguousRange const& requests, std::vector<int>& indices,
+    ::yampi::environment const& environment)
+  { return ::yampi::wait_some(boost::begin(requests), boost::end(requests), indices, environment); }
 }
 
 

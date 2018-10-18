@@ -72,13 +72,13 @@ namespace yampi
       = MPI_Waitany(
           last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
           YAMPI_addressof(index), YAMPI_addressof(mpi_status));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::wait_any", environment);
 
-    if (index == MPI_UNDEFINED)
-      return std::make_pair(::yampi::status(mpi_status), last);
-
-    return std::make_pair(::yampi::status(mpi_status), first+index);
+    typedef std::pair< ::yampi::status, ContiguousIterator > result_type;
+    return error_code == MPI_SUCCESS
+      ? index != MPI_UNDEFINED
+        ? result_type(::yampi::status(mpi_status), first + index)
+        : result_type(::yampi::status(mpi_status), last)
+      : throw ::yampi::error(error_code, "yampi::wait_any", environment);
   }
 
   template <typename ContiguousRange>
@@ -89,6 +89,38 @@ namespace yampi
   wait_any(
     ContiguousRange const& requests, ::yampi::environment const& environment)
   { return ::yampi::wait_any(boost::begin(requests), boost::end(requests), environment); }
+
+  template <typename ContiguousIterator>
+  inline ContiguousIterator wait_any(
+    ::yampi::ignore_status_t const,
+    ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::environment const& environment)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename YAMPI_remove_cv<
+           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+         ::yampi::request>::value),
+      "Value type of ContiguousIterator must be the same to ::yampi::request");
+
+    int index;
+    int const error_code
+      = MPI_Waitany(
+          last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
+          YAMPI_addressof(index), MPI_STATUS_IGNORE);
+
+    return error_code == MPI_SUCCESS
+      ? index != MPI_UNDEFINED
+        ? first + index
+        : last
+      : throw ::yampi::error(error_code, "yampi::wait_any", environment);
+  }
+
+  template <typename ContiguousRange>
+  inline typename boost::range_iterator<ContiguousRange const>::type wait_any(
+    ::yampi::ignore_status_t const ignore_status,
+    ContiguousRange const& requests, ::yampi::environment const& environment)
+  { return ::yampi::wait_any(ignore_status, boost::begin(requests), boost::end(requests), environment); }
 }
 
 

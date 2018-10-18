@@ -85,6 +85,31 @@ namespace yampi
     ContiguousRange const& requests, ContiguousIterator const out,
     ::yampi::environment const& environment)
   { ::yampi::wait_all(boost::begin(requests), boost::end(requests), out, environment); }
+
+  template <typename ContiguousIterator>
+  inline void wait_all(
+    ContiguousIterator const first, ContiguousIterator const last,
+    ::yampi::environment const& environment)
+  {
+    static_assert(
+      (YAMPI_is_same<
+         typename YAMPI_remove_cv<
+           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+         ::yampi::request>::value),
+      "Value type of ContiguousIterator must be the same to ::yampi::request");
+
+    int const error_code
+      = MPI_Waitall(
+          last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
+          MPI_STATUSES_IGNORE);
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::wait_all", environment);
+  }
+
+  template <typename ContiguousRange>
+  inline void wait_all(
+    ContiguousRange const& requests, ::yampi::environment const& environment)
+  { ::yampi::wait_all(boost::begin(requests), boost::end(requests), environment); }
 }
 
 
