@@ -156,6 +156,8 @@ namespace yampi
         and mpi_status_.MPI_ERROR == MPI_SUCCESS;
     }
 
+    MPI_Status const& mpi_status() const { return mpi_status_; }
+
     void swap(status& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Status>::value)
     {
