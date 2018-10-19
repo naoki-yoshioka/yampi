@@ -265,9 +265,9 @@ namespace yampi
 
     template <typename ContiguousIterator1, typename ContiguousIterator2, typename ContiguousIterator3>
     void topology_information(
-      ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
-      ContiguousIterator2 const is_periodic_first,
-      ContiguousIterator3 const coordinates_first,
+      ContiguousIterator1 const size_out_first, ContiguousIterator1 const size_out_last,
+      ContiguousIterator2 const is_periodic_out,
+      ContiguousIterator3 const coordinates_out,
       ::yampi::environment const& environment)
     {
       static_assert(
@@ -289,18 +289,18 @@ namespace yampi
            int>::value),
         "Value type of ContiguousIterator3 must be the same to int");
 
-      std::vector<int> my_is_periodic(size_last - size_first);
+      std::vector<int> my_is_periodic(size_out_last - size_out_first);
 
       int const error_code
         = MPI_Cart_get(
             communicator_.mpi_comm(),
-            size_last-size_first, YAMPI_addressof(*size_first),
+            size_out_last - size_out_first, YAMPI_addressof(*size_out_first),
             YAMPI_addressof(my_is_periodic.front()),
-            YAMPI_addressof(*coordinates_first));
+            YAMPI_addressof(*coordinates_out));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::topology_information", environment);
       std::transform(
-        boost::begin(my_is_periodic), boost::end(my_is_periodic), is_periodic_first);
+        boost::begin(my_is_periodic), boost::end(my_is_periodic), is_periodic_out);
     }
 
     template <typename ContiguousIterator>
@@ -327,8 +327,8 @@ namespace yampi
     template <typename ContiguousIterator>
     void coordinates(
       ::yampi::rank const rank,
-      ContiguousIterator const coordinates_first,
-      ContiguousIterator const coordinates_last,
+      ContiguousIterator const coordinates_out_first,
+      ContiguousIterator const coordinates_out_last,
       ::yampi::environment const& environment) const
     {
       static_assert(
@@ -340,8 +340,8 @@ namespace yampi
       int const error_code
         = MPI_Cart_coords(
             communicator_.mpi_comm(), rank.mpi_rank(),
-            coordinates_last - coordinates_first,
-            YAMPI_addressof(*coordinates_first));
+            coordinates_out_last - coordinates_out_first,
+            YAMPI_addressof(*coordinates_out_first));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::coordinates", environment);
     }
