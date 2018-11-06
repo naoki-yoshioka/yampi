@@ -69,6 +69,20 @@
 
 namespace yampi
 {
+  class cartesian_shift
+  {
+    int direction_;
+    int displacement_;
+
+   public:
+    cartesian_shift(int const direction, int const displacement)
+      : direction_(direction), displacement_(displacement)
+    { }
+
+    int const& direction() const { return direction_; }
+    int const& displacement() const { return displacement_; }
+  };
+
   class cartesian
     : public ::yampi::topology
   {

@@ -442,7 +442,7 @@ namespace yampi
   /* Cartesian versions */
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -452,7 +452,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -465,21 +465,20 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     return ::yampi::send_receive(
-      direction, displacement,
-      send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
+      shift, send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
       cartesian, environment);
   }
 
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -489,7 +488,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -502,15 +501,14 @@ namespace yampi
 
   template <typename SendValue, typename ReceiveValue>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     return ::yampi::send_receive(
-      direction, displacement,
-      send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
+      shift, send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
       cartesian, environment);
   }
 
@@ -518,7 +516,7 @@ namespace yampi
   // with replacement
   template <typename Value>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value>& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -528,7 +526,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -541,20 +539,19 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value>& buffer,
     ::yampi::tag const send_tag,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     return ::yampi::send_receive(
-      direction, displacement, buffer, send_tag, ::yampi::any_tag(),
-      cartesian, environment);
+      shift, buffer, send_tag, ::yampi::any_tag(), cartesian, environment);
   }
 
   template <typename Value>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -564,7 +561,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -577,15 +574,14 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status send_receive(
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::tag const send_tag,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     return ::yampi::send_receive(
-      direction, displacement, buffer, send_tag, ::yampi::any_tag(),
-      cartesian, environment);
+      shift, buffer, send_tag, ::yampi::any_tag(), cartesian, environment);
   }
 
 
@@ -593,7 +589,7 @@ namespace yampi
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -603,7 +599,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -618,22 +614,21 @@ namespace yampi
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue>& receive_buffer,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     ::yampi::send_receive(
-      ignore_status, direction, displacement,
-      send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
+      ignore_status, shift, send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
       cartesian, environment);
   }
 
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -643,7 +638,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -658,15 +653,14 @@ namespace yampi
   template <typename SendValue, typename ReceiveValue>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<SendValue> const& send_buffer, ::yampi::tag const send_tag,
     ::yampi::buffer<ReceiveValue> const& receive_buffer,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     ::yampi::send_receive(
-      ignore_status, direction, displacement,
-      send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
+      ignore_status, shift, send_buffer, send_tag, receive_buffer, ::yampi::any_tag(),
       cartesian, environment);
   }
 
@@ -675,7 +669,7 @@ namespace yampi
   template <typename Value>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value>& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -685,7 +679,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -700,22 +694,21 @@ namespace yampi
   template <typename Value>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value>& buffer,
     ::yampi::tag const send_tag,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     ::yampi::send_receive(
-      ignore_status, direction, displacement,
-      buffer, send_tag, ::yampi::any_tag(),
+      ignore_status, shift, buffer, send_tag, ::yampi::any_tag(),
       cartesian, environment);
   }
 
   template <typename Value>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::tag const send_tag, ::yampi::tag const receive_tag,
     ::yampi::cartesian const& cartesian,
@@ -725,7 +718,7 @@ namespace yampi
     int mpi_destination;
     int const error_code
       = MPI_Cart_shift(
-          cartesian.communicator().mpi_comm(), direction, displacement,
+          cartesian.communicator().mpi_comm(), shift.direction(), shift.displacement(),
           YAMPI_addressof(mpi_source), YAMPI_addressof(mpi_destination));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
@@ -740,15 +733,14 @@ namespace yampi
   template <typename Value>
   inline void send_receive(
     ::yampi::ignore_status_t const ignore_status,
-    int const direction, int const displacement,
+    ::yampi::cartesian_shift const& shift,
     ::yampi::buffer<Value> const& buffer,
     ::yampi::tag const send_tag,
     ::yampi::cartesian const& cartesian,
     ::yampi::environment const& environment)
   {
     ::yampi::send_receive(
-      ignore_status, direction, displacement,
-      buffer, send_tag, ::yampi::any_tag(),
+      ignore_status, shift, buffer, send_tag, ::yampi::any_tag(),
       cartesian, environment);
   }
 }
