@@ -184,6 +184,11 @@ namespace yampi
     }
 
     BOOST_CONSTEXPR int const& mpi_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_rank_; }
+# ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
+    explicit BOOST_CONSTEXPR operator int() const { return mpi_rank_; }
+# else
+    BOOST_CONSTEXPR operator int() const { return mpi_rank_; }
+# endif
 
     void swap(rank& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<int>::value)

@@ -170,6 +170,11 @@ namespace yampi
     }
 
     BOOST_CONSTEXPR int const& mpi_tag() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_tag_; }
+# ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
+    explicit BOOST_CONSTEXPR operator int() const { return mpi_tag_; }
+# else
+    BOOST_CONSTEXPR operator int() const { return mpi_tag_; }
+# endif
 
     void swap(tag& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<int>::value)
