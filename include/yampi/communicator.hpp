@@ -31,6 +31,8 @@
 # include <yampi/group.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/information.hpp>
+# include <yampi/color.hpp>
+# include <yampi/split_type.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
@@ -160,7 +162,26 @@ namespace yampi
     { }
 # endif
 
-    // TODO: Implement MPI_Comm_split/MPI_Comm_split_type constructors
+    communicator(
+      communicator const& other, ::yampi::color const color, ::yampi::rank const key,
+      ::yampi::environment const& environment)
+      : mpi_comm_(split(other, color, key, environment))
+    { }
+
+# if MPI_VERSION >= 3
+    communicator(
+      communicator const& other, ::yampi::split_type const split_type,
+      ::yampi::rank const key, ::yampi::information const& information,
+      ::yampi::environment const& environment)
+      : mpi_comm_(split(other, split_type, key, information, environment))
+    { }
+
+    communicator(
+      communicator const& other, ::yampi::split_type const split_type, ::yampi::rank const key,
+      ::yampi::environment const& environment)
+      : mpi_comm_(split(other, split_type, key, ::yampi::information(), environment))
+    { }
+# endif
 
    private:
     MPI_Comm duplicate(communicator const& other, ::yampi::environment const& environment) const
@@ -220,7 +241,8 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     MPI_Comm create(
-      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag, ::yampi::environment const& environment) const
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag,
+      ::yampi::environment const& environment) const
     {
       MPI_Comm result;
       int const error_code
@@ -230,6 +252,36 @@ namespace yampi
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::communicator::create", environment);
+    }
+# endif
+
+    MPI_Comm split(
+      communicator const& other, ::yampi::color const color, ::yampi::rank const key,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Comm result;
+      int const error_code
+        = MPI_Comm_split(
+            other.mpi_comm(), color.mpi_color(), key.mpi_rank(), YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::communicator::split", environment);
+    }
+
+# if MPI_VERSION >= 3
+    MPI_Comm split(
+      communicator const& other, ::yampi::split_type const split_type,
+      ::yampi::rank const key, ::yampi::information const& information,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Comm result;
+      int const error_code
+        = MPI_Comm_split_type(
+            other.mpi_comm(), split_type.mpi_split_type(), key.mpi_rank(), information.mpi_info(),
+            YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::communicator::split", environment);
     }
 # endif
 
