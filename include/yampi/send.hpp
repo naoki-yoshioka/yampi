@@ -251,7 +251,7 @@ namespace yampi
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(
       YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-      communicator, environment, buffer, destination, tag);
+      buffer, destination, tag, communicator, environment);
   }
 
   template <typename CommunicationMode, typename Value>
@@ -266,7 +266,7 @@ namespace yampi
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(
       YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-      communicator, environment, buffer, request, destination, tag);
+      request, buffer, destination, tag, communicator, environment);
   }
 }
 
