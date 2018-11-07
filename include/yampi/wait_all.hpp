@@ -23,7 +23,6 @@
 #   include <boost/static_assert.hpp>
 # endif
 
-# include <boost/range/iterator.hpp>
 # include <boost/range/begin.hpp>
 # include <boost/range/end.hpp>
 
@@ -37,7 +36,6 @@
 #   define YAMPI_is_same std::is_same
 # else
 #   define YAMPI_remove_cv boost::remove_cv
-#   define YAMPI_remove_volatile boost::remove_volatile
 #   define YAMPI_is_same boost::is_same
 # endif
 
@@ -118,7 +116,6 @@ namespace yampi
 # endif
 # undef YAMPI_addressof
 # undef YAMPI_remove_cv
-# undef YAMPI_remove_volatile
 # undef YAMPI_is_same
 
 #endif
