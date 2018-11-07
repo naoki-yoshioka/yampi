@@ -139,6 +139,13 @@ namespace yampi
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_request_ == other.mpi_request_))
     { return mpi_request_ == other.mpi_request_; }
 
+    void start(::yampi::environment const& environment)
+    {
+      int const error_code = MPI_Start(YAMPI_addressof(mpi_request_));
+      if (error_code == MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::request::start", environment);
+    }
+
     ::yampi::status wait(::yampi::environment const& environment)
     {
       MPI_Status mpi_status;

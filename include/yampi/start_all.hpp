@@ -1,5 +1,5 @@
-#ifndef YAMPI_WAIT_ALL
-# define YAMPI_WAIT_ALL
+#ifndef YAMPI_START_ALL
+# define YAMPI_START_ALL
 
 # include <boost/config.hpp>
 
@@ -26,7 +26,6 @@
 # include <boost/range/begin.hpp>
 # include <boost/range/end.hpp>
 
-# include <yampi/status.hpp>
 # include <yampi/request.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
@@ -52,40 +51,8 @@
 
 namespace yampi
 {
-  template <typename ContiguousIterator1, typename ContiguousIterator2>
-  inline void wait_all(
-    ContiguousIterator1 const first, ContiguousIterator1 const last,
-    ContiguousIterator2 const out, ::yampi::environment const& environment)
-  {
-    static_assert(
-      (YAMPI_is_same<
-         typename YAMPI_remove_cv<
-           typename std::iterator_traits<ContiguousIterator1>::value_type>::type,
-         ::yampi::request>::value),
-      "Value type of ContiguousIterator1 must be the same to ::yampi::request");
-    static_assert(
-      (YAMPI_is_same<
-         typename YAMPI_remove_cv<
-           typename std::iterator_traits<ContiguousIterator2>::value_type>::type,
-         ::yampi::status>::value),
-      "Value type of ContiguousIterator2 must be the same to ::yampi::status");
-
-    int const error_code
-      = MPI_Waitall(
-          last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
-          reinterpret_cast<MPI_Status*>(YAMPI_addressof(*out)));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::wait_all", environment);
-  }
-
-  template <typename ContiguousRange, typename ContiguousIterator>
-  inline void wait_all(
-    ContiguousRange const& requests, ContiguousIterator const out,
-    ::yampi::environment const& environment)
-  { ::yampi::wait_all(boost::begin(requests), boost::end(requests), out, environment); }
-
   template <typename ContiguousIterator>
-  inline void wait_all(
+  inline void start_all(
     ContiguousIterator const first, ContiguousIterator const last,
     ::yampi::environment const& environment)
   {
@@ -97,17 +64,15 @@ namespace yampi
       "Value type of ContiguousIterator must be the same to ::yampi::request");
 
     int const error_code
-      = MPI_Waitall(
-          last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)),
-          MPI_STATUSES_IGNORE);
+      = MPI_Startall(last-first, reinterpret_cast<MPI_Request*>(YAMPI_addressof(*first)));
     if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::wait_all", environment);
+      throw ::yampi::error(error_code, "yampi::start_all", environment);
   }
 
   template <typename ContiguousRange>
-  inline void wait_all(
+  inline void start_all(
     ContiguousRange const& requests, ::yampi::environment const& environment)
-  { ::yampi::wait_all(boost::begin(requests), boost::end(requests), environment); }
+  { ::yampi::start_all(boost::begin(requests), boost::end(requests), environment); }
 }
 
 
