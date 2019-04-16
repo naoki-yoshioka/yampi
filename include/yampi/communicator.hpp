@@ -64,6 +64,12 @@ namespace yampi
   struct world_communicator_t { };
   struct self_communicator_t { };
 
+  namespace tags
+  {
+    inline BOOST_CONSTEXPR ::yampi::world_communicator_t world_communicator() { return ::yampi::world_communicator_t(); }
+    inline BOOST_CONSTEXPR ::yampi::self_communicator_t self_communicator() { return ::yampi::self_communicator_t(); }
+  }
+
   class communicator
   {
     MPI_Comm mpi_comm_;
