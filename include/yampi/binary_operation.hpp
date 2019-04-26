@@ -240,7 +240,7 @@ namespace yampi
     { return mpi_op_ == MPI_OP_NULL; }
 
     bool operator==(binary_operation const& other) const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_op_ == other.mpi_op_))
+      BOOST_NOEXCPET_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_op_ == other.mpi_op_))*/
     { return mpi_op_ == other.mpi_op_; }
 
     MPI_Op const& mpi_op() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_op_; }

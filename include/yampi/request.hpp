@@ -136,7 +136,7 @@ namespace yampi
     { return mpi_request_ == MPI_REQUEST_NULL; }
 
     bool operator==(request const& other) const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_request_ == other.mpi_request_))
+      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_request_ == other.mpi_request_))*/
     { return mpi_request_ == other.mpi_request_; }
 
     void start(::yampi::environment const& environment)

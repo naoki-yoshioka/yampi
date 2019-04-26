@@ -324,7 +324,7 @@ namespace yampi
 
    public:
     bool operator==(datatype const& other) const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == other.mpi_datatype_))
+      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == other.mpi_datatype_))*/
     { return mpi_datatype_ == other.mpi_datatype_; }
 
     bool is_null() const

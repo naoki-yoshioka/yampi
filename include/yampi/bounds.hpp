@@ -47,7 +47,7 @@ namespace yampi
     { }
 
     bool operator==(bounds const& other) const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lower_bound_ == other.lower_bound_))
+      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lower_bound_ == other.lower_bound_))*/
     { return lower_bound_ == other.lower_bound_ and extent_ == other.extent_; }
 
     Count const& lower_bound() const BOOST_NOEXCEPT_OR_NOTHROW { return lower_bound_; }
