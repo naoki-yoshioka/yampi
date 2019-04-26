@@ -128,7 +128,7 @@ namespace yampi
       MPI_Op_free(YAMPI_addressof(mpi_op_));
     }
 
-    explicit binary_operation(MPI_Op const mpi_op)
+    explicit binary_operation(MPI_Op const& mpi_op)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Op>::value)
       : mpi_op_(mpi_op)
     { }

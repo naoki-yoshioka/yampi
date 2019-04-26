@@ -18,7 +18,7 @@ namespace yampi
   template <typename Value, typename ContiguousIterator>
   inline void put(
     ::yampi::buffer<Value> const& origin_buffer,
-    ::yampi::rank const target, int const target_index,
+    ::yampi::rank const& target, int const target_index,
     ::yampi::datatype const& target_datatype, int const target_count,
     ::yampi::window<Value> const& window,
     ::yampi::environment const& environment)
@@ -36,7 +36,7 @@ namespace yampi
   template <typename Value, typename ContiguousIterator>
   inline void put(
     ::yampi::buffer<Value> const& origin_buffer,
-    ::yampi::rank const target, int const target_index,
+    ::yampi::rank const& target, int const target_index,
     ::yampi::datatype const& target_datatype,
     ::yampi::window<Value> const& window,
     ::yampi::environment const& environment)
@@ -49,7 +49,7 @@ namespace yampi
   template <typename Value, typename ContiguousIterator>
   inline void put(
     ::yampi::buffer<Value> const& origin_buffer,
-    ::yampi::rank const target, int const target_index,
+    ::yampi::rank const& target, int const target_index,
     ::yampi::window<Value> const& window,
     ::yampi::environment const& environment)
   {

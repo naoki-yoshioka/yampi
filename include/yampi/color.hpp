@@ -68,10 +68,10 @@ namespace yampi
     ~color() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    BOOST_CONSTEXPR bool operator==(color const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR bool operator==(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_color_ == other.mpi_color_; }
 
-    bool operator<(color const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator<(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_color_ >= 0);
       assert(other.mpi_color_ >= 0);
@@ -143,7 +143,7 @@ namespace yampi
       return *this;
     }
 
-    int operator-(color const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    int operator-(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_color_ >= 0);
       assert(other.mpi_color_ >= 0);
@@ -165,19 +165,19 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::color const lhs, ::yampi::color const rhs)
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::color const& lhs, ::yampi::color const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
-  inline bool operator>=(::yampi::color const lhs, ::yampi::color const rhs)
+  inline bool operator>=(::yampi::color const& lhs, ::yampi::color const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::color const lhs, ::yampi::color const rhs)
+  inline bool operator>(::yampi::color const& lhs, ::yampi::color const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::color const lhs, ::yampi::color const rhs)
+  inline bool operator<=(::yampi::color const& lhs, ::yampi::color const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (rhs < lhs); }
 

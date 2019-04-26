@@ -76,13 +76,13 @@ namespace yampi
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
    public:
-    explicit topology(MPI_Comm const mpi_comm)
+    explicit topology(MPI_Comm const& mpi_comm)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
       : communicator_(mpi_comm)
     { }
 
    public:
-    void reset(MPI_Comm const mpi_comm, ::yampi::environment const& environment)
+    void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)
     { communicator_.reset(mpi_comm, environment); }
 
     void free(::yampi::environment const& environment)

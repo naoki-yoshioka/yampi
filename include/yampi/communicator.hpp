@@ -121,7 +121,7 @@ namespace yampi
       MPI_Comm_free(YAMPI_addressof(mpi_comm_));
     }
 
-    explicit communicator(MPI_Comm const mpi_comm)
+    explicit communicator(MPI_Comm const& mpi_comm)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
       : mpi_comm_(mpi_comm)
     { }
@@ -162,28 +162,28 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     communicator(
-      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag,
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const& tag,
       ::yampi::environment const& environment)
       : mpi_comm_(create(other, group, tag, environment))
     { }
 # endif
 
     communicator(
-      communicator const& other, ::yampi::color const color, ::yampi::rank const key,
+      communicator const& other, ::yampi::color const& color, ::yampi::rank const& key,
       ::yampi::environment const& environment)
       : mpi_comm_(split(other, color, key, environment))
     { }
 
 # if MPI_VERSION >= 3
     communicator(
-      communicator const& other, ::yampi::split_type const split_type,
-      ::yampi::rank const key, ::yampi::information const& information,
+      communicator const& other, ::yampi::split_type const& split_type,
+      ::yampi::rank const& key, ::yampi::information const& information,
       ::yampi::environment const& environment)
       : mpi_comm_(split(other, split_type, key, information, environment))
     { }
 
     communicator(
-      communicator const& other, ::yampi::split_type const split_type, ::yampi::rank const key,
+      communicator const& other, ::yampi::split_type const& split_type, ::yampi::rank const& key,
       ::yampi::environment const& environment)
       : mpi_comm_(split(other, split_type, key, ::yampi::information(), environment))
     { }
@@ -247,7 +247,7 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     MPI_Comm create(
-      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag,
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const& tag,
       ::yampi::environment const& environment) const
     {
       MPI_Comm result;
@@ -262,7 +262,7 @@ namespace yampi
 # endif
 
     MPI_Comm split(
-      communicator const& other, ::yampi::color const color, ::yampi::rank const key,
+      communicator const& other, ::yampi::color const& color, ::yampi::rank const& key,
       ::yampi::environment const& environment) const
     {
       MPI_Comm result;
@@ -276,8 +276,8 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     MPI_Comm split(
-      communicator const& other, ::yampi::split_type const split_type,
-      ::yampi::rank const key, ::yampi::information const& information,
+      communicator const& other, ::yampi::split_type const& split_type,
+      ::yampi::rank const& key, ::yampi::information const& information,
       ::yampi::environment const& environment) const
     {
       MPI_Comm result;
@@ -295,7 +295,7 @@ namespace yampi
     void reset(::yampi::environment const& environment)
     { free(environment); }
 
-    void reset(MPI_Comm const mpi_comm, ::yampi::environment const& environment)
+    void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_comm_ = mpi_comm;
@@ -346,7 +346,7 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     void reset(
-      communicator const& other, ::yampi::group const& group, ::yampi::tag const tag,
+      communicator const& other, ::yampi::group const& group, ::yampi::tag const& tag,
       ::yampi::environment const& environment)
     {
       if (this == YAMPI_addressof(other))
@@ -445,7 +445,7 @@ namespace yampi
 
 
   inline bool is_valid_rank(
-    ::yampi::rank const rank, ::yampi::communicator const& communicator,
+    ::yampi::rank const& rank, ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
     return rank >= ::yampi::rank(0)

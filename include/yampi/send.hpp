@@ -54,7 +54,7 @@ namespace yampi
   template <typename Value>
   inline void send(
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -70,7 +70,7 @@ namespace yampi
   inline void send(
     ::yampi::request& request,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -99,7 +99,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
@@ -109,7 +109,7 @@ namespace yampi
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, request, destination, tag); }
@@ -122,7 +122,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -139,7 +139,7 @@ namespace yampi
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -163,7 +163,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -180,7 +180,7 @@ namespace yampi
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -204,7 +204,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -221,7 +221,7 @@ namespace yampi
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
         ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       {
@@ -244,7 +244,7 @@ namespace yampi
   inline void send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -259,7 +259,7 @@ namespace yampi
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
     ::yampi::request& request,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {

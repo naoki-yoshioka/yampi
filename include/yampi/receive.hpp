@@ -34,7 +34,7 @@ namespace yampi
   template <typename Value>
   inline ::yampi::status receive(
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -52,7 +52,7 @@ namespace yampi
   template <typename Value>
   inline ::yampi::status receive(
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { return ::yampi::receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
@@ -67,7 +67,7 @@ namespace yampi
   template <typename Value>
   inline ::yampi::status receive(
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -85,7 +85,7 @@ namespace yampi
   template <typename Value>
   inline ::yampi::status receive(
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { return ::yampi::receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
@@ -138,7 +138,7 @@ namespace yampi
   inline void receive(
     ::yampi::ignore_status_t const,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -154,7 +154,7 @@ namespace yampi
   inline void receive(
     ::yampi::ignore_status_t const ignore_status,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { ::yampi::receive(ignore_status, buffer, source, ::yampi::any_tag(), communicator, environment); }
@@ -171,7 +171,7 @@ namespace yampi
   inline void receive(
     ::yampi::ignore_status_t const,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -187,7 +187,7 @@ namespace yampi
   inline void receive(
     ::yampi::ignore_status_t const ignore_status,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { ::yampi::receive(ignore_status, buffer, source, ::yampi::any_tag(), communicator, environment); }
@@ -240,7 +240,7 @@ namespace yampi
   inline void receive(
     ::yampi::request& request,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -260,7 +260,7 @@ namespace yampi
   inline void receive(
     ::yampi::request& request,
     ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
@@ -277,7 +277,7 @@ namespace yampi
   inline void receive(
     ::yampi::request& request,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
@@ -297,7 +297,7 @@ namespace yampi
   inline void receive(
     ::yampi::request& request,
     ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const source,
+    ::yampi::rank const& source,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }

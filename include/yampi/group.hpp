@@ -134,7 +134,7 @@ namespace yampi
       MPI_Group_free(YAMPI_addressof(mpi_group_));
     }
 
-    explicit group(MPI_Group const mpi_group)
+    explicit group(MPI_Group const& mpi_group)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(mpi_group)
     { }
@@ -285,7 +285,7 @@ namespace yampi
     void reset(::yampi::environment const& environment)
     { free(environment); }
 
-    void reset(MPI_Group const mpi_group, ::yampi::environment const& environment)
+    void reset(MPI_Group const& mpi_group, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_group_ = mpi_group;

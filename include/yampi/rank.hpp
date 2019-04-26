@@ -98,10 +98,10 @@ namespace yampi
 
     bool is_null() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_rank_ == MPI_PROC_NULL; }
 
-    BOOST_CONSTEXPR bool operator==(rank const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR bool operator==(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_rank_ == other.mpi_rank_; }
 
-    bool operator<(rank const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator<(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(
@@ -175,7 +175,7 @@ namespace yampi
       return *this;
     }
 
-    int operator-(rank const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    int operator-(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(
@@ -198,19 +198,19 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::rank const lhs, ::yampi::rank const rhs)
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
-  inline bool operator>=(::yampi::rank const lhs, ::yampi::rank const rhs)
+  inline bool operator>=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::rank const lhs, ::yampi::rank const rhs)
+  inline bool operator>(::yampi::rank const& lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::rank const lhs, ::yampi::rank const rhs)
+  inline bool operator<=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (rhs < lhs); }
 
@@ -243,12 +243,12 @@ namespace yampi
   { lhs /= rhs; return lhs; }
 
   template <typename Integral>
-  inline ::yampi::rank operator+(Integral const lhs, ::yampi::rank const rhs)
+  inline ::yampi::rank operator+(Integral const lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
   template <typename Integral>
-  inline ::yampi::rank operator*(Integral const lhs, ::yampi::rank const rhs)
+  inline ::yampi::rank operator*(Integral const lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 
@@ -271,13 +271,13 @@ namespace yampi
   inline bool exists_host_process(::yampi::environment const& environment)
   { return not ::yampi::host_process(environment).is_null(); }
 
-  inline bool is_host_process(::yampi::rank const self, ::yampi::environment const& environment)
+  inline bool is_host_process(::yampi::rank const& self, ::yampi::environment const& environment)
   { return self == ::yampi::host_process(environment); }
 
   inline bool exists_io_process(::yampi::environment const& environment)
   { return not ::yampi::io_process(environment).is_null(); }
 
-  inline bool is_io_process(::yampi::rank const self, ::yampi::environment const& environment)
+  inline bool is_io_process(::yampi::rank const& self, ::yampi::environment const& environment)
   {
     ::yampi::rank const io = ::yampi::io_process(environment);
     return io == ::yampi::any_source() or self == io;

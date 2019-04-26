@@ -91,7 +91,7 @@ namespace yampi
 
   template <typename Count>
   inline ::yampi::bounds<Count> make_bounds(
-    Count const lower_bound, Count const extent)
+    Count const& lower_bound, Count const& extent)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::bounds<Count>(lower_bound, extent)))
   { return ::yampi::bounds<Count>(lower_bound, extent); }
 }

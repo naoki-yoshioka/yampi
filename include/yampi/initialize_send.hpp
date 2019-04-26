@@ -54,7 +54,7 @@ namespace yampi
   template <typename Value>
   inline void initialize_send(
     ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::buffer<Value> const& buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
@@ -81,7 +81,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::buffer<Value> const& buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       { initialize(request, buffer, destination, tag, communicator, environment); }
     };
@@ -93,7 +93,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::buffer<Value> const& buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
@@ -115,7 +115,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::buffer<Value> const& buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
         ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
@@ -137,7 +137,7 @@ namespace yampi
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
         ::yampi::request& request,
-        ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const destination, ::yampi::tag const send_tag,
+        ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& destination, ::yampi::tag const& send_tag,
         ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
         MPI_Request mpi_request;
@@ -158,7 +158,7 @@ namespace yampi
   inline void initialize_send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
     ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::buffer<Value> const& buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;

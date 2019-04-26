@@ -44,7 +44,7 @@ namespace yampi
       : mpi_message_(MPI_MESSAGE_NULL)
     { }
 
-    explicit message(MPI_Message const mpi_message)
+    explicit message(MPI_Message const& mpi_message)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Message>::value)
       : mpi_message_(mpi_message)
     { }

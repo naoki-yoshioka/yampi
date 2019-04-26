@@ -31,7 +31,7 @@ namespace yampi
   template <typename Value>
   inline void initialize_receive(
     ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer, ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::buffer<Value>& buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
@@ -48,7 +48,7 @@ namespace yampi
   template <typename Value>
   inline void initialize_receive(
     ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer, ::yampi::rank const source,
+    ::yampi::buffer<Value>& buffer, ::yampi::rank const& source,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   { ::yampi::initialize_receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
 
@@ -61,7 +61,7 @@ namespace yampi
   template <typename Value>
   inline void initialize_receive(
     ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer, ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::buffer<Value> const& buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
@@ -78,7 +78,7 @@ namespace yampi
   template <typename Value>
   inline void initialize_receive(
     ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer, ::yampi::rank const source,
+    ::yampi::buffer<Value> const& buffer, ::yampi::rank const& source,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   { ::yampi::initialize_receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
 

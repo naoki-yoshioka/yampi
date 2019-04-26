@@ -134,7 +134,7 @@ namespace yampi
       MPI_Win_free(YAMPI_addressof(mpi_win_));
     }
 
-    window(MPI_Win const mpi_win, ::yampi::environment const& environment)
+    window(MPI_Win const& mpi_win, ::yampi::environment const& environment)
       : mpi_win_(mpi_win), base_ptr_(get_base_ptr(mpi_win, environment))
     { }
 
@@ -176,7 +176,7 @@ namespace yampi
     // TODO: implement other constructors
 
    private:
-    Value* get_base_ptr(MPI_Win const mpi_win, ::yampi::environment const& environment) const
+    Value* get_base_ptr(MPI_Win const& mpi_win, ::yampi::environment const& environment) const
     {
       Value* result;
       int exists_base_ptr;
@@ -190,7 +190,7 @@ namespace yampi
     template <typename ContiguousIterator>
     MPI_Win create(
       ContiguousIterator const first, ContiguousIterator const last,
-      MPI_Info mpi_info, ::yampi::communicator const& communicator,
+      MPI_Info const& mpi_info, ::yampi::communicator const& communicator,
       ::yampi::environment const& environment) const
     {
       static_assert(
@@ -217,7 +217,7 @@ namespace yampi
     void reset(::yampi::environment const& environment)
     { free(environment); }
 
-    void reset(MPI_Win const mpi_win, ::yampi::environment const& environment)
+    void reset(MPI_Win const& mpi_win, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_win_ = mpi_win;

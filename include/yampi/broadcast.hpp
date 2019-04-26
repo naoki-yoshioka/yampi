@@ -73,7 +73,7 @@ namespace yampi
 # endif
 
     broadcast(
-      ::yampi::rank const root, ::yampi::communicator const& communicator)
+      ::yampi::rank const& root, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value)
       : root_(root), communicator_(communicator)
     { }

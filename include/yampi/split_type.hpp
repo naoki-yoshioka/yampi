@@ -64,7 +64,7 @@ namespace yampi
     ~split_type() BOOST_NOEXCEPT_OR_NOTHROW = default;
 #   endif
 
-    BOOST_CONSTEXPR bool operator==(split_type const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR bool operator==(split_type const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_split_type_ == other.mpi_split_type_; }
 
     BOOST_CONSTEXPR int const& mpi_split_type() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_split_type_; }
@@ -77,7 +77,7 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::split_type const lhs, ::yampi::split_type const rhs)
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::split_type const& lhs, ::yampi::split_type const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 

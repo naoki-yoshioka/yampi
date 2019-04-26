@@ -116,7 +116,7 @@ namespace yampi
     ::yampi::address stride_bytes_;
 
    public:
-    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::address const stride_bytes)
+    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::address const& stride_bytes)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::address >::value)
       : length_(length), stride_bytes_(stride_bytes)
     { }

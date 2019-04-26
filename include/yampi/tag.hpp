@@ -87,10 +87,10 @@ namespace yampi
     ~tag() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    BOOST_CONSTEXPR bool operator==(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    BOOST_CONSTEXPR bool operator==(tag const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_tag_ == other.mpi_tag_; }
 
-    bool operator<(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator<(tag const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
       assert(other.mpi_tag_ >= 0);
@@ -184,19 +184,19 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::tag const lhs, ::yampi::tag const rhs)
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::tag const& lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs == rhs); }
 
-  inline bool operator>=(::yampi::tag const lhs, ::yampi::tag const rhs)
+  inline bool operator>=(::yampi::tag const& lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::tag const lhs, ::yampi::tag const rhs)
+  inline bool operator>(::yampi::tag const& lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::tag const lhs, ::yampi::tag const rhs)
+  inline bool operator<=(::yampi::tag const& lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return not (rhs < lhs); }
 
@@ -229,12 +229,12 @@ namespace yampi
   { lhs /= rhs; return lhs; }
 
   template <typename Integral>
-  inline ::yampi::tag operator+(Integral const lhs, ::yampi::tag const rhs)
+  inline ::yampi::tag operator+(Integral const lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
   template <typename Integral>
-  inline ::yampi::tag operator*(Integral const lhs, ::yampi::tag const rhs)
+  inline ::yampi::tag operator*(Integral const lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 
@@ -249,7 +249,7 @@ namespace yampi
   inline ::yampi::tag tag_upper_bound(::yampi::environment const& environment)
   { return ::yampi::tag(::yampi::tag_upper_bound_t(), environment); }
 
-  inline bool is_valid_tag(::yampi::tag const self, ::yampi::environment const& environment)
+  inline bool is_valid_tag(::yampi::tag const& self, ::yampi::environment const& environment)
   {
     BOOST_CONSTEXPR_OR_CONST ::yampi::tag tag_lower_bound(0);
     return self >= tag_lower_bound and self <= ::yampi::tag_upper_bound(environment);

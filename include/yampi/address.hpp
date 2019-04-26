@@ -58,16 +58,16 @@ namespace yampi
     ~address() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
-    BOOST_CONSTEXPR explicit address(MPI_Aint const mpi_address)
+    BOOST_CONSTEXPR explicit address(MPI_Aint const& mpi_address)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Aint>::value)
       : mpi_address_(mpi_address)
     { }
 
-    BOOST_CONSTEXPR bool operator==(address const other) const
+    BOOST_CONSTEXPR bool operator==(address const& other) const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ == other.mpi_address_))
     { return mpi_address_ == other.mpi_address_; }
 
-    BOOST_CONSTEXPR bool operator<(address const other) const
+    BOOST_CONSTEXPR bool operator<(address const& other) const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ < other.mpi_address_))
     { return mpi_address_ < other.mpi_address_; }
 
@@ -96,7 +96,7 @@ namespace yampi
       return *this;
     }
 
-    address& operator+=(address const other)
+    address& operator+=(address const& other)
     {
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_add(mpi_address_, other.mpi_address_);
@@ -107,7 +107,7 @@ namespace yampi
       return *this;
     }
 
-    address& operator-=(address const other)
+    address& operator-=(address const& other)
     {
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       mpi_address_ = MPI_Aint_diff(mpi_address_, other.mpi_address_);
@@ -130,19 +130,19 @@ namespace yampi
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::address const lhs, ::yampi::address const rhs)
+  inline BOOST_CONSTEXPR bool operator!=(::yampi::address const& lhs, ::yampi::address const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
-  inline BOOST_CONSTEXPR bool operator>=(::yampi::address const lhs, ::yampi::address const rhs)
+  inline BOOST_CONSTEXPR bool operator>=(::yampi::address const& lhs, ::yampi::address const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
   { return not (lhs < rhs); }
 
-  inline BOOST_CONSTEXPR bool operator>(::yampi::address const lhs, ::yampi::address const rhs)
+  inline BOOST_CONSTEXPR bool operator>(::yampi::address const& lhs, ::yampi::address const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
   { return rhs < lhs; }
 
-  inline BOOST_CONSTEXPR bool operator<=(::yampi::address const lhs, ::yampi::address const rhs)
+  inline BOOST_CONSTEXPR bool operator<=(::yampi::address const& lhs, ::yampi::address const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
   { return not (rhs < lhs); }
 
@@ -152,10 +152,10 @@ namespace yampi
   inline ::yampi::address operator--(::yampi::address& self, int)
   { ::yampi::address result = self; --self; return result; }
 
-  inline ::yampi::address operator+(::yampi::address lhs, ::yampi::address const rhs)
+  inline ::yampi::address operator+(::yampi::address lhs, ::yampi::address const& rhs)
   { lhs += rhs; return lhs; }
 
-  inline ::yampi::address operator-(::yampi::address lhs, ::yampi::address const rhs)
+  inline ::yampi::address operator-(::yampi::address lhs, ::yampi::address const& rhs)
   { lhs -= rhs; return lhs; }
 
   inline void swap(::yampi::address& lhs, ::yampi::address& rhs)
