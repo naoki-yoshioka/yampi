@@ -42,8 +42,8 @@ namespace yampi
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
-      Value const value,
+      ::yampi::rank const& root,
+      Value const& value,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -71,7 +71,7 @@ namespace yampi
     template <typename Value>
     inline typename std::iterator_traits<Value const*>::difference_type
     count(
-      ::yampi::buffer<Value> const& buffer, Value const value,
+      ::yampi::buffer<Value> const& buffer, Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
@@ -90,8 +90,8 @@ namespace yampi
     count(
       ::yampi::request& request,
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
-      Value const value,
+      ::yampi::rank const& root,
+      Value const& value,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -122,7 +122,7 @@ namespace yampi
     inline typename std::iterator_traits<Value const*>::difference_type
     count(
       ::yampi::request& request,
-      ::yampi::buffer<Value> const& buffer, Value const value,
+      ::yampi::buffer<Value> const& buffer, Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(

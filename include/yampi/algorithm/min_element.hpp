@@ -58,7 +58,7 @@ namespace yampi
       boost::optional< std::pair< ::yampi::rank, int > > >::type
     min_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -103,7 +103,7 @@ namespace yampi
     boost::optional< std::pair< ::yampi::rank, int > >
     min_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
+      ::yampi::rank const& root,
       ::yampi::datatype const& value_int_datatype,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)

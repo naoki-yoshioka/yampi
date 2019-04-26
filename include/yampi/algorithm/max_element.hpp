@@ -58,7 +58,7 @@ namespace yampi
       boost::optional< std::pair< ::yampi::rank, int > > >::tpye
     max_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -103,7 +103,7 @@ namespace yampi
     boost::optional< std::pair< ::yampi::rank, int > >
     max_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const root,
+      ::yampi::rank const& root,
       ::yampi::datatype const& value_int_datatype,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
@@ -178,7 +178,7 @@ namespace yampi
     template <typename Value>
     inline std::pair< ::yampi::rank, int > max_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::datatype const value_int_datatype,
+      ::yampi::datatype const& value_int_datatype,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       Value const* max_value_ptr

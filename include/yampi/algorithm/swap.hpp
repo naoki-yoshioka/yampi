@@ -27,8 +27,8 @@ namespace yampi
     inline ::yampi::status swap(
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -40,7 +40,7 @@ namespace yampi
     inline ::yampi::status swap(
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::rank const swap_rank,
+      ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -52,8 +52,8 @@ namespace yampi
     inline ::yampi::status swap(
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -65,7 +65,7 @@ namespace yampi
     inline ::yampi::status swap(
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::rank const swap_rank,
+      ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -77,8 +77,8 @@ namespace yampi
     // with replacement
     template <typename Value>
     inline ::yampi::status swap(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -88,7 +88,7 @@ namespace yampi
 
     template <typename Value>
     inline ::yampi::status swap(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const swap_rank,
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -98,8 +98,8 @@ namespace yampi
 
     template <typename Value>
     inline ::yampi::status swap(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -109,7 +109,7 @@ namespace yampi
 
     template <typename Value>
     inline ::yampi::status swap(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const swap_rank,
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -124,8 +124,8 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -140,7 +140,7 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::rank const swap_rank,
+      ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -153,8 +153,8 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -169,7 +169,7 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::rank const swap_rank,
+      ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -182,8 +182,8 @@ namespace yampi
     template <typename Value>
     inline void swap(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -196,7 +196,7 @@ namespace yampi
     template <typename Value>
     inline void swap(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const swap_rank,
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -207,8 +207,8 @@ namespace yampi
     template <typename Value>
     inline void swap(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const swap_rank,
-      ::yampi::tag const tag,
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& swap_rank,
+      ::yampi::tag const& tag,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -221,7 +221,7 @@ namespace yampi
     template <typename Value>
     inline void swap(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const swap_rank,
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& swap_rank,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -237,7 +237,7 @@ namespace yampi
       int const direction, int const displacement,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -262,7 +262,7 @@ namespace yampi
       int const direction, int const displacement,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -288,7 +288,7 @@ namespace yampi
     inline ::yampi::status swap(
       int const direction, int const displacement,
       ::yampi::buffer<Value>& buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -311,7 +311,7 @@ namespace yampi
     inline ::yampi::status swap(
       int const direction, int const displacement,
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -338,7 +338,7 @@ namespace yampi
       int const direction, int const displacement,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -367,7 +367,7 @@ namespace yampi
       int const direction, int const displacement,
       ::yampi::buffer<SendValue> const& send_buffer,
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -397,7 +397,7 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       int const direction, int const displacement,
       ::yampi::buffer<Value>& buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
@@ -424,7 +424,7 @@ namespace yampi
       ::yampi::ignore_status_t const ignore_status,
       int const direction, int const displacement,
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::tag const tag,
+      ::yampi::tag const& tag,
       ::yampi::cartesian const& cartesian,
       ::yampi::environment const& environment)
     {
