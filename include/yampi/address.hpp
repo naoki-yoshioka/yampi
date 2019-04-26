@@ -64,11 +64,11 @@ namespace yampi
     { }
 
     BOOST_CONSTEXPR bool operator==(address const& other) const
-      BOOST_NOEXCPET_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ == other.mpi_address_))*/
+      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ == other.mpi_address_))*/
     { return mpi_address_ == other.mpi_address_; }
 
     BOOST_CONSTEXPR bool operator<(address const& other) const
-      BOOST_NOEXCPET_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ < other.mpi_address_))*/
+      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ < other.mpi_address_))*/
     { return mpi_address_ < other.mpi_address_; }
 
     // The following addition and difference member functions are not noexcept because MPI_Get_address might cause error (no exception though)
