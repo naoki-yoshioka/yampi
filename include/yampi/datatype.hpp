@@ -3,8 +3,8 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # include <utility>
-# include <stdexcept>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
 #   if __cplusplus < 201703L
@@ -18,6 +18,7 @@
 #   include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #   include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
+#   include <boost/utility/enable_if.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -34,8 +35,8 @@
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/address.hpp>
-# include <yampi/uncommitted_datatype.hpp>
 # include <yampi/bounds.hpp>
+# include <yampi/datatype_base.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
@@ -44,6 +45,7 @@
 #   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
 #   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
+#   define YAMPI_enable_if std::enable_if
 # else
 #   define YAMPI_is_same boost::is_same
 #   define YAMPI_is_convertible boost::is_convertible
@@ -51,6 +53,7 @@
 #   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
 #   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+#   define YAMPI_enable_if boost::enable_if_c
 # endif
 
 # if __cplusplus >= 201703L
@@ -82,94 +85,126 @@
 
 namespace yampi
 {
-  struct char_datatype_t { };
-  struct short_datatype_t { };
-  struct int_datatype_t { };
-  struct long_datatype_t { };
-# ifndef BOOST_NO_LONG_LONG
-  struct long_long_datatype_t { };
-# endif
-  struct signed_char_datatype_t { };
-  struct unsigned_char_datatype_t { };
-  struct unsigned_short_datatype_t { };
-  struct unsigned_datatype_t { };
-  struct unsigned_long_datatype_t { };
-# ifndef BOOST_NO_LONG_LONG
-  struct unsigned_long_long_datatype_t { };
-# endif
-  struct float_datatype_t { };
-  struct double_datatype_t { };
-  struct long_double_datatype_t { };
-  struct wchar_datatype_t { };
-# if MPI_VERSION >= 2
-  struct bool_datatype_t { };
-  struct float_complex_datatype_t { };
-  struct double_complex_datatype_t { };
-  struct long_double_complex_datatype_t { };
-# endif
-  struct short_int_datatype_t { };
-  struct int_int_datatype_t { };
-  struct long_int_datatype_t { };
-  struct float_int_datatype_t { };
-  struct double_int_datatype_t { };
-  struct long_double_int_datatype_t { };
+  class strided_block
+  {
+    int length_;
+    int stride_;
+
+   public:
+    BOOST_CONSTEXPR strided_block(int const length, int const stride) BOOST_NOEXCEPT_OR_NOTHROW
+      : length_(length), stride_(stride)
+    { }
+
+    BOOST_CONSTEXPR int const& length() const BOOST_NOEXCEPT_OR_NOTHROW { return length_; }
+    BOOST_CONSTEXPR int const& stride() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_; }
+
+    void swap(strided_block& other) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      using std::swap;
+      swap(length_, other.length_);
+      swap(stride_, other.stride_);
+    }
+  };
+
+  BOOST_CONSTEXPR inline bool operator==(
+    ::yampi::strided_block const& lhs, ::yampi::strided_block const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { return lhs.length() == rhs.length() and lhs.stride() == rhs.stride(); }
+
+  BOOST_CONSTEXPR inline bool operator!=(
+    ::yampi::strided_block const& lhs, ::yampi::strided_block const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { return not (lhs == rhs); }
+
+  inline void swap(::yampi::strided_block& lhs, ::yampi::strided_block& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
+
+
+  class heterogeneous_strided_block
+  {
+    int length_;
+    ::yampi::address stride_bytes_;
+
+   public:
+    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::address const& stride_bytes)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::address >::value)
+      : length_(length), stride_bytes_(stride_bytes)
+    { }
+
+    BOOST_CONSTEXPR int const& length() const BOOST_NOEXCEPT_OR_NOTHROW { return length_; }
+    BOOST_CONSTEXPR ::yampi::address const& stride_bytes() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_bytes_; }
+
+    void swap(heterogeneous_strided_block& other)
+      BOOST_NOEXCEPT_IF(
+        YAMPI_is_nothrow_swappable< ::yampi::address >::value)
+    {
+      using std::swap;
+      swap(length_, other.length_);
+      swap(stride_bytes_, other.stride_bytes_);
+    }
+  };
+
+  BOOST_CONSTEXPR inline bool operator==(
+    ::yampi::heterogeneous_strided_block const& lhs,
+    ::yampi::heterogeneous_strided_block const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.stride_bytes() == rhs.stride_bytes()))
+  {
+    return
+      lhs.length() == rhs.length() and lhs.stride_bytes() == rhs.stride_bytes();
+  }
+
+  BOOST_CONSTEXPR inline bool operator!=(
+    ::yampi::heterogeneous_strided_block const& lhs,
+    ::yampi::heterogeneous_strided_block const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
+  { return not (lhs == rhs); }
+
+  inline void swap(
+    ::yampi::heterogeneous_strided_block& lhs,
+    ::yampi::heterogeneous_strided_block& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  { lhs.swap(rhs); }
+
 
   namespace datatype_detail
   {
-    inline bool is_basic_datatype(MPI_Datatype const& mpi_datatype)
+    inline bool is_predefined_mpi_datatype(MPI_Datatype const& mpi_datatype)
     {
       return
         mpi_datatype == MPI_CHAR or mpi_datatype == MPI_SHORT
         or mpi_datatype == MPI_INT or mpi_datatype == MPI_LONG
-# ifndef BOOST_NO_LONG_LONG
+#   ifndef BOOST_NO_LONG_LONG
         or mpi_datatype == MPI_LONG_LONG
-# endif
+#   endif
         or mpi_datatype == MPI_SIGNED_CHAR
         or mpi_datatype == MPI_UNSIGNED_CHAR or mpi_datatype == MPI_UNSIGNED_SHORT
         or mpi_datatype == MPI_UNSIGNED or mpi_datatype == MPI_UNSIGNED_LONG
-# ifndef BOOST_NO_LONG_LONG
+#   ifndef BOOST_NO_LONG_LONG
         or mpi_datatype == MPI_UNSIGNED_LONG_LONG
-# endif
+#   endif
         or mpi_datatype == MPI_FLOAT or mpi_datatype == MPI_DOUBLE or mpi_datatype == MPI_LONG_DOUBLE
         or mpi_datatype == MPI_WCHAR
-# if MPI_VERSION >= 3 || defined(__FUJITSU)
+#   if MPI_VERSION >= 3
         or mpi_datatype == MPI_CXX_BOOL or mpi_datatype == MPI_CXX_FLOAT_COMPLEX
         or mpi_datatype == MPI_CXX_DOUBLE_COMPLEX or mpi_datatype == MPI_CXX_LONG_DOUBLE_COMPLEX
-# elif MPI_VERSION >= 2
+#   elif MPI_VERSION >= 2
         or mpi_datatype == MPI::BOOL or mpi_datatype == MPI::COMPLEX
         or mpi_datatype == MPI::DOUBLE_COMPLEX or mpi_datatype == MPI::LONG_DOUBLE_COMPLEX
-# endif
+#   endif
         or mpi_datatype == MPI_SHORT_INT or mpi_datatype == MPI_2INT or mpi_datatype == MPI_LONG_INT
         or mpi_datatype == MPI_FLOAT_INT or mpi_datatype == MPI_DOUBLE_INT or mpi_datatype == MPI_LONG_DOUBLE_INT;
     }
   }
 
-
-  class uncommitted_datatype_has_been_committed_error
-    : public std::logic_error
-  {
-   public:
-    uncommitted_datatype_has_been_committed_error()
-      : std::logic_error("MPI datatype given by uncommitted_datatype has already been committed by MPI_Type_commit")
-    { }
-  };
-
-
   class datatype
+    : public ::yampi::datatype_base< ::yampi::datatype >
   {
+    typedef ::yampi::datatype_base< ::yampi::datatype > super_type;
+
     MPI_Datatype mpi_datatype_;
 
    public:
-# if MPI_VERSION >= 3
-    typedef MPI_Count size_type;
-    typedef MPI_Count count_type;
-    typedef ::yampi::bounds<count_type> bounds_type;
-# else
-    typedef int size_type;
-    typedef MPI_Aint count_type;
-    typedef ::yampi::bounds<count_type> bounds_type;
-# endif
-
     datatype()
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
       : mpi_datatype_(MPI_DATATYPE_NULL)
@@ -210,7 +245,8 @@ namespace yampi
 
     ~datatype() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_datatype_ == MPI_DATATYPE_NULL or ::yampi::datatype_detail::is_basic_datatype(mpi_datatype_))
+      if (mpi_datatype_ == MPI_DATATYPE_NULL
+          or ::yampi::datatype_detail::is_predefined_mpi_datatype(mpi_datatype_))
         return;
 
       MPI_Type_free(YAMPI_addressof(mpi_datatype_));
@@ -221,118 +257,450 @@ namespace yampi
       : mpi_datatype_(mpi_datatype)
     { }
 
-# define YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(type, mpitype) \
-    explicit datatype(::yampi:: type ## _datatype_t const)\
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)\
-      : mpi_datatype_(MPI_ ## mpitype )\
-    { }
-
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(char, CHAR)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(short, SHORT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(int, INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long, LONG)
-# ifndef BOOST_NO_LONG_LONG
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_long, LONG_LONG)
-# endif
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(signed_char, SIGNED_CHAR)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(unsigned_char, UNSIGNED_CHAR)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(unsigned_short, UNSIGNED_SHORT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(unsigned, UNSIGNED)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(unsigned_long, UNSIGNED_LONG)
-# ifndef BOOST_NO_LONG_LONG
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(unsigned_long_long, UNSIGNED_LONG_LONG)
-# endif
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(float, FLOAT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double, DOUBLE)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double, LONG_DOUBLE)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(wchar, WCHAR)
-# if MPI_VERSION >= 3 || defined(__FUJITSU)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(bool, CXX_BOOL)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(float_complex, CXX_FLOAT_COMPLEX)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_complex, CXX_DOUBLE_COMPLEX)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
-# elif MPI_VERSION >= 2
-    explicit datatype(::yampi::bool_datatype_t const)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(MPI::BOOL)
-    { }
-    explicit datatype(::yampi::float_complex_datatype_t const)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(MPI::COMPLEX)
-    { }
-    explicit datatype(::yampi::double_complex_datatype_t const)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(MPI::DOUBLE_COMPLEX)
-    { }
-    explicit datatype(::yampi::long_double_complex_datatype_t const)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(MPI::LONG_DOUBLE_COMPLEX)
-    { }
-# endif
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(short_int, SHORT_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(int_int, 2INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_int, LONG_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(float_int, FLOAT_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(double_int, DOUBLE_INT)
-    YAMPI_DEFINE_DATATYPE_CONSTRUCTOR(long_double_int, LONG_DOUBLE_INT)
-
-# undef YAMPI_DEFINE_DATATYPE_CONSTRUCTOR
-
+    template <typename DerivedDatatype>
     datatype(
-      ::yampi::uncommitted_datatype& uncommitted_datatype,
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::environment const& environment)
-      : mpi_datatype_(commit(uncommitted_datatype, environment))
+      : mpi_datatype_(duplicate(base_datatype, environment))
     { }
 
+    // MPI_Type_contiguous
+    template <typename DerivedDatatype>
     datatype(
-      datatype const& old_datatype,
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(duplicate(old_datatype, environment))
+      : mpi_datatype_(derive(base_datatype, count, environment))
+    { }
+
+    // MPI_Type_vector
+    template <typename DerivedDatatype>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::strided_block const& block, int const count,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(derive(base_datatype, block, count, environment))
+    { }
+
+    // MPI_Type_create_hvector
+    template <typename DerivedDatatype>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::heterogeneous_strided_block const& block, int const count,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(derive(base_datatype, block, count, environment))
+    { }
+
+    // MPI_Type_indexed, MPI_Type_create_hindexed
+    template <typename DerivedDatatype, typename ContiguousIterator1, typename ContiguousIterator2>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator1 const displacement_first,
+      ContiguousIterator1 const displacement_last,
+      ContiguousIterator2 const block_length_first,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(
+          derive(
+            base_datatype, displacement_first, displacement_last, block_length_first,
+            environment))
+    { }
+
+    // MPI_Type_create_indexed_block, MPI_Type_create_hindexed_block
+    template <typename DerivedDatatype, typename ContiguousIterator>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator const displacement_first,
+      ContiguousIterator const displacement_last,
+      int const block_length,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(
+          derive(
+            base_datatype, displacement_first, displacement_last, block_length,
+            environment))
+    { }
+
+    // MPI_Type_create_struct
+    template <
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    datatype(
+      ContiguousIterator1 const datatype_first,
+      ContiguousIterator1 const datatype_last,
+      ContiguousIterator2 const byte_displacement_first,
+      ContiguousIterator3 const block_length_first,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(
+          derive(
+            datatype_first, datatype_last, byte_displacement_first, block_length_first,
+            environment))
+    { }
+
+    // MPI_Type_create_subarray
+    template <
+      typename DerivedDatatype,
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& array_element_datatype,
+      ContiguousIterator1 const array_size_first,
+      ContiguousIterator1 const array_size_last,
+      ContiguousIterator2 const array_subsize_first,
+      ContiguousIterator3 const array_start_index_first,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(
+          derive(
+            array_element_datatype,
+            array_size_first, array_size_last,
+            array_subsize_first, array_start_index_first,
+            environment))
+    { }
+
+    template <typename DerivedDatatype>
+    datatype(
+      ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
+      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::environment const& environment)
+      : mpi_datatype_(derive(old_datatype, new_bounds, environment))
     { }
 
    private:
-    MPI_Datatype commit(
-      ::yampi::uncommitted_datatype& uncommitted_datatype,
-      ::yampi::environment const& environment) const
-    {
-      if (uncommitted_datatype.is_committed_)
-        throw ::yampi::uncommitted_datatype_has_been_committed_error();
-
-      MPI_Datatype result = uncommitted_datatype.mpi_datatype();
-      int const error_code = MPI_Type_commit(YAMPI_addressof(result));
-
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
-
-      uncommitted_datatype.is_committed_ = true;
-      return result;
-    }
-
+    template <typename DerivedDatatype>
     MPI_Datatype duplicate(
-      datatype const& old_datatype,
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::environment const& environment)
     {
       MPI_Datatype result;
       int const error_code
-        = MPI_Type_dup(old_datatype.mpi_datatype_, YAMPI_addressof(result));
+        = MPI_Type_dup(base_datatype.mpi_datatype(), YAMPI_addressof(result));
 
       return error_code == MPI_SUCCESS
         ? result
-        : throw ::yampi::error(
-            error_code, "yampi::datatype::duplicate", environment);
+        : throw ::yampi::error(error_code, "yampi::datatype::duplicate", environment);
+    }
+
+    // MPI_Type_contiguous
+    template <typename DerivedDatatype>
+    MPI_Datatype derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype, int const count,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_contiguous(
+            count, base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_vector
+    template <typename DerivedDatatype>
+    MPI_Datatype derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::strided_block const& block, int const count,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_vector(
+            count, block.length(), block.stride(),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_hvector
+    template <typename DerivedDatatype>
+    MPI_Datatype derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::heterogeneous_strided_block const& block, int const count,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_hvector(
+            count, block.length(), block.stride_bytes().mpi_address(),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_indexed
+    template <typename DerivedDatatype, typename ContiguousIterator1, typename ContiguousIterator2>
+    typename YAMPI_enable_if<
+      not YAMPI_is_same<
+        typename std::iterator_traits<ContiguousIterator1>::value_type,
+        ::yampi::address>::value,
+      MPI_Datatype>::type
+    derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator1 const displacement_first,
+      ContiguousIterator1 const displacement_last,
+      ContiguousIterator2 const block_length_first,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator1 must be convertible to int const");
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator2 must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_indexed(
+            displacement_last - displacement_first,
+            YAMPI_addressof(*block_length_first),
+            YAMPI_addressof(*displacement_first),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_hindexed
+    template <typename DerivedDatatype, typename ContiguousIterator1, typename ContiguousIterator2>
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename std::iterator_traits<ContiguousIterator1>::value_type,
+        ::yampi::address>::value,
+      MPI_Datatype>::type
+    derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator1 const byte_displacement_first,
+      ContiguousIterator1 const byte_displacement_last,
+      ContiguousIterator2 const block_length_first,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator2 must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_hindexed(
+            byte_displacement_last - byte_displacement_first,
+            YAMPI_addressof(*block_length_first),
+            reinterpret_cast<MPI_Aint const*>(
+              YAMPI_addressof(*byte_displacement_first)),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_indexed_block
+    template <typename DerivedDatatype, typename ContiguousIterator>
+    typename YAMPI_enable_if<
+      not YAMPI_is_same<
+        typename std::iterator_traits<ContiguousIterator>::value_type,
+        ::yampi::address>::value,
+      MPI_Datatype>::type
+    derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator const displacement_first,
+      ContiguousIterator const displacement_last,
+      int const block_length,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_indexed_block(
+            displacement_last - displacement_first,
+            block_length, YAMPI_addressof(*displacement_first),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_hindexed_block
+    template <typename DerivedDatatype, typename ContiguousIterator>
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename std::iterator_traits<ContiguousIterator>::value_type,
+        ::yampi::address>::value,
+      MPI_Datatype>::type
+    derive(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator const byte_displacement_first,
+      ContiguousIterator const byte_displacement_last,
+      int const block_length,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_hindexed_block(
+            byte_displacement_last - byte_displacement_first,
+            block_length,
+            reinterpret_cast<MPI_Aint const*>(
+              YAMPI_addressof(*byte_displacement_first)),
+            base_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_struct
+    template <
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    MPI_Datatype derive(
+      ContiguousIterator1 const datatype_first,
+      ContiguousIterator1 const datatype_last,
+      ContiguousIterator2 const byte_displacement_first,
+      ContiguousIterator3 const block_length_first,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           ::yampi::datatype const>::value),
+        "The value type of ContiguousIterator1 must be convertible to"
+        " yampi::datatype const");
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           ::yampi::address const>::value),
+        "The value type of ContiguousIterator2 must be convertible to"
+        " yampi::address const");
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator3>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator3 must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_struct(
+            datatype_last - datatype_first,
+            YAMPI_addressof(*block_length_first),
+            reinterpret_cast<MPI_Aint const*>(
+              YAMPI_addressof(*byte_displacement_first)),
+            reinterpret_cast<MPI_Datatype const*>(YAMPI_addressof(*datatype_first)),
+            YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    // MPI_Type_create_subarray
+    template <
+      typename DerivedDatatype,
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    MPI_Datatype derive(
+      ::yampi::datatype_base<DerivedDatatype> const& array_element_datatype,
+      ContiguousIterator1 const array_size_first,
+      ContiguousIterator1 const array_size_last,
+      ContiguousIterator2 const array_subsize_first,
+      ContiguousIterator3 const array_start_index_first,
+      ::yampi::environment const& environment) const
+    {
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator1>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator1 must be convertible to int const");
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator2>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator2 must be convertible to int const");
+      static_assert(
+        (YAMPI_is_convertible<
+           typename std::iterator_traits<ContiguousIterator3>::value_type,
+           int const>::value),
+        "The value type of ContiguousIterator3 must be convertible to int const");
+
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_subarray(
+            array_size_last - array_size_first,
+            YAMPI_addressof(*array_size_first),
+            YAMPI_addressof(*array_subsize_first),
+            YAMPI_addressof(*array_start_index_first),
+            MPI_ORDER_C, array_element_datatype.mpi_datatype(), YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    template <typename DerivedDatatype>
+    MPI_Datatype derive(
+      ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
+      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::environment const& environment)
+    {
+      MPI_Datatype result;
+      int const error_code
+        = MPI_Type_create_resized(
+            old_datatype.mpi_datatype(),
+            static_cast<MPI_Aint>(new_bounds.lower_bound()),
+            static_cast<MPI_Aint>(new_bounds.extent()),
+            YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? commit(result, environment)
+        : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
+    }
+
+    MPI_Datatype commit(
+      MPI_Datatype const& mpi_datatype,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Datatype result = mpi_datatype;
+      int const error_code = MPI_Type_commit(YAMPI_addressof(result));
+
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(error_code, "yampi::datatype::commit", environment);
     }
 
    public:
-    bool operator==(datatype const& other) const
-      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == other.mpi_datatype_))*/
+    bool operator==(datatype const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_datatype_ == other.mpi_datatype_; }
 
-    bool is_null() const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_datatype_ == MPI_DATATYPE_NULL))
+    bool do_is_null() const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_datatype_ == MPI_DATATYPE_NULL; }
 
-    void reset(::yampi::environment const& environment)
-    { free(environment); }
+    MPI_Datatype do_mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW
+    { return mpi_datatype_; }
+
+
+    void free(::yampi::environment const& environment)
+    {
+      if (mpi_datatype_ == MPI_DATATYPE_NULL
+          or ::yampi::datatype_detail::is_predefined_mpi_datatype(mpi_datatype_))
+        return;
+
+      int const error_code = MPI_Type_free(YAMPI_addressof(mpi_datatype_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::datatype::free", environment);
+    }
+
 
     void reset(
       MPI_Datatype const& mpi_datatype, ::yampi::environment const& environment)
@@ -341,109 +709,135 @@ namespace yampi
       mpi_datatype_ = mpi_datatype;
     }
 
-# define YAMPI_DEFINE_DATATYPE_RESET(type, mpitype) \
-    void reset(\
-      ::yampi:: type ## _datatype_t const, ::yampi::environment const& environment)\
-    {\
-      free(environment);\
-      mpi_datatype_ = MPI_ ## mpitype ;\
-    }
-
-    YAMPI_DEFINE_DATATYPE_RESET(char, CHAR)
-    YAMPI_DEFINE_DATATYPE_RESET(short, SHORT)
-    YAMPI_DEFINE_DATATYPE_RESET(int, INT)
-    YAMPI_DEFINE_DATATYPE_RESET(long, LONG)
-# ifndef BOOST_NO_LONG_LONG
-    YAMPI_DEFINE_DATATYPE_RESET(long_long, LONG_LONG)
-# endif
-    YAMPI_DEFINE_DATATYPE_RESET(signed_char, SIGNED_CHAR)
-    YAMPI_DEFINE_DATATYPE_RESET(unsigned_char, UNSIGNED_CHAR)
-    YAMPI_DEFINE_DATATYPE_RESET(unsigned_short, UNSIGNED_SHORT)
-    YAMPI_DEFINE_DATATYPE_RESET(unsigned, UNSIGNED)
-    YAMPI_DEFINE_DATATYPE_RESET(unsigned_long, UNSIGNED_LONG)
-# ifndef BOOST_NO_LONG_LONG
-    YAMPI_DEFINE_DATATYPE_RESET(unsigned_long_long, UNSIGNED_LONG_LONG)
-# endif
-    YAMPI_DEFINE_DATATYPE_RESET(float, FLOAT)
-    YAMPI_DEFINE_DATATYPE_RESET(double, DOUBLE)
-    YAMPI_DEFINE_DATATYPE_RESET(long_double, LONG_DOUBLE)
-    YAMPI_DEFINE_DATATYPE_RESET(wchar, WCHAR)
-# if MPI_VERSION >= 3 || defined(__FUJITSU)
-    YAMPI_DEFINE_DATATYPE_RESET(bool, CXX_BOOL)
-    YAMPI_DEFINE_DATATYPE_RESET(float_complex, CXX_FLOAT_COMPLEX)
-    YAMPI_DEFINE_DATATYPE_RESET(double_complex, CXX_DOUBLE_COMPLEX)
-    YAMPI_DEFINE_DATATYPE_RESET(long_double_complex, CXX_LONG_DOUBLE_COMPLEX)
-# elif MPI_VERSION >= 2
+    template <typename DerivedDatatype>
     void reset(
-      ::yampi::bool_datatype_t const, ::yampi::environment const& environment)
-    {
-      free(environment);
-      mpi_datatype_ = MPI::BOOL;
-    }
-    void reset(
-      ::yampi::float_complex_datatype_t const, ::yampi::environment const& environment)
-    {
-      free(environment);
-      mpi_datatype_ = MPI::COMPLEX;
-    }
-    void reset(
-      ::yampi::double_complex_datatype_t const, ::yampi::environment const& environment)
-    {
-      free(environment);
-      mpi_datatype_ = MPI::DOUBLE_COMPLEX;
-    }
-    void reset(
-      ::yampi::long_double_complex_datatype_t const,
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::environment const& environment)
     {
       free(environment);
-      mpi_datatype_ = MPI::LONG_DOUBLE_COMPLEX;
-    }
-# endif
-    YAMPI_DEFINE_DATATYPE_RESET(short_int, SHORT_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(int_int, 2INT)
-    YAMPI_DEFINE_DATATYPE_RESET(long_int, LONG_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(float_int, FLOAT_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(double_int, DOUBLE_INT)
-    YAMPI_DEFINE_DATATYPE_RESET(long_double_int, LONG_DOUBLE_INT)
-
-# undef YAMPI_DEFINE_DATATYPE_RESET
-
-    void reset(
-      ::yampi::uncommitted_datatype& uncommitted_datatype,
-      ::yampi::environment const& environment)
-    {
-      if (uncommitted_datatype.is_committed_)
-        throw ::yampi::uncommitted_datatype_has_been_committed_error();
-
-      free(environment);
-
-      mpi_datatype_ = uncommitted_datatype.mpi_datatype();
-      int const error_code = MPI_Type_commit(YAMPI_addressof(mpi_datatype_));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::datatype::reset", environment);
-
-      uncommitted_datatype.is_committed_ = true;
+      mpi_datatype_ = duplicate(base_datatype, environment);
     }
 
+    // MPI_Type_contiguous
+    template <typename DerivedDatatype>
     void reset(
-      datatype const& old_datatype,
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype, int const count,
       ::yampi::environment const& environment)
     {
       free(environment);
-      mpi_datatype_ = duplicate(old_datatype, environment);
+      mpi_datatype_ = derive(base_datatype, count, environment);
     }
 
-    void free(::yampi::environment const& environment)
+    // MPI_Type_vector
+    template <typename DerivedDatatype>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::strided_block const& block, int const count,
+      ::yampi::environment const& environment)
     {
-      if (mpi_datatype_ == MPI_DATATYPE_NULL
-          or ::yampi::datatype_detail::is_basic_datatype(mpi_datatype_))
-        return;
-
-      int const error_code = MPI_Type_free(YAMPI_addressof(mpi_datatype_));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::datatype::free", environment);
+      free(environment);
+      mpi_datatype_ = derive(base_datatype, block, count, environment);
     }
+
+    // MPI_Type_create_hvector
+    template <typename DerivedDatatype>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ::yampi::heterogeneous_strided_block const& block, int const count,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = derive(base_datatype, block, count, environment);
+    }
+
+    // MPI_Type_indexed, MPI_Type_create_hindexed
+    template <typename DerivedDatatype, typename ContiguousIterator1, typename ContiguousIterator2>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator1 const displacement_first,
+      ContiguousIterator1 const displacement_last,
+      ContiguousIterator2 const block_length_first,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+
+      mpi_datatype_
+        = derive(
+            base_datatype,
+            displacement_first, displacement_last, block_length_first,
+            environment);
+    }
+
+    // MPI_Type_create_indexed_block, MPI_Type_create_hindexed_block
+    template <typename DerivedDatatype, typename ContiguousIterator>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
+      ContiguousIterator const displacement_first,
+      ContiguousIterator const displacement_last,
+      int const block_length,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+
+      mpi_datatype_
+        = derive(
+            base_datatype,
+            displacement_first, displacement_last, block_length,
+            environment);
+    }
+
+    // MPI_Type_create_struct
+    template <
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    void reset(
+      ContiguousIterator1 const datatype_first,
+      ContiguousIterator1 const datatype_last,
+      ContiguousIterator2 const byte_displacement_first,
+      ContiguousIterator3 const block_length_first,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+
+      mpi_datatype_
+        = derive(
+            datatype_first, datatype_last, byte_displacement_first, block_length_first,
+            environment);
+    }
+
+    // MPI_Type_create_subarray
+    template <
+      typename DerivedDatatype,
+      typename ContiguousIterator1, typename ContiguousIterator2,
+      typename ContiguousIterator3>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& array_element_datatype,
+      ContiguousIterator1 const array_size_first,
+      ContiguousIterator1 const array_size_last,
+      ContiguousIterator2 const array_subsize_first,
+      ContiguousIterator3 const array_start_index_first,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+
+      mpi_datatype_
+        = derive(
+            array_element_datatype,
+            array_size_first, array_size_last,
+            array_subsize_first, array_start_index_first,
+            environment);
+    }
+
+    template <typename DerivedDatatype>
+    void reset(
+      ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
+      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = derive(old_datatype, new_bounds, environment);
+    }
+
 
     size_type size(::yampi::environment const& environment) const
     {
@@ -479,11 +873,6 @@ namespace yampi
             error_code, "yampi::datatype::true_bounds", environment);
     }
 
-    ::yampi::uncommitted_datatype to_uncommitted_datatype() const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::uncommitted_datatype(mpi_datatype_, true)))
-    { return ::yampi::uncommitted_datatype(mpi_datatype_, true); }
-    MPI_Datatype const& mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_datatype_; }
-
     void swap(datatype& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Datatype>::value)
     {
@@ -509,6 +898,7 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
+# undef YAMPI_enable_if
 # undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_move_assignable
 # undef YAMPI_is_nothrow_move_constructible
