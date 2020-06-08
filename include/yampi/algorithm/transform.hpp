@@ -58,7 +58,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
@@ -70,7 +70,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
 
@@ -112,7 +112,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
@@ -124,7 +124,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
 
@@ -167,7 +167,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
@@ -180,7 +180,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
 
@@ -225,7 +225,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
@@ -238,7 +238,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
 
@@ -284,7 +284,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
@@ -296,7 +296,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
@@ -337,7 +337,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
@@ -349,7 +349,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
@@ -391,7 +391,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
@@ -404,7 +404,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
@@ -447,7 +447,7 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
@@ -460,7 +460,7 @@ namespace yampi
           ::yampi::make_buffer(
             transform_buffer_first, transform_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
-          present_rank, message_envelope.tag(),
+          message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }

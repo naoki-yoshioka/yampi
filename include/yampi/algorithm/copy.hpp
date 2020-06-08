@@ -49,11 +49,11 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
         ::yampi::send(
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
 
       return boost::none;
@@ -77,11 +77,11 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
         ::yampi::send(
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
 
       return boost::none;
@@ -106,12 +106,12 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
 
       return boost::none;
@@ -136,12 +136,12 @@ namespace yampi
       if (present_rank == message_envelope.source())
         return boost::make_optional(
           ::yampi::receive(
-            receive_buffer, present_rank, message_envelope.tag(),
+            receive_buffer, message_envelope.source(), message_envelope.tag(),
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.destination())
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
 
       return boost::none;
@@ -167,11 +167,11 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
         ::yampi::send(
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
     }
 
@@ -193,11 +193,11 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
         ::yampi::send(
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
     }
 
@@ -220,12 +220,12 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
     }
 
@@ -248,12 +248,12 @@ namespace yampi
       if (present_rank == message_envelope.destination())
         ::yampi::receive(
           ignore_status,
-          receive_buffer, present_rank, message_envelope.tag(),
+          receive_buffer, message_envelope.source(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          send_buffer, present_rank, message_envelope.tag(),
+          send_buffer, message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
     }
   }
