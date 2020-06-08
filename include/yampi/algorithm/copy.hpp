@@ -159,7 +159,7 @@ namespace yampi
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (message_envelope.source() == message_envelop.destination())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
       ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
@@ -185,7 +185,7 @@ namespace yampi
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (message_envelope.source() == message_envelop.destination())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
       ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
@@ -212,7 +212,7 @@ namespace yampi
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (message_envelope.source() == message_envelop.destination())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
       ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
@@ -240,7 +240,7 @@ namespace yampi
     {
       assert(send_buffer.count() == receive_buffer.count());
 
-      if (message_envelope.source() == message_envelop.destination())
+      if (message_envelope.source() == message_envelope.destination())
         return;
 
       ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
