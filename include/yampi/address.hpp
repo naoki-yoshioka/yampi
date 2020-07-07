@@ -12,11 +12,8 @@
 #   include <boost/type_traits/has_nothrow_copy.hpp>
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+
+# include <yampi/byte_displacement.hpp>
 
 # include <mpi.h>
 
@@ -30,12 +27,6 @@
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
 # else
 #   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
 # endif
 
 
@@ -96,25 +87,25 @@ namespace yampi
       return *this;
     }
 
-    address& operator+=(address const& other)
+    address& operator+=(::yampi::byte_displacement const& displacement)
     {
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      mpi_address_ = MPI_Aint_add(mpi_address_, other.mpi_address_);
+      mpi_address_ = MPI_Aint_add(mpi_address_, displacement.mpi_byte_displacement());
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      mpi_address_ += other.mpi_address_;
-      //MPI_Get_address(static_cast<char*>(mpi_address_) + other.mpi_address_, &mpi_address_);
+      mpi_address_ += displacement.mpi_byte_displacement();
+      //MPI_Get_address(static_cast<char*>(mpi_address_) + displacement.mpi_byte_displacement(), &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
     }
 
-    address& operator-=(address const& other)
+    address& operator-=(::yampi::byte_displacement const& displacement)
     {
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      mpi_address_ = MPI_Aint_diff(mpi_address_, other.mpi_address_);
+      mpi_address_ = MPI_Aint_diff(mpi_address_, displacement.mpi_byte_displacement());
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-      mpi_address_ -= other.mpi_address_;
+      mpi_address_ -= displacement.mpi_byte_displacement();
       //MPI_Get_address(
-      //  static_cast<char*>(mpi_address_) - static_cast<char*>(other.mpi_address_),
+      //  static_cast<char*>(mpi_address_) - static_cast<char*>(displacement.mpi_byte_displacement()),
       //  &mpi_address_);
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
       return *this;
@@ -152,11 +143,17 @@ namespace yampi
   inline ::yampi::address operator--(::yampi::address& self, int)
   { ::yampi::address result = self; --self; return result; }
 
-  inline ::yampi::address operator+(::yampi::address lhs, ::yampi::address const& rhs)
-  { lhs += rhs; return lhs; }
+  inline ::yampi::address operator+(::yampi::address address, ::yampi::byte_displacement const& displacement)
+  { address += displacement; return address; }
 
-  inline ::yampi::address operator-(::yampi::address lhs, ::yampi::address const& rhs)
-  { lhs -= rhs; return lhs; }
+  inline ::yampi::address operator+(::yampi::byte_displacement const& displacement, ::yampi::address const& address)
+  { return address + displacement; }
+
+  inline ::yampi::address operator-(::yampi::address address, ::yampi::byte_displacement const& displacement)
+  { address -= displacement; return address; }
+
+  inline ::yampi::byte_displacement operator-(::yampi::address const& lhs, ::yampi::address const& rhs)
+  { return ::yampi::byte_displacement(lhs.mpi_address() - rhs.mpi_address()); }
 
   inline void swap(::yampi::address& lhs, ::yampi::address& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
@@ -164,7 +161,6 @@ namespace yampi
 }
 
 
-# undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_copy_constructible
 

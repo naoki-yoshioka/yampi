@@ -25,7 +25,7 @@
 namespace yampi
 {
   template <typename Value>
-  inline ::yampi::address addressof(Value const& value, ::yampi::environment const& environment)
+  inline ::yampi::address addressof(Value& value, ::yampi::environment const& environment)
   {
     MPI_Aint mpi_address;
     int const error_code
