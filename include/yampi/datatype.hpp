@@ -34,7 +34,7 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-# include <yampi/address.hpp>
+# include <yampi/byte_displacement.hpp>
 # include <yampi/bounds.hpp>
 # include <yampi/datatype_base.hpp>
 
@@ -124,20 +124,20 @@ namespace yampi
   class heterogeneous_strided_block
   {
     int length_;
-    ::yampi::address stride_bytes_;
+    ::yampi::byte_displacement stride_bytes_;
 
    public:
-    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::address const& stride_bytes)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::address >::value)
+    BOOST_CONSTEXPR heterogeneous_strided_block(int const length, ::yampi::byte_displacement const& stride_bytes)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::byte_displacement >::value)
       : length_(length), stride_bytes_(stride_bytes)
     { }
 
     BOOST_CONSTEXPR int const& length() const BOOST_NOEXCEPT_OR_NOTHROW { return length_; }
-    BOOST_CONSTEXPR ::yampi::address const& stride_bytes() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_bytes_; }
+    BOOST_CONSTEXPR ::yampi::byte_displacement const& stride_bytes() const BOOST_NOEXCEPT_OR_NOTHROW { return stride_bytes_; }
 
     void swap(heterogeneous_strided_block& other)
       BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable< ::yampi::address >::value)
+        YAMPI_is_nothrow_swappable< ::yampi::byte_displacement >::value)
     {
       using std::swap;
       swap(length_, other.length_);
@@ -421,7 +421,7 @@ namespace yampi
       MPI_Datatype result;
       int const error_code
         = MPI_Type_create_hvector(
-            count, block.length(), block.stride_bytes().mpi_address(),
+            count, block.length(), block.stride_bytes().mpi_byte_displacement(),
             base_datatype.mpi_datatype(), YAMPI_addressof(result));
 
       return error_code == MPI_SUCCESS
@@ -434,7 +434,7 @@ namespace yampi
     typename YAMPI_enable_if<
       not YAMPI_is_same<
         typename std::iterator_traits<ContiguousIterator1>::value_type,
-        ::yampi::address>::value,
+        ::yampi::byte_displacement>::value,
       MPI_Datatype>::type
     derive(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
@@ -472,7 +472,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_same<
         typename std::iterator_traits<ContiguousIterator1>::value_type,
-        ::yampi::address>::value,
+        ::yampi::byte_displacement>::value,
       MPI_Datatype>::type
     derive(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
@@ -506,7 +506,7 @@ namespace yampi
     typename YAMPI_enable_if<
       not YAMPI_is_same<
         typename std::iterator_traits<ContiguousIterator>::value_type,
-        ::yampi::address>::value,
+        ::yampi::byte_displacement>::value,
       MPI_Datatype>::type
     derive(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
@@ -538,7 +538,7 @@ namespace yampi
     typename YAMPI_enable_if<
       YAMPI_is_same<
         typename std::iterator_traits<ContiguousIterator>::value_type,
-        ::yampi::address>::value,
+        ::yampi::byte_displacement>::value,
       MPI_Datatype>::type
     derive(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
@@ -581,9 +581,9 @@ namespace yampi
       static_assert(
         (YAMPI_is_convertible<
            typename std::iterator_traits<ContiguousIterator2>::value_type,
-           ::yampi::address const>::value),
+           ::yampi::byte_displacement const>::value),
         "The value type of ContiguousIterator2 must be convertible to"
-        " yampi::address const");
+        " yampi::byte_displacement const");
       static_assert(
         (YAMPI_is_convertible<
            typename std::iterator_traits<ContiguousIterator3>::value_type,
