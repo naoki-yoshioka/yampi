@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <array>
 # include <iterator>
 # include <algorithm>
 # include <utility>
@@ -28,11 +29,15 @@
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
 # include <yampi/status.hpp>
-# include <yampi/datatype.hpp>
-# include <yampi/exits_basic_datatype_tag.hpp>
-# include <yampi/basic_datatype_tag_of.hpp>
 # include <yampi/message_envelope.hpp>
+# include <yampi/datatype.hpp>
+# include <yampi/predefined_datatype.hpp>
+# include <yampi/has_predefined_datatype.hpp>
+# include <yampi/addressof.hpp>
+# include <yampi/byte_displacement.hpp>
 # include <yampi/algorithm/copy.hpp>
+
+# include <mpi.h>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_enable_if std::enable_if
@@ -54,12 +59,12 @@ namespace yampi
     template <typename Value>
     inline
     typename YAMPI_enable_if<
-      ::yampi::exists_basic_datatype_tag< std::pair<Value, int> >::value,
+      ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       boost::optional< std::pair< ::yampi::rank, int > > >::type
     min_element(
       ::yampi::buffer<Value> const& buffer,
       ::yampi::rank const& root,
-      ::yampi:communicator const& communicator,
+      ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
       Value const* min_value_ptr
@@ -69,26 +74,19 @@ namespace yampi
       std::pair<Value, int> value_rank
         = std::make_pair(*min_value_ptr, present_rank.mpi_rank());
       ::yampi::reduce(root, communicator).call(
-        ::yampi::make_buffer(
-          value_rank,
-          ::yampi::datatype(::yampi::basic_datatype_tag_of< std::pair<Value, int> >::call())),
-        YAMPI_addressof(value_rank),
-        ::yampi::binary_operation(::yampi::minimum_location_t()),
-        environment);
+        ::yampi::make_buffer(value_rank), YAMPI_addressof(value_rank),
+        ::yampi::binary_operation(::yampi::minimum_location_t()), environment);
 
       ::yampi::rank result_rank;
-      ::yampi::datatype int_datatype(::yampi::int_datatype_t());
       ::yampi::scatter(root, communicator).call(
-        YAMPI_addressof(value_rank.second),
-        ::yampi::make_buffer(result_rank.mpi_rank(), int_datatype),
+        YAMPI_addressof(value_rank.second), ::yampi::make_buffer(result_rank.mpi_rank()),
         environment);
 
-      int index = static_cast<int>(min_ptr - buffer.data());
+      int index = static_cast<int>(min_value_ptr - buffer.data());
       if (result_rank != root)
         ::yampi::copy(
           ::yampi::ignore_status(),
-          ::yampi::make_buffer(index, int_datatype),
-          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::make_buffer(index), ::yampi::make_buffer(index),
           ::yampi::message_envelope(result_rank, root, communicator),
           environment);
 
@@ -100,12 +98,36 @@ namespace yampi
 
     template <typename Value>
     inline
-    boost::optional< std::pair< ::yampi::rank, int > >
+    typename YAMPI_enable_if<
+      not ::yampi::exists_basic_datatype_tag< std::pair<Value, int> >::value,
+      boost::optional< std::pair< ::yampi::rank, int > > >::type
     min_element(
       ::yampi::buffer<Value> const& buffer,
       ::yampi::rank const& root,
+      ::yampi::communicator const& communicator,
+      ::yampi::environment const& environment)
+    {
+      std::array<MPI_Datatype, 2u> mpi_datatypes
+        = { buffer.datatype().mpi_datatype(), ::yampi::predefined_datatype<int>().mpi_datatype() };
+      std::pair<Value, int> value_int;
+      std::array< ::yampi::byte_displacement, 2u > byte_displacements
+        = { ::yampi::addressof(value_int.first, environment) - ::yampi::addressof(value_int, environment),
+            ::yampi::addressof(value_int.second, environment) - ::yampi::addressof(value_int, environment) };
+      std::array<int, 2u> block_lengths = { 1, 1 };
+      ::yampi::datatype value_int_datatype(
+        mpi_datatypes.begin(), mpi_datatypes.end(),
+        byte_displacements.begin(), block_lengths.begin(), environment);
+
+      return ::yampi::algorithm::min_element(
+        buffer, root, value_int_datatype, communicator, environment);
+    }
+
+    template <typename Value>
+    inline boost::optional< std::pair< ::yampi::rank, int > > min_element(
+      ::yampi::buffer<Value> const& buffer,
+      ::yampi::rank const& root,
       ::yampi::datatype const& value_int_datatype,
-      ::yampi:communicator const& communicator,
+      ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
     {
       Value const* min_value_ptr
@@ -121,18 +143,15 @@ namespace yampi
         environment);
 
       ::yampi::rank result_rank;
-      ::yampi::datatype int_datatype(::yampi::int_datatype_t());
       ::yampi::scatter(root, communicator).call(
-        YAMPI_addressof(value_rank.second),
-        ::yampi::make_buffer(result_rank.mpi_rank(), int_datatype),
+        YAMPI_addressof(value_rank.second), ::yampi::make_buffer(result_rank.mpi_rank()),
         environment);
 
-      int index = static_cast<int>(min_ptr - buffer.data());
+      int index = static_cast<int>(min_value_ptr - buffer.data());
       if (result_rank != root)
         ::yampi::copy(
           ::yampi::ignore_status(),
-          ::yampi::make_buffer(index, int_datatype),
-          ::yampi::make_buffer(index, int_datatype),
+          ::yampi::make_buffer(index), ::yampi::make_buffer(index),
           ::yampi::message_envelope(result_rank, root, communicator),
           environment);
 
@@ -146,11 +165,11 @@ namespace yampi
     template <typename Value>
     inline
     typename YAMPI_enable_if<
-      ::yampi::exists_basic_datatype_tag< std::pair<Value, int> >::value,
+      ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       std::pair< ::yampi::rank, int > >::type
     min_element(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       Value const* min_value_ptr
         = std::min_element(buffer.data(), buffer.data() + buffer.count());
@@ -160,26 +179,46 @@ namespace yampi
         = std::make_pair(*min_value_ptr, present_rank.mpi_rank());
       ::yampi::rank result_rank(
         ::yampi::all_reduce(
-          ::yampi::make_buffer(
-            value_rank,
-            ::yampi::datatype(::yampi::basic_datatype_tag_of< std::pair<Value, int> >::call())),
+          ::yampi::make_buffer(value_rank),
           ::yampi::binary_operation(::yampi::minimum_location_t())
           communicator, environment).second);
 
-      int index = static_cast<int>(min_ptr - buffer.data());
+      int index = static_cast<int>(min_value_ptr - buffer.data());
       ::yampi::scatter(result_rank, communicator).call(
-        YAMPI_addressof(index),
-        ::yampi::make_buffer(index, ::yampi::datatype(::yampi::int_datatype_t())),
-        environment);
+        YAMPI_addressof(index), ::yampi::make_buffer(index), environment);
 
       return std::make_pair(result_rank, index);
+    }
+
+    template <typename Value>
+    inline
+    typename YAMPI_enable_if<
+      not ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
+      std::pair< ::yampi::rank, int > >::type
+    min_element(
+      ::yampi::buffer<Value> const& buffer,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      std::array<MPI_Datatype, 2u> mpi_datatypes
+        = { buffer.datatype().mpi_datatype(), ::yampi::predefined_datatype<int>().mpi_datatype() };
+      std::pair<Value, int> value_int;
+      std::array< ::yampi::byte_displacement, 2u > byte_displacements
+        = { ::yampi::addressof(value_int.first, environment) - ::yampi::addressof(value_int, environment),
+            ::yampi::addressof(value_int.second, environment) - ::yampi::addressof(value_int, environment) };
+      std::array<int, 2u> block_lengths = { 1, 1 };
+      ::yampi::datatype value_int_datatype(
+        mpi_datatypes.begin(), mpi_datatypes.end(),
+        byte_displacements.begin(), block_lengths.begin(), environment);
+
+      return ::yampi::algorithm::min_element(
+        buffer, value_int_datatype, communicator, environment);
     }
 
     template <typename Value>
     inline std::pair< ::yampi::rank, int > min_element(
       ::yampi::buffer<Value> const& buffer,
       ::yampi::datatype const& value_int_datatype,
-      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       Value const* min_value_ptr
         = std::min_element(buffer.data(), buffer.data() + buffer.count());
@@ -193,11 +232,9 @@ namespace yampi
           ::yampi::binary_operation(::yampi::minimum_location_t()),
           communicator, environment).second);
 
-      int index = static_cast<int>(min_ptr - buffer.data());
+      int index = static_cast<int>(min_value_ptr - buffer.data());
       ::yampi::scatter(result_rank, communicator).call(
-        YAMPI_addressof(index),
-        ::yampi::make_buffer(index, ::yampi::datatype(::yampi::int_datatype_t())),
-        environment);
+        YAMPI_addressof(index), ::yampi::make_buffer(index), environment);
 
       return std::make_pair(result_rank, index);
     }
