@@ -72,7 +72,7 @@ namespace yampi
 
     byte_displacement& operator+=(byte_displacement const& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
-      mpi_byte_displacement_ += other.mpi_abyte_displacement;
+      mpi_byte_displacement_ += other.mpi_byte_displacement;
       return *this;
     }
 
