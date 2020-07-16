@@ -37,8 +37,8 @@ namespace yampi
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> none_of(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const& root,
       UnaryPredicate unary_predicate,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -81,8 +81,8 @@ namespace yampi
     inline boost::optional<bool> none_of(
       ::yampi::request& request,
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const& root,
       UnaryPredicate unary_predicate,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {

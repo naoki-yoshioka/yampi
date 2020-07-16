@@ -40,8 +40,8 @@ namespace yampi
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count(
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const& root,
       Value const& value,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
@@ -86,8 +86,8 @@ namespace yampi
     count(
       ::yampi::request& request,
       ::yampi::buffer<Value> const& buffer,
-      ::yampi::rank const& root,
       Value const& value,
+      ::yampi::rank const& root,
       ::yampi:communicator const& communicator,
       ::yampi::environment const& environment)
     {
