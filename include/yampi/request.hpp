@@ -76,7 +76,8 @@ namespace yampi
 
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     request(request&& other)
       BOOST_NOEXCEPT_IF(
         YAMPI_is_nothrow_move_constructible<MPI_Request>::value
@@ -84,19 +85,15 @@ namespace yampi
       : mpi_request_(std::move(other.mpi_request_))
     { other.mpi_request_ = MPI_REQUEST_NULL; }
 
-    request& operator=(request&& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_move_assignable<MPI_Request>::value
-        and YAMPI_is_nothrow_copy_assignable<MPI_Request>::value)
-    {
-      if (this != YAMPI_addressof(other))
-      {
-        mpi_request_ = std::move(other.mpi_request_);
-        other.mpi_request_ = MPI_REQUEST_NULL;
-      }
-      return *this;
-    }
-# endif
+#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    request& operator=(request&&) = delete;
+#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    request& operator=(request&&);
+
+   public:
+#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     ~request() BOOST_NOEXCEPT_OR_NOTHROW
     {
@@ -113,6 +110,15 @@ namespace yampi
 
     void reset(::yampi::environment const& environment)
     { free(environment); }
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(request&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_request_ = std::move(other.mpi_request_);
+      other.mpi_request_ = MPI_REQUEST_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     void reset(MPI_Request const& req, ::yampi::environment const& environment)
     {
