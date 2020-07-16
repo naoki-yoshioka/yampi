@@ -10,18 +10,13 @@
 # include <boost/optional.hpp>
 # include <boost/none.hpp>
 
-# include <boost/range/begin.hpp>
-# include <boost/range/end.hpp>
-
 # include <yampi/send.hpp>
 # include <yampi/receive.hpp>
 # include <yampi/allocator.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/message_envelope.hpp>
-# include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/tag.hpp>
 # include <yampi/status.hpp>
 # include <yampi/communication_mode.hpp>
 
