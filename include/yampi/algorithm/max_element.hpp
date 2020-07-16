@@ -229,7 +229,7 @@ namespace yampi
       ::yampi::rank result_rank(
         ::yampi::all_reduce(
           ::yampi::make_buffer(value_rank, value_int_datatype),
-          ::yampi::binary_operation(::yampi::maximum_location_t())
+          ::yampi::binary_operation(::yampi::maximum_location_t()),
           communicator, environment).second);
 
       int index = static_cast<int>(max_value_ptr - buffer.data());

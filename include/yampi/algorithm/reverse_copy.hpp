@@ -1,5 +1,5 @@
-#ifndef YAMPI_ALGORITHM_TRANSFORM_HPP
-# define YAMPI_ALGORITHM_TRANSFORM_HPP
+#ifndef YAMPI_ALGORITHM_REVERSE_COPY_HPP
+# define YAMPI_ALGORITHM_REVERSE_COPY_HPP
 
 # include <boost/config.hpp>
 
@@ -33,13 +33,12 @@ namespace yampi
 {
   namespace algorithm
   {
-    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
+    template <typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -57,13 +56,13 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -72,28 +71,26 @@ namespace yampi
       return boost::none;
     }
 
-    template <typename Value, typename UnaryFunction>
+    template <typename Value>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      return ::yampi::algorithm::reverse_copy(
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
+    template <typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -111,13 +108,13 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -126,29 +123,27 @@ namespace yampi
       return boost::none;
     }
 
-    template <typename Value, typename UnaryFunction>
+    template <typename Value>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      return ::yampi::algorithm::transform(
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      return ::yampi::algorithm::reverse_copy(
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
+    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -166,14 +161,14 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -182,31 +177,29 @@ namespace yampi
       return boost::none;
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      return ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      return ::yampi::algorithm::reverse_copy(
         YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
+    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -224,14 +217,14 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -240,32 +233,30 @@ namespace yampi
       return boost::none;
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
+    template <typename CommunicationMode, typename Value>
     inline boost::optional< ::yampi::status >
-    transform(
+    reverse_copy(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      return ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      return ::yampi::algorithm::reverse_copy(
         YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
 
     // ignoring status
-    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
-    inline void transform(
+    template <typename Value, typename ContiguousIterator>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -283,42 +274,40 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
 
-    template <typename Value, typename UnaryFunction>
-    inline void transform(
+    template <typename Value>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      ::yampi::algorithm::reverse_copy(
         ignore_status,
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename Value, typename UnaryFunction, typename ContiguousIterator>
-    inline void transform(
+    template <typename Value, typename ContiguousIterator>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -336,43 +325,41 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
 
-    template <typename Value, typename UnaryFunction>
-    inline void transform(
+    template <typename Value>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      ::yampi::algorithm::reverse_copy(
         ignore_status,
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
-    inline void transform(
+    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -390,45 +377,43 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
-    inline void transform(
+    template <typename CommunicationMode, typename Value>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value>& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      ::yampi::algorithm::reverse_copy(
         ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction, typename ContiguousIterator>
-    inline void transform(
+    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
-      ContiguousIterator const transform_buffer_first,
+      ContiguousIterator const reverse_copy_buffer_first,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
@@ -446,35 +431,34 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
-        std::transform(
+        std::reverse_copy(
           send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          transform_buffer_first, unary_function);
+          reverse_copy_buffer_first);
 
         ::yampi::send(
           YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
           ::yampi::make_buffer(
-            transform_buffer_first, transform_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
       }
     }
 
-    template <typename CommunicationMode, typename Value, typename UnaryFunction>
-    inline void transform(
+    template <typename CommunicationMode, typename Value>
+    inline void reverse_copy(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
       ::yampi::buffer<Value> const& send_buffer,
       ::yampi::buffer<Value> const& receive_buffer,
-      UnaryFunction unary_function,
       ::yampi::message_envelope const& message_envelope,
       ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
-      ::yampi::algorithm::transform(
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+      ::yampi::algorithm::reverse_copy(
         ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, unary_function,
-        transform_buffer.begin(), message_envelope, environment);
+        send_buffer, receive_buffer,
+        reverse_copy_buffer.begin(), message_envelope, environment);
     }
   }
 }
