@@ -122,7 +122,7 @@ namespace yampi
   {
     MPI_Status stat;
     int const error_code
-      = MPI_Recv(
+      = MPI_Mrecv(
           const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           YAMPI_addressof(message.mpi_message()), YAMPI_addressof(stat));
 
@@ -225,7 +225,7 @@ namespace yampi
   {
     MPI_Status stat;
     int const error_code
-      = MPI_Recv(
+      = MPI_Mrecv(
           const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           YAMPI_addressof(message.mpi_message()), MPI_STATUS_IGNORE);
 

@@ -238,7 +238,7 @@ namespace yampi
     ::yampi::environment const& environment)
   {
     int const error_code
-      = MPI_Allgather(
+      = MPI_Neighbor_allgather(
           const_cast<SendValue*>(send_buffer.data()),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           const_cast<ReceiveValue*>(receive_buffer.data()),
