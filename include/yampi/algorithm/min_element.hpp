@@ -91,7 +91,7 @@ namespace yampi
           environment);
 
       if (present_rank == root)
-        return boost::make_optional(std::make_pair(root, index));
+        return boost::make_optional(std::make_pair(result_rank, index));
 
       return boost::none;
     }
@@ -156,7 +156,7 @@ namespace yampi
           environment);
 
       if (present_rank == root)
-        return boost::make_optional(std::make_pair(root, index));
+        return boost::make_optional(std::make_pair(result_rank, index));
 
       return boost::none;
     }
@@ -180,7 +180,7 @@ namespace yampi
       ::yampi::rank result_rank(
         ::yampi::all_reduce(
           ::yampi::make_buffer(value_rank),
-          ::yampi::binary_operation(::yampi::minimum_location_t())
+          ::yampi::binary_operation(::yampi::minimum_location_t()),
           communicator, environment).second);
 
       int index = static_cast<int>(min_value_ptr - buffer.data());
