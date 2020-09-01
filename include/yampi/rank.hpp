@@ -175,6 +175,19 @@ namespace yampi
       return *this;
     }
 
+    template <typename Integer>
+    typename YAMPI_enable_if<
+      YAMPI_is_integral<Integer>::value,
+      rank&>::type
+    operator%=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
+      assert(n > static_cast<Integer>(0));
+      mpi_rank_ %= n;
+      assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
+      return *this;
+    }
+
     int operator-(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
@@ -222,33 +235,38 @@ namespace yampi
     BOOST_NOEXCEPT_OR_NOTHROW
   { ::yampi::rank result = lhs; --lhs; return result; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator+(::yampi::rank lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator+(::yampi::rank lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs += rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator-(::yampi::rank lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator-(::yampi::rank lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs -= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator*(::yampi::rank lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator*(::yampi::rank lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs *= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator/(::yampi::rank lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator/(::yampi::rank lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs /= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator+(Integral const lhs, ::yampi::rank const& rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator%(::yampi::rank lhs, Integer const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs %= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::rank operator+(Integer const lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
-  template <typename Integral>
-  inline ::yampi::rank operator*(Integral const lhs, ::yampi::rank const& rhs)
+  template <typename Integer>
+  inline ::yampi::rank operator*(Integer const lhs, ::yampi::rank const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 

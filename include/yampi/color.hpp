@@ -143,6 +143,19 @@ namespace yampi
       return *this;
     }
 
+    template <typename Integer>
+    typename YAMPI_enable_if<
+      YAMPI_is_integral<Integer>::value,
+      color&>::type
+    operator%=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      assert(mpi_color_ >= 0);
+      assert(n > static_cast<Integer>(0));
+      mpi_color_ %= n;
+      assert(mpi_color_ >= 0);
+      return *this;
+    }
+
     int operator-(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_color_ >= 0);
@@ -189,33 +202,38 @@ namespace yampi
     BOOST_NOEXCEPT_OR_NOTHROW
   { ::yampi::color result = lhs; --lhs; return result; }
 
-  template <typename Integral>
-  inline ::yampi::color operator+(::yampi::color lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator+(::yampi::color lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs += rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::color operator-(::yampi::color lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator-(::yampi::color lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs -= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::color operator*(::yampi::color lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator*(::yampi::color lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs *= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::color operator/(::yampi::color lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator/(::yampi::color lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs /= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::color operator+(Integral const lhs, ::yampi::color const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator%(::yampi::color lhs, Integer const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs %= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::color operator+(Integer const lhs, ::yampi::color const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
-  template <typename Integral>
-  inline ::yampi::color operator*(Integral const lhs, ::yampi::color const rhs)
+  template <typename Integer>
+  inline ::yampi::color operator*(Integer const lhs, ::yampi::color const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 

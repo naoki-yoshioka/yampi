@@ -82,6 +82,27 @@ namespace yampi
       return *this;
     }
 
+    template <typename Integer>
+    byte_displacement& operator*=(Integer const scalar) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      mpi_byte_displacement_ *= scalar;
+      return *this;
+    }
+
+    template <typename Integer>
+    byte_displacement& operator/=(Integer const scalar) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      mpi_byte_displacement_ /= scalar;
+      return *this;
+    }
+
+    template <typename Integer>
+    byte_displacement& operator%=(Integer const scalar) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      mpi_byte_displacement_ %= scalar;
+      return *this;
+    }
+
     BOOST_CONSTEXPR MPI_Aint const& mpi_byte_displacement() const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_byte_displacement_; }
 
@@ -120,6 +141,22 @@ namespace yampi
 
   inline ::yampi::byte_displacement operator-(::yampi::byte_displacement lhs, ::yampi::byte_displacement const& rhs)
   { lhs -= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::byte_displacement operator*(::yampi::byte_displacement lhs, Integer const rhs)
+  { lhs *= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::byte_displacement operator/(::yampi::byte_displacement lhs, Integer const rhs)
+  { lhs /= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::byte_displacement operator%(::yampi::byte_displacement lhs, Integer const rhs)
+  { lhs %= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::byte_displacement operator*(Integer const lhs, ::yampi::byte_displacement rhs)
+  { rhs *= lhs; return rhs; }
 
   inline void swap(::yampi::byte_displacement& lhs, ::yampi::byte_displacement& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))

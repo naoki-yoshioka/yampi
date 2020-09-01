@@ -162,6 +162,19 @@ namespace yampi
       return *this;
     }
 
+    template <typename Integer>
+    typename YAMPI_enable_if<
+      YAMPI_is_integral<Integer>::value,
+      tag&>::type
+    operator%=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      assert(mpi_tag_ >= 0);
+      assert(n > static_cast<Integer>(0));
+      mpi_tag_ %= n;
+      assert(mpi_tag_ >= 0);
+      return *this;
+    }
+
     int operator-(tag const other) const BOOST_NOEXCEPT_OR_NOTHROW
     {
       assert(mpi_tag_ >= 0);
@@ -208,33 +221,38 @@ namespace yampi
     BOOST_NOEXCEPT_OR_NOTHROW
   { ::yampi::tag result = lhs; --lhs; return result; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator+(::yampi::tag lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator+(::yampi::tag lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs += rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator-(::yampi::tag lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator-(::yampi::tag lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs -= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator*(::yampi::tag lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator*(::yampi::tag lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs *= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator/(::yampi::tag lhs, Integral const rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator/(::yampi::tag lhs, Integer const rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { lhs /= rhs; return lhs; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator+(Integral const lhs, ::yampi::tag const& rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator%(::yampi::tag lhs, Integer const rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs %= rhs; return lhs; }
+
+  template <typename Integer>
+  inline ::yampi::tag operator+(Integer const lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs+lhs; }
 
-  template <typename Integral>
-  inline ::yampi::tag operator*(Integral const lhs, ::yampi::tag const& rhs)
+  template <typename Integer>
+  inline ::yampi::tag operator*(Integer const lhs, ::yampi::tag const& rhs)
     BOOST_NOEXCEPT_OR_NOTHROW
   { return rhs*lhs; }
 
