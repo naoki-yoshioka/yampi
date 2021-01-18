@@ -389,7 +389,7 @@ namespace yampi
       int const error_code = MPI_Comm_rank(mpi_comm_, YAMPI_addressof(mpi_rank));
       return error_code == MPI_SUCCESS
         ? ::yampi::rank(mpi_rank)
-        : throw ::yampi::error(error_code, "yampi::communicator::size", environment);
+        : throw ::yampi::error(error_code, "yampi::communicator::rank", environment);
     }
 
     void group(::yampi::group& group, ::yampi::environment const& environment) const
