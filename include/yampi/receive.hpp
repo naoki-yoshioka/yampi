@@ -223,7 +223,6 @@ namespace yampi
     ::yampi::buffer<Value> const& buffer, ::yampi::message& message,
     ::yampi::environment const& environment)
   {
-    MPI_Status stat;
     int const error_code
       = MPI_Mrecv(
           const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
