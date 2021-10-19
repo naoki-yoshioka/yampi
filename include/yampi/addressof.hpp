@@ -28,9 +28,7 @@ namespace yampi
   inline ::yampi::address addressof(Value& value, ::yampi::environment const& environment)
   {
     MPI_Aint mpi_address;
-    int const error_code
-      = MPI_Get_address(
-          const_cast<Value*>(YAMPI_addressof(value)), YAMPI_addressof(mpi_address));
+    int const error_code = MPI_Get_address(YAMPI_addressof(value), YAMPI_addressof(mpi_address));
     return error_code == MPI_SUCCESS
       ? ::yampi::address(mpi_address)
       : throw ::yampi::error(error_code, "yampi::address", environment);
