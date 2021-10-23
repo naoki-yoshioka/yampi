@@ -197,8 +197,8 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT { return window_ptr_; }
-    bool owns_access() const BOOST_NOEXCEPT { return owns_; }
+    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    bool owns_access() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
   inline void swap(::yampi::access& lhs, ::yampi::access& rhs) BOOST_NOEXCEPT

@@ -207,9 +207,9 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::rank const& rank() const BOOST_NOEXCEPT { return rank_; }
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT { return window_ptr_; }
-    bool owns_lock() const BOOST_NOEXCEPT { return owns_; }
+    ::yampi::rank const& rank() const BOOST_NOEXCEPT_OR_NOTHROW { return rank_; }
+    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
   inline void swap(::yampi::unique_lock& lhs, ::yampi::unique_lock& rhs) BOOST_NOEXCEPT
@@ -325,9 +325,9 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::rank const& rank() const BOOST_NOEXCEPT { return rank_; }
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT { return window_ptr_; }
-    bool owns_lock() const BOOST_NOEXCEPT { return owns_; }
+    ::yampi::rank const& rank() const BOOST_NOEXCEPT_OR_NOTHROW { return rank_; }
+    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
   inline void swap(::yampi::shared_lock& lhs, ::yampi::shared_lock& rhs) BOOST_NOEXCEPT
@@ -433,8 +433,8 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT { return window_ptr_; }
-    bool owns_lock() const BOOST_NOEXCEPT { return owns_; }
+    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
   inline void swap(::yampi::all_shared_lock& lhs, ::yampi::all_shared_lock& rhs) BOOST_NOEXCEPT
