@@ -82,7 +82,7 @@ namespace yampi
       : window_(window)
     { do_post(group, static_assert<int>(assertion), environment); }
 
-    exposure_guard(::yampi::window& window, ::yampi::adopt_lock_t const)
+    exposure_guard(::yampi::window& window, ::yampi::adopt_exposure_t const)
       : window_(window)
     { }
 

@@ -82,7 +82,7 @@ namespace yampi
       : window_(window)
     { do_start(group, static_cast<int>(assertion), environment); }
 
-    access_guard(::yampi::window& window, ::yampi::adopt_lock_t const)
+    access_guard(::yampi::window& window, ::yampi::adopt_access_t const)
       : window_(window)
     { }
 
@@ -183,9 +183,6 @@ namespace yampi
     {
       if (not owns_)
         throw ::yampi::unexpected_access_status_error(environment);
-
-      if (window_ptr_ == nullptr)
-        return;
 
       int const error_code = MPI_Win_complete(window_ptr_->mpi_win());
       if (error_code != MPI_SUCCESS)
