@@ -16,7 +16,7 @@
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/mode.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
@@ -53,10 +53,11 @@ namespace yampi
   struct defer_lock_t { };
   struct adapt_lock_t { };
 
+  template <typename Window>
   class lock_guard
   {
     ::yampi::rank rank_;
-    ::yampi::window& window_;
+    ::yampi::window_base<Window>& window_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -73,17 +74,17 @@ namespace yampi
     ~lock_guard() BOOST_NOEXCEPT
     { MPI_Win_unlock(rank_.mpi_rank(), window_.mpi_win()); }
 
-    lock_guard(::yampi::rank const& rank, ::yampi::window& window, ::yampi::environment const& environment)
+    lock_guard(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_(window)
     { do_lock(0, environment); }
 
     lock_guard(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_(window)
     { do_lock(static_cast<int>(assertion), environment); }
 
-    lock_guard(::yampi::rank const& rank, ::yampi::window& window, ::yampi::adopt_lock_t const)
+    lock_guard(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_(window)
     { }
 
@@ -98,10 +99,11 @@ namespace yampi
   };
 
 
+  template <typename Window>
   class unique_lock
   {
     ::yampi::rank rank_;
-    ::yampi::window* window_ptr_;
+    ::yampi::window_base<Window>* window_ptr_;
     bool owns_;
 
    public:
@@ -149,21 +151,21 @@ namespace yampi
       : rank_(rank), window_ptr_(nullptr), owns_(false)
     { }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::environment const& environment)
+    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(environment); }
 
     unique_lock(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::defer_lock_t const)
+    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::adopt_lock_t const)
+    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -208,18 +210,20 @@ namespace yampi
     }
 
     ::yampi::rank const& rank() const BOOST_NOEXCEPT_OR_NOTHROW { return rank_; }
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    ::yampi::window_base<Window>* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
     bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
-  inline void swap(::yampi::unique_lock& lhs, ::yampi::unique_lock& rhs) BOOST_NOEXCEPT
+  template <typename Window>
+  inline void swap(::yampi::unique_lock<Window>& lhs, ::yampi::unique_lock<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
 
 
+  template <typename Window>
   class shared_lock
   {
     ::yampi::rank rank_;
-    ::yampi::window* window_ptr_;
+    ::yampi::window_base<Window>* window_ptr_;
     bool owns_;
 
    public:
@@ -267,21 +271,21 @@ namespace yampi
       : rank_(rank), window_ptr_(nullptr), owns_(false)
     { }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::environment const& environment)
+    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(environment); }
 
     shared_lock(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::defer_lock_t const)
+    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window& window, ::yampi::adopt_lock_t const)
+    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -326,17 +330,19 @@ namespace yampi
     }
 
     ::yampi::rank const& rank() const BOOST_NOEXCEPT_OR_NOTHROW { return rank_; }
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    ::yampi::window_base<Window>* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
     bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
-  inline void swap(::yampi::shared_lock& lhs, ::yampi::shared_lock& rhs) BOOST_NOEXCEPT
+  template <typename Window>
+  inline void swap(::yampi::shared_lock<Window>& lhs, ::yampi::shared_lock<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
 
 
+  template <typename Window>
   class all_shared_lock
   {
-    ::yampi::window* window_ptr_;
+    ::yampi::window_base<Window>* window_ptr_;
     bool owns_;
 
    public:
@@ -379,20 +385,20 @@ namespace yampi
         MPI_Win_unlock_all(window_ptr_->mpi_win());
     }
 
-    all_shared_lock(::yampi::window& window, ::yampi::environment const& environment)
+    all_shared_lock(::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(environment); }
 
     all_shared_lock(
-      YAMPI_MODE const assertion, ::yampi::window& window, ::yampi::environment const& environment)
+      YAMPI_MODE const assertion, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
-    all_shared_lock(::yampi::window& window, ::yampi::defer_lock_t const)
+    all_shared_lock(::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    all_shared_lock(::yampi::window& window, ::yampi::adopt_lock_t const)
+    all_shared_lock(::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -433,11 +439,12 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    ::yampi::window_base<Window>* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
     bool owns_lock() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
-  inline void swap(::yampi::all_shared_lock& lhs, ::yampi::all_shared_lock& rhs) BOOST_NOEXCEPT
+  template <typename Window>
+  inline void swap(::yampi::all_shared_lock<Window>& lhs, ::yampi::all_shared_lock<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
 }
 

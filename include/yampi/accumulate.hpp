@@ -11,7 +11,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/target_buffer.hpp>
@@ -29,12 +29,12 @@
 
 namespace yampi
 {
-  template <typename OriginValue, typename TargetValue>
+  template <typename OriginValue, typename TargetValue, typename Derived>
   inline void accumulate(
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Accumulate(
@@ -46,13 +46,13 @@ namespace yampi
   }
 
   // Request-based accumulate
-  template <typename OriginValue, typename TargetValue>
+  template <typename OriginValue, typename TargetValue, typename Derived>
   inline void accumulate(
     ::yampi::request& request,
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code

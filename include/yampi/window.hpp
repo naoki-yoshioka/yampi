@@ -28,12 +28,9 @@
 
 # include <mpi.h>
 
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
-
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/addressof.hpp>
 # include <yampi/information.hpp>
@@ -64,15 +61,14 @@
 #   define YAMPI_addressof boost::addressof
 # endif
 
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif
-
 
 namespace yampi
 {
   class window
+    : public ::yampi::window_base< ::yampi::window >
   {
+    typedef ::yampi::window_base< ::yampi::window > super_type;
+
     MPI_Win mpi_win_;
 
    public:
@@ -162,6 +158,27 @@ namespace yampi
     }
 
    public:
+    bool operator==(window const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    { return mpi_win_ == other.mpi_win_; }
+
+    bool do_is_null() const BOOST_NOEXCEPT_OR_NOTHROW
+    { return mpi_win_ == MPI_WIN_NULL; }
+
+    MPI_Win const& do_mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW
+    { return mpi_win_; }
+
+
+    void free(::yampi::environment const& environment)
+    {
+      if (mpi_win_ == MPI_WIN_NULL)
+        return;
+
+      int const error_code = MPI_Win_free(YAMPI_addressof(mpi_win_));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::window::free", environment);
+    }
+
+
     void reset(::yampi::environment const& environment)
     { free(environment); }
 
@@ -192,16 +209,6 @@ namespace yampi
       mpi_win_ = create(first, last, information.mpi_info(), communicator, environment);
     }
 
-    void free(::yampi::environment const& environment)
-    {
-      if (mpi_win_ == MPI_WIN_NULL)
-        return;
-
-      int const error_code = MPI_Win_free(YAMPI_addressof(mpi_win_));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window::free", environment);
-    }
-
     void set_information(yampi::information const& information, yampi::environment const& environment) const
     {
       int const error_code = MPI_Win_set_info(mpi_win_, information.mpi_info());
@@ -218,12 +225,6 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::information", environment);
     }
 
-    bool is_null() const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_win_ == MPI_WIN_NULL))
-    { return mpi_win_ == MPI_WIN_NULL; }
-
-    MPI_Win const& mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_win_; }
-
     void swap(window& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Win>::value)
     {
@@ -232,14 +233,15 @@ namespace yampi
     }
   };
 
+  inline bool operator!=(::yampi::window const& lhs, ::yampi::window const& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
+  { return not (lhs == rhs); }
+
   inline void swap(::yampi::window& lhs, ::yampi::window& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
 # undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_move_assignable

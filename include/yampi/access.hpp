@@ -15,7 +15,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/group.hpp>
 # include <yampi/mode.hpp>
 # include <yampi/environment.hpp>
@@ -53,9 +53,10 @@ namespace yampi
   struct defer_access_t { };
   struct adapt_access_t { };
 
+  template <typename Window>
   class access_guard
   {
-    ::yampi::window& window_;
+    ::yampi::window_base<Window>& window_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -72,17 +73,17 @@ namespace yampi
     ~access_guard() BOOST_NOEXCEPT
     { MPI_Win_complete(window_.mpi_win()); }
 
-    access_guard(::yampi::group const& group, ::yampi::window& window, ::yampi::environment const& environment)
+    access_guard(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_(window)
     { do_start(group, 0, environment); }
 
     access_guard(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_(window)
     { do_start(group, static_cast<int>(assertion), environment); }
 
-    access_guard(::yampi::window& window, ::yampi::adopt_access_t const)
+    access_guard(::yampi::window_base<Window>& window, ::yampi::adopt_access_t const)
       : window_(window)
     { }
 
@@ -97,9 +98,10 @@ namespace yampi
   };
 
 
+  template <typename Window>
   class unique_access
   {
-    ::yampi::window* window_ptr_;
+    ::yampi::window_base<Window>* window_ptr_;
     bool owns_;
 
    public:
@@ -142,21 +144,21 @@ namespace yampi
         MPI_Win_complete(window_ptr_->mpi_win());
     }
 
-    unique_access(::yampi::group const& group, ::yampi::window& window, ::yampi::environment const& environment)
+    unique_access(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { start(group, environment); }
 
     unique_access(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { start(group, assertion, environment); }
 
-    unique_access(::yampi::window& window, ::yampi::defer_access_t const)
+    unique_access(::yampi::window_base<Window>& window, ::yampi::defer_access_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    unique_access(::yampi::window& window, ::yampi::adopt_access_t const)
+    unique_access(::yampi::window_base<Window>& window, ::yampi::adopt_access_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -197,11 +199,12 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    ::yampi::window_base<Window>* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
     bool owns_access() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
-  inline void swap(::yampi::access& lhs, ::yampi::access& rhs) BOOST_NOEXCEPT
+  template <typename Window>
+  inline void swap(::yampi::access<Window>& lhs, ::yampi::access<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
 }
 

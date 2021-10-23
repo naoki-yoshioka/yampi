@@ -11,7 +11,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/target_buffer.hpp>
@@ -29,13 +29,13 @@
 
 namespace yampi
 {
-  template <typename OriginValue, typename ResultValue, typename TargetValue>
+  template <typename OriginValue, typename ResultValue, typename TargetValue, typename Derived>
   inline void fetch_accumulate(
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::buffer<ResultValue>& result_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Get_accumulate(
@@ -47,13 +47,13 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::fetch_accumulate", environment);
   }
 
-  template <typename OriginValue, typename ResultValue, typename TargetValue>
+  template <typename OriginValue, typename ResultValue, typename TargetValue, typename Derived>
   inline void fetch_accumulate(
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::buffer<ResultValue> const& result_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Get_accumulate(
@@ -66,14 +66,14 @@ namespace yampi
   }
 
   // Request-based fetch_accumulate
-  template <typename OriginValue, typename ResultValue, typename TargetValue>
+  template <typename OriginValue, typename ResultValue, typename TargetValue, typename Derived>
   inline void fetch_accumulate(
     ::yampi::request& request,
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::buffer<ResultValue>& result_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code
@@ -88,14 +88,14 @@ namespace yampi
     request.reset(mpi_request, environment);
   }
 
-  template <typename OriginValue, typename ResultValue, typename TargetValue>
+  template <typename OriginValue, typename ResultValue, typename TargetValue, typename Derived>
   inline void fetch_accumulate(
     ::yampi::request& request,
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::buffer<ResultValue> const& result_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code

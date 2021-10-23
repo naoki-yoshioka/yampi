@@ -15,7 +15,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/group.hpp>
 # include <yampi/mode.hpp>
 # include <yampi/environment.hpp>
@@ -53,9 +53,10 @@ namespace yampi
   struct defer_exposure_t { };
   struct adapt_exposure_t { };
 
+  template <typename Window>
   class exposure_guard
   {
-    ::yampi::window& window_;
+    ::yampi::window_base<Window>& window_;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -72,17 +73,17 @@ namespace yampi
     ~exposure_guard() BOOST_NOEXCEPT
     { MPI_Win_wait(window_.mpi_win()); }
 
-    exposure_guard(::yampi::group const& group, ::yampi::window& window, ::yampi::environment const& environment)
+    exposure_guard(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_(window)
     { do_post(group, 0, environment); }
 
     exposure_guard(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_(window)
     { do_post(group, static_assert<int>(assertion), environment); }
 
-    exposure_guard(::yampi::window& window, ::yampi::adopt_exposure_t const)
+    exposure_guard(::yampi::window_base<Window>& window, ::yampi::adopt_exposure_t const)
       : window_(window)
     { }
 
@@ -97,9 +98,10 @@ namespace yampi
   };
 
 
+  template <typename Window>
   class unique_exposure
   {
-    ::yampi::window* window_ptr_;
+    ::yampi::window_base<Window>* window_ptr_;
     bool owns_;
 
    public:
@@ -143,21 +145,21 @@ namespace yampi
     }
 
     unique_exposure(
-      ::yampi::group const& group, ::yampi::window& window, ::yampi::environment const& environment)
+      ::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { post(group, environment); }
 
     unique_exposure(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window& window,
+      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { post(group, assertion, environment); }
 
-    unique_exposure(::yampi::window& window, ::yampi::defer_exposure_t const)
+    unique_exposure(::yampi::window_base<Window>& window, ::yampi::defer_exposure_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    unique_exposure(::yampi::window& window, ::yampi::adopt_exposure_t const)
+    unique_exposure(::yampi::window_base<Window>& window, ::yampi::adopt_exposure_t const)
       : window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -214,11 +216,12 @@ namespace yampi
       swap(owns_, other.owns_);
     }
 
-    ::yampi::window* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
+    ::yampi::window_base<Window>* window_ptr() const BOOST_NOEXCEPT_OR_NOTHROW { return window_ptr_; }
     bool owns_exposure() const BOOST_NOEXCEPT_OR_NOTHROW { return owns_; }
   };
 
-  inline void swap(::yampi::exposure& lhs, ::yampi::exposure& rhs) BOOST_NOEXCEPT
+  template <typename Window>
+  inline void swap(::yampi::exposure<Window>& lhs, ::yampi::exposure<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
 }
 

@@ -11,7 +11,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/target_buffer.hpp>
@@ -28,11 +28,11 @@
 
 namespace yampi
 {
-  template <typename OriginValue, typename TargetValue>
+  template <typename OriginValue, typename TargetValue, typename Derived>
   inline void put(
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Put(
@@ -44,12 +44,12 @@ namespace yampi
   }
 
   // Request-based put
-  template <typename OriginValue, typename TargetValue>
+  template <typename OriginValue, typename TargetValue, typename Derived>
   inline void put(
     ::yampi::request& request,
     ::yampi::buffer<OriginValue> const& origin_buffer,
     ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     MPI_Request mpi_request;
     int const error_code

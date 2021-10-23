@@ -16,7 +16,7 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/datatype.hpp>
 # include <yampi/predefined_datatype.hpp>
@@ -39,13 +39,13 @@
 
 namespace yampi
 {
-  template <typename Value, typename Integer>
+  template <typename Value, typename Integer, typename Derived>
   inline
   typename YAMPI_enable_if< ::yampi::has_predefined_datatype<Value>::value, void >::type
   compare_swap(
     Value const& origin_value, Value const& compare_value, Value& result_value,
     ::yampi::rank const& target, Integer const target_displacement,
-    ::yampi::window const& window, ::yampi::environment const& environment)
+    ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Compare_and_swap(

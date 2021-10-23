@@ -5,14 +5,15 @@
 
 # include <mpi.h>
 
-# include <yampi/window.hpp>
+# include <yampi/window_base.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
 
 namespace yampi
 {
-  inline void synchronize(::yampi::window const& window, ::yampi::environment const& environment)
+  template <typename Derived>
+  inline void synchronize(::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code = MPI_Win_synchronize(window.mpi_win());
     if (error_code != MPI_SUCCESS)
