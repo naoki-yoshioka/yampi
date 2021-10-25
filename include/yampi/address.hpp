@@ -37,7 +37,7 @@ namespace yampi
     MPI_Aint mpi_address_;
 
    public:
-    BOOST_CONSTEXPR address() : mpi_address_(MPI_BOTTOM) { }
+    BOOST_CONSTEXPR address() : mpi_address_() { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     address(address const&) = default;
