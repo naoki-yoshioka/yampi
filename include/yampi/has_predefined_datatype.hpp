@@ -12,6 +12,9 @@
 #   include <boost/type_traits/integral_constant.hpp>
 # endif
 
+# include <yampi/address.hpp>
+# include <yampi/byte_displacement.hpp>
+
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
 #   define YAMPI_false_type std::false_type
@@ -61,6 +64,9 @@ namespace yampi
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(double)
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(long double)
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(wchar_t)
+
+  YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::address)
+  YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::byte_displacement)
 
 # if MPI_VERSION >= 2
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(bool)
