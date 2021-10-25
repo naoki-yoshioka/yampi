@@ -337,6 +337,7 @@ namespace yampi
   template <typename Window>
   inline void swap(::yampi::shared_lock<Window>& lhs, ::yampi::shared_lock<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
+# if MPI_VERSION >= 3
 
 
   template <typename Window>
@@ -446,6 +447,7 @@ namespace yampi
   template <typename Window>
   inline void swap(::yampi::all_shared_lock<Window>& lhs, ::yampi::all_shared_lock<Window>& rhs) BOOST_NOEXCEPT
   { lhs.swap(rhs); }
+# endif // MPI_VERSION >= 3
 }
 
 

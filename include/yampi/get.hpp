@@ -57,6 +57,7 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::get", environment);
   }
+# if MPI_VERSION >= 3
 
   // Request-based get
   template <typename OriginValue, typename TargetValue, typename Derived>
@@ -96,6 +97,7 @@ namespace yampi
 
     request.reset(mpi_request, environment);
   }
+# endif // MPI_VERSION >= 3
 }
 
 

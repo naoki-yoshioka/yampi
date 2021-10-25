@@ -11,6 +11,7 @@
 # include <yampi/error.hpp>
 
 
+# if MPI_VERSION >= 3
 namespace yampi
 {
   template <typename Derived>
@@ -29,6 +30,7 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::flush_local", environment);
   }
 }
+# endif // MPI_VERSION >= 3
 
 
 #endif

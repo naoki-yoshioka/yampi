@@ -37,6 +37,7 @@
 # endif
 
 
+# if MPI_VERSION >= 3
 namespace yampi
 {
   template <typename Value, typename Integer, typename Derived>
@@ -57,6 +58,7 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::fetch_operate", environment);
   }
 }
+# endif // MPI_VERSION >= 3
 
 
 # undef YAMPI_enable_if

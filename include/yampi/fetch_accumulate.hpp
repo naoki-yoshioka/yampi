@@ -27,6 +27,7 @@
 # endif
 
 
+# if MPI_VERSION >= 3
 namespace yampi
 {
   template <typename OriginValue, typename ResultValue, typename TargetValue, typename Derived>
@@ -110,6 +111,7 @@ namespace yampi
     request.reset(mpi_request, environment);
   }
 }
+# endif // MPI_VERSION >= 3
 
 
 # undef YAMPI_addressof

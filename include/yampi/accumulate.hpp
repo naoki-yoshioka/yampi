@@ -44,6 +44,8 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::accumulate", environment);
   }
+# if MPI_VERSION >= 3
+
 
   // Request-based accumulate
   template <typename OriginValue, typename TargetValue, typename Derived>
@@ -65,6 +67,7 @@ namespace yampi
 
     request.reset(mpi_request, environment);
   }
+# endif // MPI_VERSION >= 3
 }
 
 
