@@ -12,6 +12,8 @@
 # endif
 
 # include <yampi/datatype_base.hpp>
+# include <yampi/address.hpp>
+# include <yampi/byte_displacement.hpp>
 
 namespace yampi
 {
@@ -56,6 +58,11 @@ namespace yampi
     YAMPI_MAKE_MPI_DATATYPE_OF(double, DOUBLE)
     YAMPI_MAKE_MPI_DATATYPE_OF(long double, LONG_DOUBLE)
     YAMPI_MAKE_MPI_DATATYPE_OF(wchar_t, WCHAR)
+
+    // No template specializations for types like std::int8_t because they are typedefs of fundamental types
+
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::address, AINT)
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::byte_displacement, AINT)
 
 # if MPI_VERSION >= 3
     YAMPI_MAKE_MPI_DATATYPE_OF(bool, CXX_BOOL)
