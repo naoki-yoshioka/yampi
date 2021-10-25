@@ -135,7 +135,7 @@ namespace yampi
 
       pointer result;
       int const error_code
-        = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T)), MPI_INFO_NULL, &result);
+        = MPI_Alloc_mem(static_cast<MPI_Aint>(n) * static_cast<MPI_Aint>(sizeof(T)), MPI_INFO_NULL, &result);
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::allocate_error(error_code);
@@ -215,7 +215,7 @@ namespace yampi
 
       pointer result;
       int const error_code
-        = MPI_Alloc_mem(static_cast<MPI_Aint>(n * sizeof(T_)), MPI_INFO_NULL, &result);
+        = MPI_Alloc_mem(static_cast<MPI_Aint>(n) * static_cast<MPI_Aint>(sizeof(T_)), MPI_INFO_NULL, &result);
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::allocate_error(error_code);

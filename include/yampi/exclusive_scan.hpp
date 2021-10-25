@@ -109,7 +109,7 @@ namespace yampi
 
     MPI_Request mpi_request;
     int const error_code
-      = MPI_Exscan(
+      = MPI_Iexscan(
           const_cast<SendValue*>(send_buffer.data()),
           const_cast<SendValue*>(YAMPI_addressof(*first)),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),

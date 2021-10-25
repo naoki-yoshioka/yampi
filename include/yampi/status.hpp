@@ -24,7 +24,7 @@
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
-# include <yampi/datatype.hpp>
+# include <yampi/datatype_base.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 
@@ -115,8 +115,9 @@ namespace yampi
         throw ::yampi::error(mpi_status_.MPI_ERROR, "yampi::status::test_error", environment);
     }
 
+    template <typename Datatype>
     int message_length(
-      ::yampi::datatype const& datatype, ::yampi::environment const& environment) const
+      ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
       int count;
       int const error_code
@@ -131,8 +132,9 @@ namespace yampi
       return count;
     }
 
-    num_elements_type num_elements(
-      ::yampi::datatype const& datatype, ::yampi::environment const& environment) const
+    template <typename Datatype>
+    num_elements_type num_basic_elements(
+      ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
       num_elements_type result;
       int const error_code
@@ -142,7 +144,7 @@ namespace yampi
 
       return error_code == MPI_SUCCESS
         ? result
-        : throw ::yampi::error(error_code, "yampi::status::num_elements", environment);
+        : throw ::yampi::error(error_code, "yampi::status::num_basic_elements", environment);
     }
 
     bool empty() const
