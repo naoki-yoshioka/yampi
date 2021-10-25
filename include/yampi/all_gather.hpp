@@ -27,6 +27,7 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
+# include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 #   include <yampi/topology.hpp>
@@ -111,6 +112,40 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::all_gather", environment);
   }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
 # if MPI_VERSION >= 3
 
 
@@ -186,6 +221,48 @@ namespace yampi
     request.reset(mpi_request, environment);
   }
 
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Iallgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Iallgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
 
   // Neighbor all_gather
   template <typename SendValue, typename ContiguousIterator>
@@ -248,6 +325,40 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::all_gather", environment);
   }
 
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Neighbor_allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Neighbor_allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+  }
+
 
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
@@ -313,6 +424,48 @@ namespace yampi
           const_cast<SendValue*>(send_buffer.data()),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           const_cast<ReceiveValue*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Ineighbor_allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::all_gather", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void all_gather(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Ineighbor_allgather(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
     if (error_code != MPI_SUCCESS)

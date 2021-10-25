@@ -27,6 +27,7 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
+# include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 #   include <yampi/topology.hpp>
@@ -87,6 +88,40 @@ namespace yampi
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
   }
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Alltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+  }
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Alltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+  }
 # if MPI_VERSION >= 3
 
 
@@ -133,7 +168,48 @@ namespace yampi
     request.reset(mpi_request, environment);
   }
 
+  template <typename Value>
+  inline void complete_exchange(
+    ::yapmi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Ialltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
 
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yapmi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Ialltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+
+  // Neighbor complete_exchange
   template <typename SendValue, typename ReceiveValue>
   inline void complete_exchange(
     ::yampi::buffer<SendValue> const& send_buffer,
@@ -164,6 +240,39 @@ namespace yampi
           const_cast<SendValue*>(send_buffer.data()),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           const_cast<ReceiveValue*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+  }
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Neighbor_alltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Neighbor_alltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           topology.communicator().mpi_comm());
     if (error_code != MPI_SUCCESS)
@@ -193,19 +302,38 @@ namespace yampi
     request.reset(mpi_request, environment);
   }
 
-  template <typename SendValue, typename ReceiveValue>
+  template <typename Value>
   inline void complete_exchange(
+    ::yampi::in_place_t const,
     ::yampi::request& request,
-    ::yampi::buffer<SendValue> const& send_buffer,
-    ::yampi::buffer<ReceiveValue> const& receive_buffer,
+    ::yampi::buffer<Value>& receive_buffer,
     ::yampi::topology const& topology,
     ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Ineighor_alltoall(
-          const_cast<SendValue*>(send_buffer.data()),
-          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-          const_cast<ReceiveValue*>(receive_buffer.data()),
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::complete_exchange", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void complete_exchange(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::topology const& topology,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Ineighor_alltoall(
+          MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<Value*>(receive_buffer.data()),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
     if (error_code != MPI_SUCCESS)

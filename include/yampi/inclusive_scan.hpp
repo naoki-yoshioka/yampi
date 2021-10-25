@@ -29,6 +29,7 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
+# include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -89,6 +90,42 @@ namespace yampi
     ::yampi::inclusive_scan(send_buffer, &result, operation, communicator, environment);
     return result;
   }
+
+  template <typename Value>
+  inline void inclusive_scan(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Scan(
+          MPI_IN_PLACE,
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::inclusive_scan", environment);
+  }
+
+  template <typename Value>
+  inline void inclusive_scan(
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Scan(
+          MPI_IN_PLACE,
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::inclusive_scan", environment);
+  }
 # if MPI_VERSION >= 3
 
 
@@ -133,6 +170,50 @@ namespace yampi
     SendValue result;
     ::yampi::inclusive_scan(request, send_buffer, &result, operation, communicator, environment);
     return result;
+  }
+
+  template <typename Value>
+  inline void inclusive_scan(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Iscan(
+          MPI_IN_PLACE,
+          receive_buffer.data(),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::inclusive_scan", environment);
+
+    request.reset(mpi_request, environment);
+  }
+
+  template <typename Value>
+  inline void inclusive_scan(
+    ::yampi::in_place_t const,
+    ::yampi::request& request,
+    ::yampi::buffer<Value> const& receive_buffer,
+    ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator,
+    ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    int const error_code
+      = MPI_Iscan(
+          MPI_IN_PLACE,
+          const_cast<Value*>(receive_buffer.data()),
+          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::inclusive_scan", environment);
+
+    request.reset(mpi_request, environment);
   }
 # endif
 }

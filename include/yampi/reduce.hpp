@@ -29,6 +29,8 @@
 # include <yampi/binary_operation.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
+# include <yampi/root_call_on_nonroot_error.hpp>
+# include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -123,6 +125,46 @@ namespace yampi
       SendValue null;
       call(send_buffer, YAMPI_addressof(null), operation, environment);
     }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) != root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+
+      int const error_code
+        = MPI_Reduce(
+            MPI_IN_PLACE,
+            receive_buffer.data(),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+    }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) != root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+
+      int const error_code
+        = MPI_Reduce(
+            MPI_IN_PLACE,
+            const_cast<Value*>(receive_buffer.data()),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+    }
 # if MPI_VERSION >= 3
 
 
@@ -166,6 +208,56 @@ namespace yampi
 
       SendValue null;
       call(request, send_buffer, YAMPI_addressof(null), operation, environment);
+    }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::request& request,
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) != root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+
+      MPI_Request mpi_request;
+      int const error_code
+        = MPI_Ireduce(
+            MPI_IN_PLACE,
+            receive_buffer.data(),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+
+      request.reset(mpi_request, environment);
+    }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::request& request,
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) != root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+
+      MPI_Request mpi_request;
+      int const error_code
+        = MPI_Ireduce(
+            MPI_IN_PLACE,
+            const_cast<Value*>(receive_buffer.data()),
+            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+
+      request.reset(mpi_request, environment);
     }
 # endif
   };

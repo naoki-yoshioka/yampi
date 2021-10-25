@@ -29,6 +29,8 @@
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
+# include <yampi/root_call_on_nonroot_error.hpp>
+# include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
 #   include <yampi/request.hpp>
 # endif
@@ -109,7 +111,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
 
     template <typename ContiguousIterator, typename ReceiveValue>
@@ -132,7 +134,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
 
     template <typename SendValue, typename ReceiveValue>
@@ -149,7 +151,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
 
     template <typename SendValue, typename ReceiveValue>
@@ -166,7 +168,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
 
     template <typename ReceiveValue>
@@ -175,10 +177,29 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
-        throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
+        throw ::yampi::nonroot_call_on_root_error("yampi::scatter::call");
 
       ReceiveValue null;
       call(YAMPI_addressof(null), receive_buffer, environment);
+    }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) == root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::scatter::call");
+
+      int const error_code
+        = MPI_Scatter(
+            const_cast<Value*>(send_buffer.data()),
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            MPI_IN_PLACE, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm());
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
 # if MPI_VERSION >= 3
 
@@ -205,7 +226,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
 
       request.reset(mpi_request, environment);
     }
@@ -232,7 +253,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
 
       request.reset(mpi_request, environment);
     }
@@ -253,7 +274,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
 
       request.reset(mpi_request, environment);
     }
@@ -274,7 +295,7 @@ namespace yampi
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
 
       request.reset(mpi_request, environment);
     }
@@ -286,10 +307,33 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       if (communicator_.rank(environment) == root_)
-        throw ::yampi::nonroot_call_on_root_error("yampi::gather::call");
+        throw ::yampi::nonroot_call_on_root_error("yampi::scatter::call");
 
       ReceiveValue null;
       call(requet, YAMPI_addressof(null), receive_buffer, environment);
+    }
+
+    template <typename Value>
+    void call(
+      ::yampi::in_place_t const,
+      ::yampi::request& request,
+      ::yampi::buffer<Value> const& send_buffer,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) == root_)
+        throw ::yampi::root_call_on_nonroot_error("yampi::scatter::call");
+
+      MPI_Request mpi_request;
+      int const error_code
+        = MPI_Iscatter(
+            const_cast<Value*>(send_buffer.data()),
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            MPI_IN_PLACE, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
+
+      request.reset(mpi_request, environment);
     }
 # endif
   };
