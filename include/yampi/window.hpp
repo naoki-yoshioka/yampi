@@ -34,6 +34,7 @@
 # include <yampi/communicator.hpp>
 # include <yampi/addressof.hpp>
 # include <yampi/information.hpp>
+# include <yampi/group.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
@@ -166,6 +167,15 @@ namespace yampi
 
     MPI_Win const& do_mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_win_; }
+
+    void do_group(::yampi::group& group, ::yampi::environment const& environment) const
+    {
+      MPI_Group mpi_group;
+      int const error_code = MPI_Win_get_group(mpi_win_, YAMPI_addressof(mpi_group));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::window::do_group", environment);
+      group.reset(mpi_group, environment);
+    }
 
 
     void free(::yampi::environment const& environment)
