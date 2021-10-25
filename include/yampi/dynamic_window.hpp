@@ -32,6 +32,7 @@
 # include <yampi/addressof.hpp>
 # include <yampi/information.hpp>
 # include <yampi/group.hpp>
+# include <yampi/byte_displacement.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
@@ -58,6 +59,16 @@
 # else
 #   define YAMPI_addressof boost::addressof
 # endif
+
+# if MPI_VERSION >= 3
+#   ifndef BOOST_NO_CXX11_SCOPED_ENUMS
+#     define YAMPI_FLAVOR ::yampi::flavor
+#     define YAMPI_MEMORY_MODEL ::yampi::memory_model
+#   else // BOOST_NO_CXX11_SCOPED_ENUMS
+#     define YAMPI_FLAVOR ::yampi::flavor::flavor_
+#     define YAMPI_MEMORY_MODEL ::yampi::memory_model::memory_model_
+#   endif // BOOST_NO_CXX11_SCOPED_ENUMS
+# endif // MPI_VERSION >= 3
 
 
 # if MPI_VERSION >= 3
@@ -150,6 +161,61 @@ namespace yampi
     MPI_Win const& do_mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_win_; }
 
+    template <typename T>
+    T* do_base_ptr() const
+    {
+      T* base_ptr;
+      int flag;
+      int const error_code
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_BASE, base_ptr, YAMPI_addressof(flag));
+      return error_code == MPI_SUCCESS and flag
+        ? base_ptr
+        : throw ::yampi::error(error_code, "yampi::window::do_base_ptr", environment);
+    }
+
+    ::yampi::byte_displacement do_size_in_bytes() const
+    {
+      MPI_Aint size_in_bytes;
+      int flag;
+      int const error_code
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_SIZE, YAMPI_addressof(size_in_bytes), YAMPI_addressof(flag));
+      return error_code == MPI_SUCCESS and flag
+        ? ::yampi::byte_displacement(size_in_bytes)
+        : throw ::yampi::error(error_code, "yampi::window::do_size_in_bytes", environment);
+
+    int do_displacement_unit() const
+    {
+      int displacement_unit;
+      int flag;
+      int const error_code
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_DISP_UNIT, YAMPI_addressof(displacement_unit), YAMPI_addressof(flag));
+      return error_code == MPI_SUCCESS and flag
+        ? displacement_unit
+        : throw ::yampi::error(error_code, "yampi::window::do_displacement_unit", environment);
+    }
+
+    YAMPI_FLAVOR do_flavor() const
+    {
+      int flavor;
+      int flag;
+      int const error_code
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_CREATE_FLAVOR, YAMPI_addressof(flavor), YAMPI_addressof(flag));
+      return error_code == MPI_SUCCESS and flag
+        ? static_cast<YAMPI_FLAVOR>(flavor)
+        : throw ::yampi::error(error_code, "yampi::window::do_flavor", environment);
+    }
+
+    YAMPI_MEMORY_MODEL do_memory_model() const
+    {
+      int memory_model;
+      int flag;
+      int const error_code
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_MODEL, YAMPI_addressof(memory_model), YAMPI_addressof(flag));
+      return error_code == MPI_SUCCESS and flag
+        ? static_cast<YAMPI_MEMORY_MODEL>(memory_model)
+        : throw ::yampi::error(error_code, "yampi::window::do_memory_model", environment);
+    }
+
     void do_group(::yampi::group& group, ::yampi::environment const& environment) const
     {
       MPI_Group mpi_group;
@@ -236,6 +302,10 @@ namespace yampi
 # endif // MPI_VERSION >= 3
 
 
+# if MPI_VERSION >= 3
+#   undef YAMPI_MEMORY_MODEL
+#   undef YAMPI_FLAVOR
+# endif // MPI_VERSION >= 3
 # undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_move_assignable
