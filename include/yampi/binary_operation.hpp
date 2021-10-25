@@ -71,6 +71,8 @@ namespace yampi
   struct bit_xor_t { };
   struct maximum_location_t { };
   struct minimum_location_t { };
+  struct replace_t { }; // for yampi::accumulate, etc.
+  struct no_op_t { }; // for yampi::fetch_accumulate, etc.
 
   class binary_operation
   {
@@ -122,7 +124,8 @@ namespace yampi
           or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
           or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
           or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
-          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC)
+          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC
+          or mpi_op_ == MPI_REPLACE or mpi_op_ == MPI_NO_OP)
         return;
 
       MPI_Op_free(YAMPI_addressof(mpi_op_));
@@ -151,6 +154,8 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(bit_xor, BXOR)
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(maximum_location, MAXLOC)
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(minimum_location, MINLOC)
+    YAMPI_DEFINE_OPERATION_CONSTRUCTOR(replace, REPLACE)
+    YAMPI_DEFINE_OPERATION_CONSTRUCTOR(no_op, NO_OP)
 
 # undef YAMPI_DEFINE_OPERATION_CONSTRUCTOR
 
@@ -206,6 +211,8 @@ namespace yampi
     YAMPI_DEFINE_OPERATION_RESET(bit_xor, BXOR)
     YAMPI_DEFINE_OPERATION_RESET(maximum_location, MAXLOC)
     YAMPI_DEFINE_OPERATION_RESET(minimum_location, MINLOC)
+    YAMPI_DEFINE_OPERATION_RESET(replace, REPLACE)
+    YAMPI_DEFINE_OPERATION_RESET(no_op, NO_OP)
 
 # undef YAMPI_DEFINE_OPERATION_RESET
 
@@ -226,7 +233,8 @@ namespace yampi
           or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
           or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
           or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
-          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC)
+          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC
+          or mpi_op_ == MPI_REPLACE or mpi_op_ == MPI_NO_OP)
         return;
 
       int const error_code = MPI_Op_free(YAMPI_addressof(mpi_op_));

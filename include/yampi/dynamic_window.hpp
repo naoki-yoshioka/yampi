@@ -1,11 +1,8 @@
-#ifndef YAMPI_WINDOW_HPP
-# define YAMPI_WINDOW_HPP
+#ifndef YAMPI_DYNAMIC_WINDOW_HPP
+# define YAMPI_DYNAMIC_WINDOW_HPP
 
 # include <boost/config.hpp>
 
-# include <cassert>
-# include <cstddef>
-# include <iterator>
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
@@ -74,41 +71,42 @@
 # endif // MPI_VERSION >= 3
 
 
+# if MPI_VERSION >= 3
 namespace yampi
 {
-  class window
-    : public ::yampi::window_base< ::yampi::window >
+  class dynamic_window
+    : public ::yampi::window_base< ::yampi::dynamic_window >
   {
-    typedef ::yampi::window_base< ::yampi::window > super_type;
+    typedef ::yampi::window_base< ::yampi::dynamic_window > super_type;
 
     MPI_Win mpi_win_;
 
    public:
-    window()
+    dynamic_window()
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Win>::value)
       : mpi_win_(MPI_WIN_NULL)
     { }
 
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    window(window const&) = delete;
-    window& operator=(window const&) = delete;
+    dynamic_window(dynamic_window const&) = delete;
+    dynamic_window& operator=(dynamic_window const&) = delete;
 # else // BOOST_NO_CXX11_DELETED_FUNCTIONS
    private:
-    window(window const&);
-    window& operator=(window const&);
+    dynamic_window(dynamic_window const&);
+    dynamic_window& operator=(dynamic_window const&);
 
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    window(window&& other)
+    dynamic_window(dynamic_window&& other)
       BOOST_NOEXCEPT_IF(
         YAMPI_is_nothrow_move_constructible<MPI_Win>::value
         and YAMPI_is_nothrow_copy_assignable<MPI_Win>::value)
       : mpi_win_(std::move(other.mpi_win_))
     { other.mpi_win_ = MPI_WIN_NULL; }
 
-    window& operator=(window&& other)
+    dynamic_window& operator=(dynamic_window&& other)
       BOOST_NOEXCEPT_IF(
         YAMPI_is_nothrow_move_assignable<MPI_Win>::value
         and YAMPI_is_nothrow_copy_assignable<MPI_Win>::value)
@@ -122,7 +120,7 @@ namespace yampi
     }
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
-    ~window() BOOST_NOEXCEPT_OR_NOTHROW
+    ~dynamic_window() BOOST_NOEXCEPT_OR_NOTHROW
     {
       if (mpi_win_ == MPI_WIN_NULL)
         return;
@@ -130,47 +128,31 @@ namespace yampi
       MPI_Win_free(YAMPI_addressof(mpi_win_));
     }
 
-    template <typename ContiguousIterator>
-    window(
-      ContiguousIterator const first, ContiguousIterator const last,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-      : mpi_win_(create(first, last, MPI_INFO_NULL, communicator, environment))
-    { assert(last >= first); }
+    dynamic_window(::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : mpi_win_(create(MPI_INFO_NULL, communicator, environment))
+    { }
 
-    template <typename ContiguousIterator>
-    window(
-      ContiguousIterator const first, ContiguousIterator const last,
+    dynamic_window(
       ::yampi::information const& information,
-      ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment)
-      : mpi_win_(create(first, last, information.mpi_info(), communicator, environment))
-    { assert(last >= first); }
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : mpi_win_(create(information.mpi_info(), communicator, environment))
+    { }
 
    private:
-    template <typename ContiguousIterator>
     MPI_Win create(
-      ContiguousIterator const first, ContiguousIterator const last,
-      MPI_Info const& mpi_info, ::yampi::communicator const& communicator,
-      ::yampi::environment const& environment) const
+      MPI_Info const& mpi_info,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment) const
     {
-      assert(last >= first);
-
-      using value_type = typename YAMPI_remove_cv<typename std::iterator_traits<ContiguousIterator>::value_type>::type;
       MPI_Win result;
       int const error_code
-        = MPI_Win_create(
-            YAMPI_addressof(*first),
-            (::yampi::addressof(*last, environment) - ::yampi::addressof(*first, environment)).mpi_address(),
-            sizeof(value_type), mpi_info, communicator.mpi_comm(),
-            YAMPI_addressof(result));
+        = MPI_Win_create_dynamic(mpi_info, communicator.mpi_comm(), YAMPI_addressof(result));
       return error_code == MPI_SUCCESS
         ? result
-        : throw ::yampi::error(error_code, "yampi::window::create", environment);
+        : throw ::yampi::error(error_code, "yampi::dynamic_window::create", environment);
     }
 
    public:
-    bool operator==(window const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator==(dynamic_window const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_win_ == other.mpi_win_; }
 
     bool do_is_null() const BOOST_NOEXCEPT_OR_NOTHROW
@@ -212,7 +194,6 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_displacement_unit", environment);
     }
 
-# if MPI_VERSION >= 3
     YAMPI_FLAVOR do_flavor() const
     {
       int flavor;
@@ -234,7 +215,6 @@ namespace yampi
         ? static_cast<YAMPI_MEMORY_MODEL>(memory_model)
         : throw ::yampi::error(error_code, "yampi::window::do_memory_model", environment);
     }
-# endif // MPI_VERSION >= 3
 
     void do_group(::yampi::group& group, ::yampi::environment const& environment) const
     {
@@ -273,7 +253,7 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       free(environment);
-      mpi_win_ = create(first, last, MPI_INFO_NULL, communicator, environment);
+      mpi_win_ = create(MPI_INFO_NULL, communicator, environment);
     }
 
     template <typename ContiguousIterator>
@@ -284,14 +264,14 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       free(environment);
-      mpi_win_ = create(first, last, information.mpi_info(), communicator, environment);
+      mpi_win_ = create(information.mpi_info(), communicator, environment);
     }
 
     void set_information(yampi::information const& information, yampi::environment const& environment) const
     {
       int const error_code = MPI_Win_set_info(mpi_win_, information.mpi_info());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window::information", environment);
+        throw ::yampi::error(error_code, "yampi::dynamic_window::information", environment);
     }
 
     void get_information(yampi::information& information, yampi::environment const& environment) const
@@ -300,10 +280,10 @@ namespace yampi
       int const error_code = MPI_Win_get_info(mpi_win_, YAMPI_addressof(result));
       return error_code == MPI_SUCCESS
         ? yampi::information(result)
-        : throw ::yampi::error(error_code, "yampi::window::information", environment);
+        : throw ::yampi::error(error_code, "yampi::dynamic_window::information", environment);
     }
 
-    void swap(window& other)
+    void swap(dynamic_window& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Win>::value)
     {
       using std::swap;
@@ -311,14 +291,15 @@ namespace yampi
     }
   };
 
-  inline bool operator!=(::yampi::window const& lhs, ::yampi::window const& rhs)
+  inline bool operator!=(::yampi::dynamic_window const& lhs, ::yampi::dynamic_window const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
-  inline void swap(::yampi::window& lhs, ::yampi::window& rhs)
+  inline void swap(::yampi::dynamic_window& lhs, ::yampi::dynamic_window& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
+# endif // MPI_VERSION >= 3
 
 
 # if MPI_VERSION >= 3
