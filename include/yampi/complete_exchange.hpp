@@ -290,7 +290,7 @@ namespace yampi
   {
     MPI_Request mpi_request;
     int const error_code
-      = MPI_Ineighor_alltoall(
+      = MPI_Ineighbor_alltoall(
           const_cast<SendValue*>(send_buffer.data()),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           receive_buffer.data(),
@@ -311,7 +311,7 @@ namespace yampi
     ::yampi::environment const& environment)
   {
     int const error_code
-      = MPI_Ineighor_alltoall(
+      = MPI_Ineighbor_alltoall(
           MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           receive_buffer.data(),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
@@ -331,7 +331,7 @@ namespace yampi
     ::yampi::environment const& environment)
   {
     int const error_code
-      = MPI_Ineighor_alltoall(
+      = MPI_Ineighbor_alltoall(
           MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           const_cast<Value*>(receive_buffer.data()),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
