@@ -15,6 +15,8 @@
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 
+# include <yampi/extent.hpp>
+
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 #   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
@@ -32,17 +34,14 @@
 
 namespace yampi
 {
-  template <typename Count>
   class bounds
   {
-    Count lower_bound_;
-    Count extent_;
+    ::yampi::extent lower_bound_;
+    ::yampi::extent extent_;
 
    public:
-    typedef Count count_type;
-
-    bounds(Count const& lower_bound, Count const& extent)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<Count>::value)
+    bounds(::yampi::extent const& lower_bound, ::yampi::extent const& extent)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::extent >::value)
       : lower_bound_(lower_bound), extent_(extent)
     { }
 
@@ -50,27 +49,27 @@ namespace yampi
       BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lower_bound_ == other.lower_bound_))*/
     { return lower_bound_ == other.lower_bound_ and extent_ == other.extent_; }
 
-    Count const& lower_bound() const BOOST_NOEXCEPT_OR_NOTHROW { return lower_bound_; }
-    void lower_bound(Count const& lb)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<Count>::value)
+    ::yampi::extent const& lower_bound() const BOOST_NOEXCEPT_OR_NOTHROW { return lower_bound_; }
+    void lower_bound(::yampi::extent const& lb)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable< ::yampi::extent >::value)
     { lower_bound_ = lb; }
 
-    Count const& upper_bound() const
+    ::yampi::extent upper_bound() const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lower_bound_ + extent_))
     { return lower_bound_ + extent_; }
-    void upper_bound(Count const& ub)
+    void upper_bound(::yampi::extent const& ub)
       BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_copy_assignable<Count>::value
+        YAMPI_is_nothrow_copy_assignable< ::yampi::extent >::value
         and BOOST_NOEXCEPT_EXPR(ub - lower_bound_))
     { extent_ = ub - lower_bound_; }
 
-    Count const& extent() const BOOST_NOEXCEPT_OR_NOTHROW { return extent_; }
-    void extent(Count const& ex)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<Count>::value)
+    ::yampi::extent const& extent() const BOOST_NOEXCEPT_OR_NOTHROW { return extent_; }
+    void extent(::yampi::extent const& ex)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable< ::yampi::extent >::value)
     { extent_ = ex; }
 
     void swap(bounds& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<Count>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable< ::yampi::extent >::value)
     {
       using std::swap;
       swap(lower_bound_, other.lower_bound_);
@@ -78,22 +77,14 @@ namespace yampi
     }
   };
 
-  template <typename Count>
   inline bool operator!=(
-    ::yampi::bounds<Count> const& lhs, ::yampi::bounds<Count> const& rhs)
+    ::yampi::bounds const& lhs, ::yampi::bounds const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
   { return not (lhs == rhs); }
 
-  template <typename Count>
-  inline void swap(::yampi::bounds<Count>& lhs, ::yampi::bounds<Count>& rhs)
+  inline void swap(::yampi::bounds& lhs, ::yampi::bounds& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
-
-  template <typename Count>
-  inline ::yampi::bounds<Count> make_bounds(
-    Count const& lower_bound, Count const& extent)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::bounds<Count>(lower_bound, extent)))
-  { return ::yampi::bounds<Count>(lower_bound, extent); }
 }
 
 
