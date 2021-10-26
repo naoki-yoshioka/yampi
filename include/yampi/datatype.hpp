@@ -533,6 +533,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
     }
 
+# if MPI_VERSION >= 3
     // MPI_Type_create_hindexed_block
     template <typename DerivedDatatype, typename ContiguousIterator>
     typename YAMPI_enable_if<
@@ -560,6 +561,7 @@ namespace yampi
         ? commit(result, environment)
         : throw ::yampi::error(error_code, "yampi::datatype::derive", environment);
     }
+# endif // MPI_VERSION >= 3
 
     // MPI_Type_create_struct
     template <

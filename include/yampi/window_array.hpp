@@ -333,7 +333,7 @@ namespace yampi
     {
       int const error_code = MPI_Win_set_info(mpi_win_, information.mpi_info());
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::information", environment);
+        throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::set_information", environment);
     }
 
     void get_information(yampi::information& information, yampi::environment const& environment) const
@@ -342,7 +342,7 @@ namespace yampi
       int const error_code = MPI_Win_get_info(mpi_win_, YAMPI_addressof(result));
       return error_code == MPI_SUCCESS
         ? yampi::information(result)
-        : throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::information", environment);
+        : throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::get_information", environment);
     }
 
 
