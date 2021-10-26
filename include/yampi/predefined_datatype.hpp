@@ -14,6 +14,10 @@
 # include <yampi/datatype_base.hpp>
 # include <yampi/address.hpp>
 # include <yampi/byte_displacement.hpp>
+# include <yampi/offset.hpp>
+# include <yampi/count.hpp>
+# include <yampi/extent.hpp>
+
 
 namespace yampi
 {
@@ -63,6 +67,14 @@ namespace yampi
 
     YAMPI_MAKE_MPI_DATATYPE_OF(yampi::address, AINT)
     YAMPI_MAKE_MPI_DATATYPE_OF(yampi::byte_displacement, AINT)
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::offset, OFFSET)
+# if MPI_VERSION >= 3
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::count, COUNT)
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::extent, COUNT)
+# else
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::count, INT)
+    YAMPI_MAKE_MPI_DATATYPE_OF(yampi::extent, AINT)
+# endif
 
 # if MPI_VERSION >= 3
     YAMPI_MAKE_MPI_DATATYPE_OF(bool, CXX_BOOL)

@@ -35,7 +35,9 @@
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/byte_displacement.hpp>
+# include <yampi/count.hpp>
 # include <yampi/bounds.hpp>
+# include <yampi/extent.hpp>
 # include <yampi/datatype_base.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
@@ -70,16 +72,6 @@
 
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif
-
-# if MPI_VERSION >= 3
-#   define YAMPI_Type_size MPI_Type_size_x
-#   define YAMPI_Type_get_extent MPI_Type_get_extent_x
-#   define YAMPI_Type_get_true_extent MPI_Type_get_true_extent_x
-# else
-#   define YAMPI_Type_size MPI_Type_size
-#   define YAMPI_Type_get_extent MPI_Type_get_extent
-#   define YAMPI_Type_get_true_extent MPI_Type_get_true_extent
 # endif
 
 
@@ -357,7 +349,7 @@ namespace yampi
     template <typename DerivedDatatype>
     datatype(
       ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
-      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::bounds const& new_bounds,
       ::yampi::environment const& environment)
       : mpi_datatype_(derive(old_datatype, new_bounds, environment))
     { }
@@ -653,15 +645,15 @@ namespace yampi
     template <typename DerivedDatatype>
     MPI_Datatype derive(
       ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
-      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::bounds const& new_bounds,
       ::yampi::environment const& environment)
     {
       MPI_Datatype result;
       int const error_code
         = MPI_Type_create_resized(
             old_datatype.mpi_datatype(),
-            static_cast<MPI_Aint>(new_bounds.lower_bound()),
-            static_cast<MPI_Aint>(new_bounds.extent()),
+            new_bounds.lower_bound().mpi_aint_mpi_extent(),
+            new_bounds.extent().mpi_aint_mpi_extent(),
             YAMPI_addressof(result));
 
       return error_code == MPI_SUCCESS
@@ -833,7 +825,7 @@ namespace yampi
     template <typename DerivedDatatype>
     void reset(
       ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
-      ::yampi::bounds<count_type> const& new_bounds,
+      ::yampi::bounds const& new_bounds,
       ::yampi::environment const& environment)
     {
       free(environment);
@@ -841,36 +833,55 @@ namespace yampi
     }
 
 
-    size_type size(::yampi::environment const& environment) const
+    ::yampi::count size(::yampi::environment const& environment) const
     {
-      size_type result;
-      int const error_code = YAMPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
+# if MPI_VERSION >= 3
+      MPI_Count result;
+      int const error_code = MPI_Type_size_x(mpi_datatype_, YAMPI_addressof(result));
+# else
+      int result;
+      int const error_code = MPI_Type_size(mpi_datatype_, YAMPI_addressof(result));
+# endif
       return error_code == MPI_SUCCESS
-        ? result
+        ? ::yampi::count(result)
         : throw ::yampi::error(
             error_code, "yampi::datatype::size", environment);
     }
 
-    bounds_type bounds(::yampi::environment const& environment) const
+    ::yampi::bounds bounds(::yampi::environment const& environment) const
     {
-      count_type lower_bound, extent;
+# if MPI_VERSION >= 3
+      MPI_Count lower_bound, extent;
       int const error_code
-        = YAMPI_Type_get_extent(
+        = MPI_Type_get_extent_x(
             mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+# else
+      MPI_Aint lower_bound, extent;
+      int const error_code
+        = MPI_Type_get_extent(
+            mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+# endif
       return error_code == MPI_SUCCESS
-        ? ::yampi::make_bounds(lower_bound, extent)
+        ? ::yampi::bounds(::yampi::extent(lower_bound), ::yampi::extent(extent))
         : throw ::yampi::error(
             error_code, "yampi::datatype::bounds", environment);
     }
 
-    bounds_type true_bounds(::yampi::environment const& environment) const
+    ::yampi::bounds true_bounds(::yampi::environment const& environment) const
     {
-      count_type lower_bound, extent;
+# if MPI_VERSION >= 3
+      MPI_Count lower_bound, extent;
       int const error_code
-        = YAMPI_Type_get_true_extent(
+        = MPI_Type_get_true_extent_x(
             mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+# else
+      MPI_Aint lower_bound, extent;
+      int const error_code
+        = MPI_Type_get_true_extent(
+            mpi_datatype_, YAMPI_addressof(lower_bound), YAMPI_addressof(extent));
+# endif
       return error_code == MPI_SUCCESS
-        ? ::yampi::make_bounds(lower_bound, extent)
+        ? ::yampi::bounds(::yampi::extent(lower_bound), ::yampi::extent(extent))
         : throw ::yampi::error(
             error_code, "yampi::datatype::true_bounds", environment);
     }
@@ -893,9 +904,6 @@ namespace yampi
 }
 
 
-# undef YAMPI_Type_get_true_extent
-# undef YAMPI_Type_get_extent
-# undef YAMPI_Type_size
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   undef static_assert
 # endif
