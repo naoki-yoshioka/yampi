@@ -14,6 +14,9 @@
 
 # include <yampi/address.hpp>
 # include <yampi/byte_displacement.hpp>
+# include <yampi/offset.hpp>
+# include <yampi/count.hpp>
+# include <yampi/extent.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_true_type std::true_type
@@ -67,6 +70,9 @@ namespace yampi
 
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::address)
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::byte_displacement)
+  YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::offset)
+  YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::count)
+  YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(yampi::extent)
 
 # if MPI_VERSION >= 2
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(bool)
