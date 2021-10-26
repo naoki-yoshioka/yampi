@@ -27,6 +27,7 @@
 # include <yampi/datatype_base.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
+# include <yampi/count.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
@@ -48,12 +49,6 @@
 #   define YAMPI_addressof boost::addressof
 # endif
 
-# if MPI_VERSION >= 3
-#   define YAMPI_Get_elements MPI_Get_elements_x
-# else
-#   define YAMPI_Get_elements MPI_Get_elements
-# endif
-
 
 namespace yampi
 {
@@ -71,12 +66,6 @@ namespace yampi
     MPI_Status mpi_status_;
 
    public:
-# if MPI_VERSION >= 3
-    typedef MPI_Count num_elements_type;
-# else
-    typedef int num_elements_type;
-# endif
-
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     status() = delete;
 # else
@@ -116,34 +105,42 @@ namespace yampi
     }
 
     template <typename Datatype>
-    int message_length(
+    ::yampi::count message_length(
       ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
-      int count;
+      int result;
       int const error_code
         = MPI_Get_count(
             const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
-            datatype.mpi_datatype(), &count);
+            datatype.mpi_datatype(), &result);
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::status::message_length", environment);
-      if (count == MPI_UNDEFINED)
+      if (result == MPI_UNDEFINED)
         throw ::yampi::count_value_undefined_error();
 
-      return count;
+      return ::yampi::count(result);
     }
 
     template <typename Datatype>
-    num_elements_type num_basic_elements(
+    ::yampi::count num_basic_elements(
       ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
-      num_elements_type result;
+# if MPI_VERSION >= 3
+      MPI_Count result;
       int const error_code
-        = YAMPI_Get_elements(
+        = MPI_Get_elements_x(
             const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
             datatype.mpi_datatype(), &result);
+# else
+      int result;
+      int const error_code
+        = MPI_Get_elements(
+            const_cast<MPI_Status*>(YAMPI_addressof(mpi_status_)),
+            datatype.mpi_datatype(), &result);
+# endif
 
       return error_code == MPI_SUCCESS
-        ? result
+        ? ::yampi::count(result)
         : throw ::yampi::error(error_code, "yampi::status::num_basic_elements", environment);
     }
 
