@@ -52,6 +52,12 @@ namespace yampi
       : mpi_byte_displacement_(mpi_byte_displacement)
     { }
 
+# ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
+    explicit BOOST_CONSTEXPR operator MPI_Aint() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_byte_displacement_; }
+# else
+    BOOST_CONSTEXPR operator MPI_Aint() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_byte_displacement_; }
+# endif
+
     BOOST_CONSTEXPR bool operator==(byte_displacement const& other) const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_byte_displacement_ == other.mpi_byte_displacement_; }
 
