@@ -24,7 +24,6 @@
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
-# include <yampi/request.hpp>
 # include <yampi/error.hpp>
 # include <yampi/communication_mode.hpp>
 
@@ -66,27 +65,6 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::send", environment);
   }
 
-  template <typename Value>
-  inline void send(
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  {
-    MPI_Request mpi_request;
-    int const error_code
-      = MPI_Isend(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-          destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(mpi_request));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::send", environment);
-
-    request.reset(mpi_request, environment);
-  }
-
-
   namespace send_detail
   {
     template <typename CommunicationMode>
@@ -103,16 +81,6 @@ namespace yampi
         ::yampi::communicator const& communicator,
         ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
-
-      template <typename CommunicationMode, typename Value>
-      static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
-      { ::yampi::send(communicator, environment, buffer, request, destination, tag); }
     };
 
     template <>
@@ -132,27 +100,6 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
-      }
-
-      template <typename CommunicationMode, typename Value>
-      static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
-      {
-        MPI_Request mpi_request;
-        int const error_code
-          = MPI_Ibsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(mpi_request));
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error(error_code, "yampi::send", environment);
-
-        request.reset(mpi_request, environment);
       }
     };
 
@@ -174,27 +121,6 @@ namespace yampi
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
       }
-
-      template <typename CommunicationMode, typename Value>
-      static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
-      {
-        MPI_Request mpi_request;
-        int const error_code
-          = MPI_Issend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(mpi_request));
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error(error_code, "yampi::send", environment);
-
-        request.reset(mpi_request, environment);
-      }
     };
 
     template <>
@@ -215,27 +141,6 @@ namespace yampi
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
       }
-
-      template <typename CommunicationMode, typename Value>
-      static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::request& request,
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
-      {
-        MPI_Request mpi_request;
-        int const error_code
-          = MPI_Irsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-              YAMPI_addressof(mpi_request));
-        if (error_code != MPI_SUCCESS)
-          throw ::yampi::error(error_code, "yampi::send", environment);
-
-        request.reset(mpi_request, environment);
-      }
     };
   }
 
@@ -252,21 +157,6 @@ namespace yampi
     ::yampi::send_detail::send<communication_mode_type>::call(
       YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
       buffer, destination, tag, communicator, environment);
-  }
-
-  template <typename CommunicationMode, typename Value>
-  inline void send(
-    YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  {
-    typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
-    ::yampi::send_detail::send<communication_mode_type>::call(
-      YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-      request, buffer, destination, tag, communicator, environment);
   }
 }
 

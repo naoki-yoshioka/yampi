@@ -27,12 +27,12 @@
 # include <yampi/environment.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
-# include <yampi/request.hpp>
 # include <yampi/group.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/information.hpp>
 # include <yampi/color.hpp>
 # include <yampi/split_type.hpp>
+# include <yampi/request_base.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
@@ -70,9 +70,12 @@ namespace yampi
     inline BOOST_CONSTEXPR ::yampi::self_communicator_t self_communicator() { return ::yampi::self_communicator_t(); }
   }
 
+  class duplicate_communicator_request;
+
   class communicator
   {
     MPI_Comm mpi_comm_;
+    friend class ::yampi::duplicate_communicator_request;
 
    public:
     communicator()
@@ -106,6 +109,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_comm_ != MPI_COMM_NULL and mpi_comm_ != MPI_COMM_WORLD and mpi_comm_ != MPI_COMM_SELF)
+          MPI_Comm_free(YAMPI_addressof(mpi_comm_));
         mpi_comm_ = std::move(other.mpi_comm_);
         other.mpi_comm_ = MPI_COMM_NULL;
       }
@@ -145,12 +150,6 @@ namespace yampi
       communicator const& other, ::yampi::information const& information,
       ::yampi::environment const& environment)
       : mpi_comm_(duplicate(other, information, environment))
-    { }
-
-    communicator(
-      communicator const& other, ::yampi::request& request,
-      ::yampi::environment const& environment)
-      : mpi_comm_(duplicate(other, request, environment))
     { }
 # endif
 
@@ -213,23 +212,6 @@ namespace yampi
         ? result
         : throw ::yampi::error(
             error_code, "yampi::communicator::duplicate", environment);
-    }
-
-    MPI_Comm duplicate(
-      communicator const& other, ::yampi::request& request,
-      ::yampi::environment const& environment) const
-    {
-      MPI_Comm result;
-      MPI_Request mpi_request;
-      int const error_code
-        = MPI_Comm_idup(other.mpi_comm(), YAMPI_addressof(result), YAMPI_addressof(mpi_request));
-
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(
-          error_code, "yampi::communicator::duplicate", environment);
-
-      request.mpi_request(mpi_request);
-      return result;
     }
 # endif
 
@@ -301,6 +283,15 @@ namespace yampi
       mpi_comm_ = mpi_comm;
     }
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(communicator&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_comm_ = std::move(other.mpi_comm_);
+      other.mpi_comm_ = MPI_COMM_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
     void reset(yampi::world_communicator_t const, ::yampi::environment const& environment)
     {
       free(environment);
@@ -321,17 +312,6 @@ namespace yampi
       free(environment);
       mpi_comm_ = duplicate(other, environment);
     }
-
-# if MPI_VERSION >= 3
-    void reset(communicator const& other, ::yampi::request& request, ::yampi::environment const& environment)
-    {
-      if (this == YAMPI_addressof(other))
-        return;
-
-      free(environment);
-      mpi_comm_ = duplicate(other, request, environment);
-    }
-# endif
 
     void reset(
       communicator const& other, ::yampi::group const& group,
@@ -368,7 +348,6 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::communicator::free", environment);
     }
-
 
     bool is_null() const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_comm_ == MPI_COMM_NULL))
@@ -427,9 +406,6 @@ namespace yampi
 # endif
 
     MPI_Comm const& mpi_comm() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_comm_; }
-    void mpi_comm(MPI_Comm const& comm)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<MPI_Comm>::value)
-    { mpi_comm_ = comm; }
 
     void swap(communicator& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Comm>::value)
@@ -451,6 +427,52 @@ namespace yampi
     return rank >= ::yampi::rank(0)
       and rank < ::yampi::rank(communicator.size(environment));
   }
+# if MPI_VERSION >= 3
+
+  class non_null_communicator_error
+    : public std::logic_error
+  {
+   public:
+    non_null_communicator_error()
+      : std::logic_error("Non-null communicator is specified for new communicator")
+    { }
+  };
+
+  class duplicate_communicator_request
+    : public ::yampi::request_base
+  {
+    typedef request_base base_type;
+
+   public:
+    duplicate_communicator_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+      : base_type()
+    { }
+
+# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    duplicate_communicator_request(duplicate_communicator_request const&) = default;
+    duplicate_communicator_request& operator=(duplicate_communicator_request const&) = default;
+#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    duplicate_communicator_request(duplicate_communicator_request&&) = default;
+    duplicate_communicator_request& operator=(duplicate_communicator_request&&) = default;
+#   endif
+    ~duplicate_communicator_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
+# endif
+
+    void duplicate(
+      ::yampi::communicator const& old_communicator, ::yampi::communicator& new_communicator,
+      ::yampi::environment const& environment)
+    {
+      if (not new_communicator.is_null())
+        throw ::yampi::non_null_communicator_error();
+
+      int const error_code
+        = MPI_Comm_idup(old_communicator.mpi_comm_, YAMPI_addressof(new_communicator.mpi_comm_), YAMPI_addressof(mpi_request_));
+
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::duplicate_communicator_request::duplicate", environment);
+    }
+  };
+# endif // MPI_VERSION >= 3
 }
 
 

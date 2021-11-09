@@ -18,15 +18,14 @@
 #   endif
 # endif
 
-# include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/tag.hpp>
-# include <yampi/error.hpp>
 # if MPI_VERSION >= 3
-#   include <yampi/request.hpp>
+#   include <yampi/request_base.hpp>
 # endif
+# include <yampi/environment.hpp>
+# include <yampi/error.hpp>
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
@@ -100,41 +99,124 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
     }
+  };
 # if MPI_VERSION >= 3
 
+  class broadcast_request
+    : public ::yampi::request_base
+  {
+    typedef request_base base_type;
+
+   public:
+    broadcast_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+      : base_type()
+    { }
+
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    broadcast_request(broadcast_request const&) = default;
+    broadcast_request& operator=(broadcast_request const&) = default;
+#     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    broadcast_request(broadcast_request&&) = default;
+    broadcast_request& operator=(broadcast_request&&) = default;
+#     endif
+    ~broadcast_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
+#   endif
+
     template <typename Value>
-    void call(
-      ::yampi::request& request, ::yampi::buffer<Value>& buffer,
-      ::yampi::environment const& environment) const
+    broadcast_request(
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_broadcast_request(buffer, root, communicator, environment))
+    { }
+
+    template <typename Value>
+    broadcast_request(
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_broadcast_request(buffer, root, communicator, environment))
+    { }
+
+   private:
+    template <typename Value>
+    static void do_broadcast(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Ibcast(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::broadcast_request::do_broadcast", environment);
     }
 
     template <typename Value>
-    void call(
-      ::yampi::request& request, ::yampi::buffer<Value> const& buffer,
-      ::yampi::environment const& environment) const
+    static void do_broadcast(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Ibcast(
             const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::broadcast_request::do_broadcast", environment);
     }
-# endif
+
+    template <typename Value>
+    static MPI_Request make_broadcast_request(
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_broadcast(result, buffer, root, communicator, environment);
+      return result;
+    }
+
+    template <typename Value>
+    static MPI_Request make_broadcast_request(
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_broadcast(result, buffer, root, communicator, environment);
+      return result;
+    }
+
+   public:
+    template <typename Value>
+    void reset(
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      broadcast(buffer, root, communicator, environment);
+    }
+
+    template <typename Value>
+    void reset(
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      broadcast(buffer, root, communicator, environment);
+    }
+
+    template <typename Value>
+    void broadcast(
+      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_broadcast(mpi_request_, buffer, root, communicator, environment); }
+
+    template <typename Value>
+    void broadcast(
+      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_broadcast(mpi_request_, buffer, root, communicator, environment); }
   };
+# endif // MPI_VERSION >= 3
 }
 
 

@@ -22,18 +22,18 @@
 #   include <boost/static_assert.hpp>
 # endif
 
-# include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/binary_operation.hpp>
+# include <yampi/in_place.hpp>
+# if MPI_VERSION >= 3
+#   include <yampi/request_base.hpp>
+# endif
+# include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
 # include <yampi/root_call_on_nonroot_error.hpp>
-# include <yampi/in_place.hpp>
-# if MPI_VERSION >= 3
-#   include <yampi/request.hpp>
-# endif
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
@@ -88,7 +88,6 @@ namespace yampi
 #   endif
     ~reduce() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
-
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
@@ -165,16 +164,71 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::reduce::call", environment);
     }
-# if MPI_VERSION >= 3
+  };
 
+# if MPI_VERSION >= 3
+  class reduce_request
+    : public ::yampi::request_base
+  {
+    typedef request_base base_type;
+
+   public:
+    reduce_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+      : base_type()
+    { }
+
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    reduce_request(reduce_request const&) = default;
+    reduce_request& operator=(reduce_request const&) = default;
+#     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    reduce_request(reduce_request&&) = default;
+    reduce_request& operator=(reduce_request&&) = default;
+#     endif
+    ~reduce_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
+#   endif
 
     template <typename SendValue, typename ContiguousIterator>
-    void call(
-      ::yampi::request& request,
+    reduce_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_reduce_request(send_buffer, first, operation, root, communicator, environment))
+    { }
+
+    template <typename SendValue>
+    reduce_request(
       ::yampi::buffer<SendValue> const& send_buffer,
-      ContiguousIterator const first,
-      ::yampi::binary_operation const& operation,
-      ::yampi::environment const& environment) const
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_reduce_request(send_buffer, operation, root, communicator, environment))
+    { }
+
+    template <typename Value>
+    reduce_request(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_reduce_in_place_request(receive_buffer, operation, root, communicator, environment))
+    { }
+
+    template <typename Value>
+    reduce_request(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_reduce_in_place_request(receive_buffer, operation, root, communicator, environment))
+    { }
+
+   private:
+    // Nonblocking reduce
+    template <typename SendValue, typename ContiguousIterator>
+    static void do_reduce(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
         (YAMPI_is_same<
@@ -182,85 +236,191 @@ namespace yampi
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Ireduce(
             const_cast<SendValue*>(send_buffer.data()),
             const_cast<SendValue*>(YAMPI_addressof(*first)),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
             YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
+        throw ::yampi::error(error_code, "yampi::reduce_request::do_reduce", environment);
+    }
 
-      request.reset(mpi_request, environment);
+    template <typename SendValue, typename ContiguousIterator>
+    static MPI_Request make_reduce_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_reduce(result, send_buffer, first, operation, root, communicator, environment);
+      return result;
     }
 
     template <typename SendValue>
-    void call(
-      ::yampi::request& request,
+    static void do_reduce(
+      MPI_Request& mpi_request,
       ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::environment const& environment) const
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      if (communicator_.rank(environment) == root_)
-        throw ::yampi::nonroot_call_on_root_error("yampi::reduce::call");
+      if (communicator.rank(environment) == root)
+        throw ::yampi::nonroot_call_on_root_error("yampi::reduce_request::do_reduce");
 
       SendValue null;
-      call(request, send_buffer, YAMPI_addressof(null), operation, environment);
+      do_reduce(mpi_request, send_buffer, YAMPI_addressof(null), operation, root, communicator, environment);
+    }
+
+    template <typename SendValue>
+    static MPI_Request make_reduce_request(
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_reduce(result, send_buffer, operation, root, communicator, environment);
+      return result;
     }
 
     template <typename Value>
-    void call(
-      ::yampi::in_place_t const,
-      ::yampi::request& request,
+    static void do_reduce_in_place(
+      MPI_Request& mpi_request,
       ::yampi::buffer<Value>& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::environment const& environment) const
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      if (communicator_.rank(environment) != root_)
-        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+      if (communicator.rank(environment) != root)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce_request::do_reduce_in_place");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Ireduce(
             MPI_IN_PLACE,
             receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
             YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::reduce_request::do_reduce_in_place", environment);
     }
 
     template <typename Value>
-    void call(
-      ::yampi::in_place_t const,
-      ::yampi::request& request,
+    static void do_reduce_in_place(
+      MPI_Request& mpi_request,
       ::yampi::buffer<Value> const& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::environment const& environment) const
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      if (communicator_.rank(environment) != root_)
-        throw ::yampi::root_call_on_nonroot_error("yampi::reduce::call");
+      if (communicator.rank(environment) != root)
+        throw ::yampi::root_call_on_nonroot_error("yampi::reduce_request::do_reduce_in_place");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Ireduce(
             MPI_IN_PLACE,
             const_cast<Value*>(receive_buffer.data()),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), root_.mpi_rank(), communicator_.mpi_comm(),
+            operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
             YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::reduce::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::reduce_request::do_reduce_in_place", environment);
     }
-# endif
+
+    template <typename Value>
+    static MPI_Request make_reduce_in_place_request(
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_reduce_in_place(result, receive_buffer, operation, root, communicator, environment);
+      return result;
+    }
+
+    template <typename Value>
+    static MPI_Request make_reduce_in_place_request(
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_reduce_in_place(result, receive_buffer, operation, root, communicator, environment);
+      return result;
+    }
+
+   public:
+    template <typename SendValue, typename ContiguousIterator>
+    void reset(
+      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      reduce(send_buffer, first, operation, root, communicator, environment);
+    }
+
+    template <typename SendValue>
+    void reset(
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      reduce(send_buffer, operation, root, communicator, environment);
+    }
+
+    template <typename Value>
+    void reset(
+      ::yampi::in_place_t const in_place,
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      reduce(in_place, receive_buffer, operation, root, communicator, environment);
+    }
+
+    template <typename Value>
+    void reset(
+      ::yampi::in_place_t const in_place,
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      reduce(in_place, receive_buffer, operation, root, communicator, environment);
+    }
+
+    template <typename SendValue, typename ContiguousIterator>
+    void reduce(
+      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_reduce(mpi_request_, send_buffer, first, operation, root, communicator, environment); }
+
+    template <typename SendValue>
+    void reduce(
+      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_reduce(mpi_request_, send_buffer, operation, root, communicator, environment); }
+
+    template <typename Value>
+    void reduce(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_reduce_in_place(mpi_request_, receive_buffer, operation, root, communicator, environment); }
+
+    template <typename Value>
+    void reduce(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::binary_operation const& operation, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_reduce_in_place(mpi_request_, receive_buffer, operation, root, communicator, environment); }
   };
+# endif // MPI_VERSION >= 3
 }
 
 

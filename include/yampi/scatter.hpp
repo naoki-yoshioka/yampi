@@ -22,18 +22,17 @@
 #   include <boost/static_assert.hpp>
 # endif
 
-# include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
-# include <yampi/tag.hpp>
+# include <yampi/in_place.hpp>
+# if MPI_VERSION >= 3
+#   include <yampi/request_base.hpp>
+# endif
+# include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/nonroot_call_on_root_error.hpp>
 # include <yampi/root_call_on_nonroot_error.hpp>
-# include <yampi/in_place.hpp>
-# if MPI_VERSION >= 3
-#   include <yampi/request.hpp>
-# endif
 
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_is_same std::is_same
@@ -173,6 +172,18 @@ namespace yampi
 
     template <typename ReceiveValue>
     void call(
+      ::yampi::buffer<ReceiveValue>& receive_buffer,
+      ::yampi::environment const& environment) const
+    {
+      if (communicator_.rank(environment) == root_)
+        throw ::yampi::nonroot_call_on_root_error("yampi::scatter::call");
+
+      ReceiveValue null;
+      call(YAMPI_addressof(null), receive_buffer, environment);
+    }
+
+    template <typename ReceiveValue>
+    void call(
       ::yampi::buffer<ReceiveValue> const& receive_buffer,
       ::yampi::environment const& environment) const
     {
@@ -201,15 +212,85 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::scatter::call", environment);
     }
+  };
 # if MPI_VERSION >= 3
 
+  class scatter_request
+    : public ::yampi::request_base
+  {
+    typedef request_base base_type;
+
+   public:
+    scatter_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+      : base_type()
+    { }
+
+#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+    scatter_request(scatter_request const&) = default;
+    scatter_request& operator=(scatter_request const&) = default;
+#     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    scatter_request(scatter_request&&) = default;
+    scatter_request& operator=(scatter_request&&) = default;
+#     endif
+    ~scatter_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
+#   endif
 
     template <typename ContiguousIterator, typename ReceiveValue>
-    void call(
-      ::yampi::request& request,
-      ContiguousIterator const first,
-      ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::environment const& environment) const
+    scatter_request(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(first, receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    scatter_request(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(first, receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename SendValue, typename ReceiveValue>
+    scatter_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(send_buffer, receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename SendValue, typename ReceiveValue>
+    scatter_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(send_buffer, receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename ReceiveValue>
+    scatter_request(
+      ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename ReceiveValue>
+    scatter_request(
+      ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_request(receive_buffer, root, communicator, environment))
+    { }
+
+    template <typename Value>
+    scatter_request(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      : base_type(make_scatter_in_place_request(send_buffer, root, communicator, environment))
+    { }
+
+   private:
+    template <typename ContiguousIterator, typename ReceiveValue>
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
         (YAMPI_is_same<
@@ -217,26 +298,22 @@ namespace yampi
            ReceiveValue>::value),
         "value_type of ContiguousIterator must be the same to ReceiveValue");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Iscatter(
             const_cast<ReceiveValue*>(YAMPI_addressof(*first)),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::scatter_request::do_scatter", environment);
     }
 
     template <typename ContiguousIterator, typename ReceiveValue>
-    void call(
-      ::yampi::request& request,
-      ContiguousIterator const first,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::environment const& environment) const
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
         (YAMPI_is_same<
@@ -244,99 +321,275 @@ namespace yampi
            ReceiveValue>::value),
         "value_type of ContiguousIterator must be the same to ReceiveValue");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Iscatter(
             const_cast<ReceiveValue*>(YAMPI_addressof(*first)),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             const_cast<ReceiveValue*>(receive_buffer.data()),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter_request::do_scatter", environment);
+    }
 
-      request.reset(mpi_request, environment);
+    template <typename ContiguousIterator, typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, first, receive_buffer, root, communicator, environment);
+      return result;
+    }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, first, receive_buffer, root, communicator, environment);
+      return result;
     }
 
     template <typename SendValue, typename ReceiveValue>
-    void call(
-      ::yampi::request& request,
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue>& receive_buffer,
-      ::yampi::environment const& environment) const
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Iscatter(
             const_cast<SendValue*>(send_buffer.data()),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::scatter_request::do_scatter", environment);
     }
 
     template <typename SendValue, typename ReceiveValue>
-    void call(
-      ::yampi::request& request,
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::environment const& environment) const
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Iscatter(
             const_cast<SendValue*>(send_buffer.data()),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             const_cast<ReceiveValue*>(receive_buffer.data()),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
+        throw ::yampi::error(error_code, "yampi::scatter_request::do_scatter", environment);
+    }
 
-      request.reset(mpi_request, environment);
+    template <typename SendValue, typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, send_buffer, receive_buffer, root, communicator, environment);
+      return result;
+    }
+
+    template <typename SendValue, typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, send_buffer, receive_buffer, root, communicator, environment);
+      return result;
     }
 
     template <typename ReceiveValue>
-    void call(
-      ::yampi::request& request,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::environment const& environment)
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      if (communicator_.rank(environment) == root_)
-        throw ::yampi::nonroot_call_on_root_error("yampi::scatter::call");
+      if (communicator.rank(environment) == root)
+        throw ::yampi::nonroot_call_on_root_error("yampi::scatter_request::do_scatter");
 
       ReceiveValue null;
-      call(requet, YAMPI_addressof(null), receive_buffer, environment);
+      do_scatter(mpi_request, YAMPI_addressof(null), receive_buffer, root, communicator, environment);
+    }
+
+    template <typename ReceiveValue>
+    static void do_scatter(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      if (communicator.rank(environment) == root)
+        throw ::yampi::nonroot_call_on_root_error("yampi::scatter_request::do_scatter");
+
+      ReceiveValue null;
+      do_scatter(mpi_request, YAMPI_addressof(null), receive_buffer, root, communicator, environment);
+    }
+
+    template <typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, receive_buffer, root, communicator, environment);
+      return result;
+    }
+
+    template <typename ReceiveValue>
+    static MPI_Request make_scatter_request(
+      ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter(result, receive_buffer, root, communicator, environment);
+      return result;
     }
 
     template <typename Value>
-    void call(
-      ::yampi::in_place_t const,
-      ::yampi::request& request,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::environment const& environment) const
+    static void do_scatter_in_place(
+      MPI_Request& mpi_request,
+      ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      if (communicator_.rank(environment) == root_)
-        throw ::yampi::root_call_on_nonroot_error("yampi::scatter::call");
+      if (communicator.rank(environment) == root)
+        throw ::yampi::root_call_on_nonroot_error("yampi::scatter_request::do_scatter_in_place");
 
-      MPI_Request mpi_request;
       int const error_code
         = MPI_Iscatter(
-            const_cast<Value*>(send_buffer.data()),
+            const_cast<SendValue*>(send_buffer.data()),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             MPI_IN_PLACE, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::scatter::call", environment);
-
-      request.reset(mpi_request, environment);
+        throw ::yampi::error(error_code, "yampi::scatter_request::do_scatter_in_place", environment);
     }
-# endif
+
+    template <typename Value>
+    static MPI_Request make_scatter_in_place_request(
+      ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      MPI_Request result;
+      do_scatter_in_place(result, send_buffer, root, communicator, environment);
+      return result;
+    }
+
+   public:
+    template <typename ContiguousIterator, typename ReceiveValue>
+    void reset(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(first, receive_buffer, root, communicator, environment);
+    }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    void reset(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(first, receive_buffer, root, communicator, environment);
+    }
+
+    template <typename SendValue, typename ReceiveValue>
+    void reset(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(send_buffer, receive_buffer, root, communicator, environment);
+    }
+
+    template <typename SendValue, typename ReceiveValue>
+    void reset(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(send_buffer, receive_buffer, root, communicator, environment);
+    }
+
+    template <typename ReceiveValue>
+    void reset(
+      ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(receive_buffer, root, communicator, environment);
+    }
+
+    template <typename ReceiveValue>
+    void reset(
+      ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(receive_buffer, root, communicator, environment);
+    }
+
+    template <typename Value>
+    void reset(
+      ::yampi::in_place_t const in_place,
+      ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    {
+      free(environment);
+      scatter(in_place, send_buffer, root, communicator, environment);
+    }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    void scatter(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, first, receive_buffer, root, communicator, environment); }
+
+    template <typename ContiguousIterator, typename ReceiveValue>
+    void scatter(
+      ContiguousIterator const first, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, first, receive_buffer, root, communicator, environment); }
+
+    template <typename SendValue, typename ReceiveValue>
+    void scatter(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, send_buffer, receive_buffer, root, communicator, environment); }
+
+    template <typename SendValue, typename ReceiveValue>
+    void scatter(
+      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, send_buffer, receive_buffer, root, communicator, environment); }
+
+    template <typename ReceiveValue>
+    void scatter(
+      ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, receive_buffer, root, communicator, environment); }
+
+    template <typename ReceiveValue>
+    void scatter(
+      ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter(mpi_request_, receive_buffer, root, communicator, environment); }
+
+    template <typename Value>
+    void scatter(
+      ::yampi::in_place_t const,
+      ::yampi::buffer<Value> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    { do_scatter_in_place(mpi_request_, send_buffer, root, communicator, environment); }
   };
+# endif // MPI_VERSION >= 3
 }
 
 
