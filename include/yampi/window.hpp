@@ -193,15 +193,16 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_base_ptr", environment);
     }
 
-    ::yampi::byte_displacement do_size_in_bytes() const
+    ::yampi::byte_displacement do_size_bytes() const
     {
-      MPI_Aint size_in_bytes;
+      MPI_Aint size_bytes;
       int flag;
       int const error_code
-        = MPI_Win_get_attr(mpi_win_, MPI_WIN_SIZE, YAMPI_addressof(size_in_bytes), YAMPI_addressof(flag));
+        = MPI_Win_get_attr(mpi_win_, MPI_WIN_SIZE, YAMPI_addressof(size_bytes), YAMPI_addressof(flag));
       return error_code == MPI_SUCCESS and flag
-        ? ::yampi::byte_displacement(size_in_bytes)
-        : throw ::yampi::error(error_code, "yampi::window::do_size_in_bytes", environment);
+        ? ::yampi::byte_displacement(size_bytes)
+        : throw ::yampi::error(error_code, "yampi::window::do_size_bytes", environment);
+    }
 
     int do_displacement_unit() const
     {
