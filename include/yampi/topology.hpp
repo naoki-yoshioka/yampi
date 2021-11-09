@@ -85,6 +85,11 @@ namespace yampi
     void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)
     { communicator_.reset(mpi_comm, environment); }
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(topology&& other, ::yampi::environment const& environment)
+    { communicator_.reset(std::move(other.communicator_), environment); }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
     void free(::yampi::environment const& environment)
     { communicator_.free(environment); }
 

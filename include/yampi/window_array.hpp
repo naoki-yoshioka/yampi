@@ -180,11 +180,14 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_win_ != MPI_WIN_NULL)
+          MPI_Win_free(YAMPI_addressof(mpi_win_));
         mpi_win_ = std::move(other.mpi_win_);
         base_ptr_ = std::move(other.base_ptr_);
         num_elements_ = std::move(other.num_elements_);
         other.mpi_win_ = MPI_WIN_NULL;
         other.base_ptr_ = nullptr;
+        other.num_elements_ = static_cast<std::size_t>(0u);
       }
       return *this;
     }
@@ -294,7 +297,6 @@ namespace yampi
       group.reset(mpi_group, environment);
     }
 
-
     void free(::yampi::environment const& environment)
     {
       if (mpi_win_ == MPI_WIN_NULL)
@@ -305,9 +307,21 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::free", environment);
     }
 
-
     void reset(::yampi::environment const& environment)
     { free(environment); }
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(window_array&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_win_ = std::move(other.mpi_win_);
+      base_ptr_ = std::move(other.base_ptr_);
+      num_elements_ = std::move(other.num_elements_);
+      other.mpi_win_ = MPI_WIN_NULL;
+      other.base_ptr_ = nullptr;
+      other.num_elements_ = static_cast<std::size_t>(0u);
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     void reset(
       std::size_t const num_elements,
@@ -344,7 +358,6 @@ namespace yampi
         ? yampi::information(result)
         : throw ::yampi::error(error_code, "yampi::window_array<T, is_on_shared_memory>::get_information", environment);
     }
-
 
     reference at(size_type const index)
     {
@@ -400,6 +413,7 @@ namespace yampi
       using std::swap;
       swap(mpi_win_, other.mpi_win_);
       swap(base_ptr_, other.base_ptr_);
+      swap(num_elements_, other.num_elements_);
     }
   };
 

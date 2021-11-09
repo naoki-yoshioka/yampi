@@ -177,6 +177,10 @@ namespace yampi
 #   endif
         or mpi_datatype == MPI_FLOAT or mpi_datatype == MPI_DOUBLE or mpi_datatype == MPI_LONG_DOUBLE
         or mpi_datatype == MPI_WCHAR
+        or mpi_datatype == MPI_AINT or mpi_datatype == MPI_OFFSET
+#   if MPI_VERSION >= 3
+        or mpi_datatype == MPI_COUNT
+#   endif
 #   if MPI_VERSION >= 3
         or mpi_datatype == MPI_CXX_BOOL or mpi_datatype == MPI_CXX_FLOAT_COMPLEX
         or mpi_datatype == MPI_CXX_DOUBLE_COMPLEX or mpi_datatype == MPI_CXX_LONG_DOUBLE_COMPLEX
@@ -228,6 +232,9 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_datatype_ != MPI_DATATYPE_NULL
+            and (not ::yampi::datatype_detail::is_predefined_mpi_datatype(mpi_datatype_)))
+          MPI_Type_free(YAMPI_addressof(mpi_datatype_));
         mpi_datatype_ = std::move(other.mpi_datatype_);
         other.mpi_datatype_ = MPI_DATATYPE_NULL;
       }
@@ -683,7 +690,6 @@ namespace yampi
     MPI_Datatype do_mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW
     { return mpi_datatype_; }
 
-
     void free(::yampi::environment const& environment)
     {
       if (mpi_datatype_ == MPI_DATATYPE_NULL
@@ -695,13 +701,20 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::datatype::free", environment);
     }
 
-
-    void reset(
-      MPI_Datatype const& mpi_datatype, ::yampi::environment const& environment)
+    void reset(MPI_Datatype const& mpi_datatype, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_datatype_ = mpi_datatype;
     }
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(datatype&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_datatype_ = std::move(other.mpi_datatype_);
+      other.mpi_datatype_ = MPI_DATATYPE_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     template <typename DerivedDatatype>
     void reset(
@@ -831,7 +844,6 @@ namespace yampi
       free(environment);
       mpi_datatype_ = derive(old_datatype, new_bounds, environment);
     }
-
 
     ::yampi::count size(::yampi::environment const& environment) const
     {

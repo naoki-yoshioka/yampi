@@ -119,6 +119,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_group_ != MPI_GROUP_NULL and mpi_group_ != MPI_GROUP_EMPTY)
+          MPI_Group_free(YAMPI_addressof(mpi_group_));
         mpi_group_ = std::move(other.mpi_group_);
         other.mpi_group_ = MPI_GROUP_NULL;
       }
@@ -291,6 +293,15 @@ namespace yampi
       mpi_group_ = mpi_group;
     }
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(group&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_group_ = std::move(other.mpi_group_);
+      other.mpi_group_ = MPI_GROUP_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
     void reset(::yampi::empty_group_t const, ::yampi::environment const& environment)
     {
       free(environment);
@@ -377,7 +388,6 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::group::free", environment);
     }
 
-
     bool is_null() const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_group_ == MPI_GROUP_NULL))
     { return mpi_group_ == MPI_GROUP_NULL; }
@@ -401,9 +411,6 @@ namespace yampi
     }
 
     MPI_Group const& mpi_group() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_group_; }
-    void mpi_group(MPI_Group const& mpi_grp)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
-    { mpi_group_ = mpi_grp; }
 
     void swap(group& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Group>::value)

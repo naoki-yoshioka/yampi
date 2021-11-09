@@ -115,6 +115,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_win_ != MPI_WIN_NULL)
+          MPI_Win_free(YAMPI_addressof(mpi_win_));
         mpi_win_ = std::move(other.mpi_win_);
         other.mpi_win_ = MPI_WIN_NULL;
       }
@@ -245,7 +247,6 @@ namespace yampi
       group.reset(mpi_group, environment);
     }
 
-
     void free(::yampi::environment const& environment)
     {
       if (mpi_win_ == MPI_WIN_NULL)
@@ -256,7 +257,6 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::window::free", environment);
     }
 
-
     void reset(::yampi::environment const& environment)
     { free(environment); }
 
@@ -265,6 +265,15 @@ namespace yampi
       free(environment);
       mpi_win_ = mpi_win;
     }
+
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(window&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_win_ = std::move(other.mpi_win_);
+      other.mpi_win_ = MPI_WIN_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     template <typename ContiguousIterator>
     void reset(

@@ -131,6 +131,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (owns_)
+          MPI_Win_unlock(rank_.mpi_rank(), window_ptr_->mpi_win());
         rank_ = std::move(other.rank_);
         window_ptr_ = std::move(other.window_ptr_);
         owns_ = std::move(other.owns_);
