@@ -17,7 +17,6 @@
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/status.hpp>
-# include <yampi/request.hpp>
 # include <yampi/error.hpp>
 # include <yampi/message.hpp>
 
@@ -230,121 +229,6 @@ namespace yampi
 
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::receive", environment);
-  }
-# endif // MPI_VERSION >= 3
-
-
-  // Nonblocking receive
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  {
-    MPI_Request mpi_request;
-    int const error_code
-      = MPI_Irecv(
-          buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-          source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(mpi_request));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
-
-    request.reset(mpi_request, environment);
-  }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer,
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  { ::yampi::receive(request, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  {
-    MPI_Request mpi_request;
-    int const error_code
-      = MPI_Irecv(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-          source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(mpi_request));
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
-
-    request.reset(mpi_request, environment);
-  }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  { ::yampi::receive(request, buffer, source, ::yampi::any_tag(), communicator, environment); }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  { ::yampi::receive(request, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
-# if MPI_VERSION >= 3
-
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value>& buffer, ::yampi::message& message,
-    ::yampi::environment const& environment)
-  {
-    MPI_Request mpi_request;
-    int const error_code
-      = MPI_Imrecv(
-          buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-          YAMPI_addressof(message.mpi_message()), YAMPI_addressof(mpi_request));
-
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
-
-    request.reset(mpi_request, environment);
-  }
-
-  template <typename Value>
-  inline void receive(
-    ::yampi::request& request,
-    ::yampi::buffer<Value> const& buffer, ::yampi::message& message,
-    ::yampi::environment const& environment)
-  {
-    MPI_Request mpi_request;
-    int const error_code
-      = MPI_Imrecv(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-          YAMPI_addressof(message.mpi_message()), YAMPI_addressof(mpi_request));
-
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::receive", environment);
-
-    request.reset(mpi_request, environment);
   }
 # endif // MPI_VERSION >= 3
 }

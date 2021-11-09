@@ -129,10 +129,12 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (owns_)
+          MPI_Win_complete(window_ptr_->mpi_win());
         window_ptr_ = std::move(other.window_ptr_);
         owns_ = std::move(other.owns_);
-        window_ptr_ = nullptr;
-        owns_ = false;
+        other.window_ptr_ = nullptr;
+        other.owns_ = false;
       }
       return *this;
     }

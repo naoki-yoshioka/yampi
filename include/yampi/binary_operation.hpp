@@ -74,6 +74,20 @@ namespace yampi
   struct replace_t { }; // for yampi::accumulate, etc.
   struct no_op_t { }; // for yampi::fetch_accumulate, etc.
 
+  namespace binary_operation_detail
+  {
+    inline bool is_predefined_binary_operation(MPI_Op const& mpi_op)
+    {
+      return mpi_op == MPI_MAX or mpi_op == MPI_MIN
+          or mpi_op == MPI_SUM or mpi_op == MPI_PROD
+          or mpi_op == MPI_LAND or mpi_op == MPI_BAND
+          or mpi_op == MPI_LOR or mpi_op == MPI_BOR
+          or mpi_op == MPI_LXOR or mpi_op == MPI_BXOR
+          or mpi_op == MPI_MAXLOC or mpi_op == MPI_MINLOC
+          or mpi_op == MPI_REPLACE or mpi_op == MPI_NO_OP;
+    }
+  }
+
   class binary_operation
   {
     MPI_Op mpi_op_;
@@ -109,6 +123,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_op_ != MPI_OP_NULL and (not ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_)))
+          MPI_Op_free(YAMPI_addressof(mpi_op_));
         mpi_op_ = std::move(other.mpi_op_);
         other.mpi_op_ = MPI_OP_NULL;
       }
@@ -118,14 +134,7 @@ namespace yampi
 
     ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW
     {
-      if (mpi_op_ == MPI_OP_NULL
-          or mpi_op_ == MPI_MAX or mpi_op_ == MPI_MIN
-          or mpi_op_ == MPI_SUM or mpi_op_ == MPI_PROD
-          or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
-          or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
-          or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
-          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC
-          or mpi_op_ == MPI_REPLACE or mpi_op_ == MPI_NO_OP)
+      if (mpi_op_ == MPI_OP_NULL or ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_))
         return;
 
       MPI_Op_free(YAMPI_addressof(mpi_op_));
@@ -192,6 +201,15 @@ namespace yampi
       mpi_op_ = mpi_op;
     }
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(binary_operation&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_op_ = std::move(other.mpi_op_);
+      other.mpi_op_ = MPI_OP_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
 # define YAMPI_DEFINE_OPERATION_RESET(op, mpiop) \
     void reset(::yampi:: op ## _t const, ::yampi::environment const& environment)\
     {\
@@ -227,21 +245,13 @@ namespace yampi
 
     void free(::yampi::environment const& environment)
     {
-      if (mpi_op_ == MPI_OP_NULL
-          or mpi_op_ == MPI_MAX or mpi_op_ == MPI_MIN
-          or mpi_op_ == MPI_SUM or mpi_op_ == MPI_PROD
-          or mpi_op_ == MPI_LAND or mpi_op_ == MPI_BAND
-          or mpi_op_ == MPI_LOR or mpi_op_ == MPI_BOR
-          or mpi_op_ == MPI_LXOR or mpi_op_ == MPI_BXOR
-          or mpi_op_ == MPI_MAXLOC or mpi_op_ == MPI_MINLOC
-          or mpi_op_ == MPI_REPLACE or mpi_op_ == MPI_NO_OP)
+      if (mpi_op_ == MPI_OP_NULL or ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_))
         return;
 
       int const error_code = MPI_Op_free(YAMPI_addressof(mpi_op_));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::binary_operation::free", environment);
     }
-
 
     bool is_null() const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_op_ == MPI_OP_NULL))

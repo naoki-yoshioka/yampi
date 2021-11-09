@@ -93,6 +93,8 @@ namespace yampi
     {
       if (this != YAMPI_addressof(other))
       {
+        if (mpi_info_ != MPI_INFO_NULL)
+          MPI_Info_free(YAMPI_addressof(mpi_info_));
         mpi_info_ = std::move(other.mpi_info_);
         other.mpi_info_ = MPI_INFO_NULL;
       } 
@@ -148,6 +150,15 @@ namespace yampi
       mpi_info_ = mpi_info;
     }
 
+# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
+    void reset(information&& other, ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_info_ = std::move(other.mpi_info_);
+      other.mpi_info_ = MPI_INFO_NULL;
+    }
+# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
+
     void reset(::yampi::environment const& environment)
     {
       free(environment);
@@ -169,7 +180,6 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::free", environment);
     }
-
 
     bool is_null() const
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_info_ == MPI_INFO_NULL))
@@ -263,9 +273,6 @@ namespace yampi
     }
 
     MPI_Info const& mpi_info() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_info_; }
-    void mpi_info(MPI_Info const& info)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_assignable<MPI_Info>::value)
-    { mpi_info_ = info; }
 
     void swap(information& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Info>::value)

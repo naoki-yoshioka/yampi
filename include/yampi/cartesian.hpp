@@ -224,6 +224,7 @@ namespace yampi
 
    public:
     using ::yampi::topology::reset;
+    using ::yampi::topology::free;
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     void reset(
@@ -264,8 +265,6 @@ namespace yampi
       communicator_.mpi_comm(
         make_subcommunicator(other, remains_first, remains_last, environment));
     }
-
-    using ::yampi::topology::free;
 
     int dimension(::yampi::environment const& environment) const
     {
