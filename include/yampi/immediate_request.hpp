@@ -1,5 +1,5 @@
-#ifndef YAMPI_NONBLOCKING_REQUEST_HPP
-# define YAMPI_NONBLOCKING_REQUEST_HPP
+#ifndef YAMPI_IMMEDIATE_REQUEST_HPP
+# define YAMPI_IMMEDIATE_REQUEST_HPP
 
 # include <boost/config.hpp>
 
@@ -42,35 +42,35 @@
 
 namespace yampi
 {
-  class nonblocking_request_ref;
-  class nonblocking_request_cref;
+  class immediate_request_ref;
+  class immediate_request_cref;
 
-  class nonblocking_request
+  class immediate_request
     : public ::yampi::request_base
   {
     typedef ::yampi::request_base base_type;
-    friend class ::yampi::nonblocking_request_ref;
+    friend class ::yampi::immediate_request_ref;
 
    public:
-    typedef ::yampi::nonblocking_request_ref reference_type;
-    typedef ::yampi::nonblocking_request_cref const_reference_type;
+    typedef ::yampi::immediate_request_ref reference_type;
+    typedef ::yampi::immediate_request_cref const_reference_type;
 
-    nonblocking_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+    immediate_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
       : base_type()
     { }
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    nonblocking_request(nonblocking_request const&) = default;
-    nonblocking_request& operator=(nonblocking_request const&) = default;
+    immediate_request(immediate_request const&) = default;
+    immediate_request& operator=(immediate_request const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    nonblocking_request(nonblocking_request&&) = default;
-    nonblocking_request& operator=(nonblocking_request&&) = default;
+    immediate_request(immediate_request&&) = default;
+    immediate_request& operator=(immediate_request&&) = default;
 #   endif
-    ~nonblocking_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    ~immediate_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_send_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
@@ -78,7 +78,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_send_t const,
       ::yampi::mode::standard_communication const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
@@ -87,7 +87,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_send_t const,
       ::yampi::mode::buffered_communication const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
@@ -96,7 +96,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_send_t const,
       ::yampi::mode::synchronous_communication const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
@@ -105,7 +105,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_send_t const,
       ::yampi::mode::ready_communication const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
@@ -114,7 +114,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
@@ -122,7 +122,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
@@ -130,7 +130,7 @@ namespace yampi
     { }
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
@@ -139,7 +139,7 @@ namespace yampi
 # if MPI_VERSION >= 3
 
     template <typename Value>
-    nonblocking_request(
+    immediate_request(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::message& message,
       ::yampi::environment const& environment)
@@ -168,7 +168,7 @@ namespace yampi
             YAMPI_addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_standard_send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_standard_send", environment);
     }
 
     template <typename Value>
@@ -201,7 +201,7 @@ namespace yampi
             YAMPI_addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_buffered_send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_buffered_send", environment);
     }
 
     template <typename Value>
@@ -234,7 +234,7 @@ namespace yampi
             YAMPI_addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_synchronous_send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_synchronous_send", environment);
     }
 
     template <typename Value>
@@ -267,7 +267,7 @@ namespace yampi
             YAMPI_addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_ready_send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_ready_send", environment);
     }
 
     template <typename Value>
@@ -292,7 +292,7 @@ namespace yampi
             source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_receive", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_receive", environment);
     }
 
     template <typename Value>
@@ -317,7 +317,7 @@ namespace yampi
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             YAMPI_addressof(message.mpi_message()), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request::do_receive", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request::do_receive", environment);
     }
 
     template <typename Value>
@@ -455,29 +455,29 @@ namespace yampi
 # endif // MPI_VERSION >= 3
   };
 
-  class nonblocking_request_ref
+  class immediate_request_ref
     : public ::yampi::request_ref_base
   {
     typedef ::yampi::request_ref_base base_type;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    nonblocking_request_ref() = delete;
+    immediate_request_ref() = delete;
 # else // BOOST_NO_CXX11_DELETED_FUNCTIONS
    private:
-    nonblocking_request_ref();
+    immediate_request_ref();
 
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~nonblocking_request_ref() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    ~immediate_request_ref() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~nonblocking_request_ref() BOOST_NOEXCEPT_OR_NOTHROW { }
+    ~immediate_request_ref() BOOST_NOEXCEPT_OR_NOTHROW { }
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    void reset(::yampi::nonblocking_request&& request, ::yampi::environment const& environment)
+    void reset(::yampi::immediate_request&& request, ::yampi::environment const& environment)
     {
       free(environment);
       *mpi_request_ptr_ = std::move(request.mpi_request_);
@@ -573,7 +573,7 @@ namespace yampi
             mpi_request_ptr_);
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::send", environment);
     }
 
     template <typename Value>
@@ -596,7 +596,7 @@ namespace yampi
             mpi_request_ptr_);
 # endif  // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::send", environment);
     }
 
     template <typename Value>
@@ -619,7 +619,7 @@ namespace yampi
             mpi_request_ptr_);
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::send", environment);
     }
 
     template <typename Value>
@@ -642,7 +642,7 @@ namespace yampi
             mpi_request_ptr_);
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::send", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::send", environment);
     }
 
     template <typename Value>
@@ -656,7 +656,7 @@ namespace yampi
             source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::receive", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::receive", environment);
     }
 
     template <typename Value>
@@ -683,30 +683,30 @@ namespace yampi
             YAMPI_addressof(message.mpi_message()), mpi_request_ptr_);
 
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::nonblocking_request_ref::receive", environment);
+        throw ::yampi::error(error_code, "yampi::immediate_request_ref::receive", environment);
     }
 # endif // MPI_VERSION >= 3
   };
 
-  class nonblocking_request_cref
+  class immediate_request_cref
     : public ::yampi::request_cref_base
   {
     typedef ::yampi::request_cref_base base_type;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    nonblocking_request_cref() = delete;
+    immediate_request_cref() = delete;
 # else // BOOST_NO_CXX11_DELETED_FUNCTIONS
    private:
-    nonblocking_request_cref();
+    immediate_request_cref();
 
    public:
 # endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
 
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~nonblocking_request_cref() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    ~immediate_request_cref() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~nonblocking_request_cref() BOOST_NOEXCEPT_OR_NOTHROW { }
+    ~immediate_request_cref() BOOST_NOEXCEPT_OR_NOTHROW { }
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
   };
 }
