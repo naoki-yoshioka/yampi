@@ -19,9 +19,9 @@
 # include <yampi/reduce.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
-# if MPI_VERSION >= 3
-#   include <yampi/request.hpp>
-# endif
+//# if MPI_VERSION >= 3
+//#   include <yampi/request.hpp>
+//# endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
@@ -36,11 +36,9 @@ namespace yampi
   {
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> all_of(
-      ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate,
-      ::yampi::rank const& root,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer,
+      UnaryPredicate unary_predicate, ::yampi::rank const& root,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       bool result
         = std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
@@ -63,28 +61,24 @@ namespace yampi
 
     template <typename Value, typename UnaryPredicate>
     inline bool all_of(
-      ::yampi::buffer<Value> const& buffer,
+      ::yampi::buffer<Value> const buffer,
       UnaryPredicate unary_predicate,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
-        ::yampi::make_buffer(
-          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
+        ::yampi::make_buffer(std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
         ::yampi::binary_operation(::yampi::logical_and_t()),
         communicator, environment);
     }
+    /*
 # if MPI_VERSION >= 3
-
 
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> all_of(
       ::yampi::request& request,
-      ::yampi::buffer<Value> const& buffer,
-      UnaryPredicate unary_predicate,
-      ::yampi::rank const& root,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer,
+      UnaryPredicate unary_predicate, ::yampi::rank const& root,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       bool result
         = std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
@@ -110,19 +104,18 @@ namespace yampi
     template <typename Value, typename UnaryPredicate>
     inline bool all_of(
       ::yampi::request& request,
-      ::yampi::buffer<Value> const& buffer,
+      ::yampi::buffer<Value> const buffer,
       UnaryPredicate unary_predicate,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
         request,
-        ::yampi::make_buffer(
-          std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
+        ::yampi::make_buffer(std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate)),
         ::yampi::binary_operation(::yampi::logical_and_t()),
         communicator, environment);
     }
 # endif
+*/
   }
 }
 

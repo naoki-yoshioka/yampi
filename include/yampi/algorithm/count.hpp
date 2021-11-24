@@ -20,9 +20,9 @@
 # include <yampi/reduce.hpp>
 # include <yampi/all_reduce.hpp>
 # include <yampi/binary_operation.hpp>
-# if MPI_VERSION >= 3
-#   include <yampi/request.hpp>
-# endif
+//# if MPI_VERSION >= 3
+//#   include <yampi/request.hpp>
+//# endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   define YAMPI_addressof std::addressof
@@ -39,11 +39,9 @@ namespace yampi
     inline
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count(
-      ::yampi::buffer<Value> const& buffer,
-      Value const& value,
-      ::yampi::rank const& root,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer,
+      Value const& value, ::yampi::rank const& root,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
@@ -68,7 +66,8 @@ namespace yampi
     template <typename Value>
     inline typename std::iterator_traits<Value const*>::difference_type
     count(
-      ::yampi::buffer<Value> const& buffer, Value const& value,
+      ::yampi::buffer<Value> const buffer,
+      Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
@@ -77,19 +76,17 @@ namespace yampi
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
+    /*
 # if MPI_VERSION >= 3
-
 
     template <typename Value>
     inline
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count(
       ::yampi::request& request,
-      ::yampi::buffer<Value> const& buffer,
-      Value const& value,
-      ::yampi::rank const& root,
-      ::yampi:communicator const& communicator,
-      ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer,
+      Value const& value, ::yampi::rank const& root,
+      ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
@@ -117,17 +114,18 @@ namespace yampi
     inline typename std::iterator_traits<Value const*>::difference_type
     count(
       ::yampi::request& request,
-      ::yampi::buffer<Value> const& buffer, Value const& value,
+      ::yampi::buffer<Value> const buffer,
+      Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       return ::yampi::all_reduce(
         request,
-        ::yampi::make_buffer(
-          std::count(buffer.data(), buffer.data() + buffer.count(), value)),
+        ::yampi::make_buffer(std::count(buffer.data(), buffer.data() + buffer.count(), value)),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
 # endif
+*/
   }
 }
 
