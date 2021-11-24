@@ -92,7 +92,7 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     void call(
-      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::buffer<SendValue> const send_buffer,
       ContiguousIterator const first,
       ::yampi::environment const& environment) const
     {
@@ -102,54 +102,49 @@ namespace yampi
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
 
+# if MPI_VERSION >= 3
       int const error_code
         = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<SendValue*>(YAMPI_addressof(*first)),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
+# else // MPI_VERSION >= 3
+      int const error_code
+        = MPI_Gather(
+            const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root_.mpi_rank(), communicator_.mpi_comm());
+# endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather::call", environment);
     }
 
     template <typename SendValue, typename ReceiveValue>
     void call(
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue>& receive_buffer,
+      ::yampi::buffer<SendValue> const send_buffer,
+      ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::environment const& environment) const
     {
+# if MPI_VERSION >= 3
       int const error_code
         = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            receive_buffer.data(),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    void call(
-      ::yampi::buffer<SendValue> const& send_buffer,
-      ::yampi::buffer<ReceiveValue> const& receive_buffer,
-      ::yampi::environment const& environment) const
-    {
+# else // MPI_VERSION >= 3
       int const error_code
         = MPI_Gather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<ReceiveValue*>(receive_buffer.data()),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
+# endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather::call", environment);
     }
 
     template <typename SendValue>
     void call(
-      ::yampi::buffer<SendValue> const& send_buffer,
+      ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) == root_)
@@ -162,7 +157,7 @@ namespace yampi
     template <typename Value>
     void call(
       ::yampi::in_place_t const,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::environment const& environment) const
     {
       if (communicator_.rank(environment) != root_)
@@ -171,27 +166,7 @@ namespace yampi
       int const error_code
         = MPI_Gather(
             MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            receive_buffer.data(),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather::call", environment);
-    }
-
-    template <typename Value>
-    void call(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> const& receive_buffer,
-      ::yampi::environment const& environment) const
-    {
-      if (communicator_.rank(environment) != root_)
-        throw ::yampi::root_call_on_nonroot_error("yampi::gather::call");
-
-      int const error_code
-        = MPI_Gather(
-            MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            const_cast<Value*>(receive_buffer.data()),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather::call", environment);
@@ -221,28 +196,21 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_gather_request(send_buffer, first, root, communicator, environment))
     { }
 
     template <typename SendValue, typename ReceiveValue>
     gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(send_buffer, receive_buffer, root, communicator, environment))
-    { }
-
-    template <typename SendValue, typename ReceiveValue>
-    gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_gather_request(send_buffer, receive_buffer, root, communicator, environment))
     { }
 
     template <typename SendValue>
     gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_gather_request(send_buffer, root, communicator, environment))
     { }
@@ -250,15 +218,7 @@ namespace yampi
     template <typename Value>
     gather_request(
       ::yampi::in_place_t const,
-      ::yampi::buffer<Value>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_in_place_request(receive_buffer, root, communicator, environment))
-    { }
-
-    template <typename Value>
-    gather_request(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_gather_in_place_request(receive_buffer, root, communicator, environment))
     { }
@@ -267,7 +227,7 @@ namespace yampi
     template <typename SendValue, typename ContiguousIterator>
     static void do_gather(
       MPI_Request& mpi_request,
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
@@ -278,10 +238,8 @@ namespace yampi
 
       int const error_code
         = MPI_Igather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<SendValue*>(YAMPI_addressof(*first)),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather_request::do_gather", environment);
@@ -289,7 +247,7 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     static MPI_Request make_gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -300,32 +258,13 @@ namespace yampi
     template <typename SendValue, typename ReceiveValue>
     static void do_gather(
       MPI_Request& mpi_request,
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       int const error_code
         = MPI_Igather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            receive_buffer.data(),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather_request::do_gather", environment);
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    static void do_gather(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Igather(
-            const_cast<SendValue*>(send_buffer.data()),
-            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            const_cast<ReceiveValue*>(receive_buffer.data()),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather_request::do_gather", environment);
@@ -333,17 +272,7 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     static MPI_Request make_gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_gather(result, send_buffer, receive_buffer, root, communicator, environment);
-      return result;
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    static MPI_Request make_gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -354,7 +283,7 @@ namespace yampi
     template <typename SendValue>
     static void do_gather(
       MPI_Request& mpi_request,
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       if (communicator.rank(environment) == root)
@@ -366,7 +295,7 @@ namespace yampi
 
     template <typename SendValue>
     static MPI_Request make_gather_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -377,7 +306,7 @@ namespace yampi
     template <typename Value>
     static void do_gather_in_place(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value>& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       if (communicator.rank(environment) != root)
@@ -386,27 +315,7 @@ namespace yampi
       int const error_code
         = MPI_Igather(
             MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            receive_buffer.data(),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::gather_request::do_gather_in_place", environment);
-    }
-
-    template <typename Value>
-    static void do_gather_in_place(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      if (communicator.rank(environment) != root)
-        throw ::yampi::root_call_on_nonroot_error("yampi::gather_request::do_gather_in_place");
-
-      int const error_code
-        = MPI_Igather(
-            MPI_IN_PLACE, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            const_cast<Value*>(receive_buffer.data()),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::gather_request::do_gather_in_place", environment);
@@ -414,17 +323,7 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_gather_in_place_request(
-      ::yampi::buffer<Value>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_gather_in_place(result, receive_buffer, root, communicator, environment);
-      return result;
-    }
-
-    template <typename Value>
-    static MPI_Request make_gather_in_place_request(
-      ::yampi::buffer<Value> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -435,7 +334,7 @@ namespace yampi
    public:
     template <typename SendValue, typename ContiguousIterator>
     void reset(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
@@ -444,16 +343,7 @@ namespace yampi
 
     template <typename SendValue, typename ReceiveValue>
     void reset(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      free(environment);
-      gather(send_buffer, receive_buffer, root, communicator, environment);
-    }
-
-    template <typename SendValue, typename ReceiveValue>
-    void reset(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
@@ -462,7 +352,7 @@ namespace yampi
 
     template <typename SendValue>
     void reset(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
@@ -472,17 +362,7 @@ namespace yampi
     template <typename Value>
     void reset(
       ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      free(environment);
-      gather(in_place, receive_buffer, root, communicator, environment);
-    }
-
-    template <typename Value>
-    void reset(
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
@@ -491,39 +371,26 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     void gather(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_gather(mpi_request_, send_buffer, first, root, communicator, environment); }
 
     template <typename SendValue, typename ReceiveValue>
     void gather(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    { do_gather(mpi_request_, send_buffer, receive_buffer, root, communicator, environment); }
-
-    template <typename SendValue, typename ReceiveValue>
-    void gather(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::buffer<ReceiveValue> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_gather(mpi_request_, send_buffer, receive_buffer, root, communicator, environment); }
 
     template <typename SendValue>
     void gather(
-      ::yampi::buffer<SendValue> const& send_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_gather(mpi_request_, send_buffer, root, communicator, environment); }
 
     template <typename Value>
     void gather(
       ::yampi::in_place_t const,
-      ::yampi::buffer<Value>& receive_buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    { do_gather_in_place(mpi_request_, receive_buffer, root, communicator, environment); }
-
-    template <typename Value>
-    void gather(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> const& receive_buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> receive_buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_gather_in_place(mpi_request_, receive_buffer, root, communicator, environment); }
   };

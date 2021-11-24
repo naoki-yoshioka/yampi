@@ -52,13 +52,13 @@ namespace yampi
   {
     MPI_Aint mpi_displacement_;
     int count_;
-    ::yampi::datatype& datatype_;
+    ::yampi::datatype* datatype_ptr_;
 
    public:
     template <typename Integer>
     target_buffer(Integer const displacement, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1),
-        datatype_(datatype)
+        datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -67,7 +67,7 @@ namespace yampi
     template <typename Integer>
     target_buffer(Integer const displacement, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1),
-        datatype_(const_cast< ::yampi::datatype& >(datatype))
+        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -76,7 +76,7 @@ namespace yampi
     template <typename Integer>
     target_buffer(Integer const displacement, int const count, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count),
-        datatype_(datatype)
+        datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -86,7 +86,7 @@ namespace yampi
     template <typename Integer>
     target_buffer(Integer const displacement, int const count, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count),
-        datatype_(const_cast< ::yampi::datatype& >(datatype))
+        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -94,22 +94,19 @@ namespace yampi
     }
 
     bool operator==(target_buffer const& other) const BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(datatype_ == other.datatype_))
-    { return mpi_displacement_ == other.mpi_displacement_ and count_ == other.count_ and datatype_ == other.datatype_; }
+    { return mpi_displacement_ == other.mpi_displacement_ and count_ == other.count_ and *datatype_ptr_ == *other.datatype_ptr_; }
 
     MPI_Aint const& mpi_displacement() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_displacement_; }
     int const& count() const BOOST_NOEXCEPT_OR_NOTHROW { return count_; }
-    ::yampi::datatype const& datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return datatype_; }
+    ::yampi::datatype const& datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return *datatype_ptr_; }
 
     void swap(target_buffer& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable<MPI_Aint>::value
-        and YAMPI_is_nothrow_swappable<int>::value
-        and YAMPI_is_nothrow_swappable< ::yampi::datatype& >::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Aint>::value)
     {
       using std::swap;
       swap(mpi_displacement_, other.mpi_displacement_);
       swap(count_, other.count_);
-      swap(datatype_, other.datatype_);
+      swap(datatype_ptr_, other.datatype_ptr_);
     }
   }; // class target_buffer<T, Enable>
 
@@ -145,9 +142,7 @@ namespace yampi
     ::yampi::predefined_datatype<T> datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::predefined_datatype<T>(); }
 
     void swap(target_buffer& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable<MPI_Aint>::value
-        and YAMPI_is_nothrow_swappable<int>::value)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Aint>::value)
     {
       using std::swap;
       swap(mpi_displacement_, other.mpi_displacement_);

@@ -89,8 +89,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     rma_request(
       ::yampi::request_put_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
       : base_type(make_put_request(origin_buffer, target, target_buffer, window, environment))
     { }
@@ -98,17 +98,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     rma_request(
       ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_get_request(origin_buffer, target, target_buffer, window, environment))
-    { }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
-    rma_request(
-      ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
       : base_type(make_get_request(origin_buffer, target, target_buffer, window, environment))
     { }
@@ -116,8 +107,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     rma_request(
       ::yampi::request_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
       : base_type(make_accumulate_request(origin_buffer, target, target_buffer, operation, window, environment))
@@ -126,18 +117,8 @@ namespace yampi
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     rma_request(
       ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_fetch_accumulate_request(origin_buffer, result_buffer, target, target_buffer, operation, window, environment))
-    { }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    rma_request(
-      ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
       : base_type(make_fetch_accumulate_request(origin_buffer, result_buffer, target, target_buffer, operation, window, environment))
@@ -147,8 +128,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     static void do_put(
       MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       int const error_code
@@ -162,8 +143,8 @@ namespace yampi
 
     template <typename OriginValue, typename TargetValue, typename Window>
     static MPI_Request make_put_request(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -174,8 +155,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     static void do_get(
       MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       int const error_code
@@ -188,36 +169,9 @@ namespace yampi
     }
 
     template <typename OriginValue, typename TargetValue, typename Window>
-    static void do_get(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Rget(
-            const_cast<OriginValue*>(origin_buffer.data()), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            window.mpi_win(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::rma_request::do_get", environment);
-    }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
     static MPI_Request make_get_request(
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_get(result, origin_buffer, target, target_buffer, window, environment);
-      return result;
-    }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
-    static MPI_Request make_get_request(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -228,8 +182,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     static void do_accumulate(
       MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -244,8 +198,8 @@ namespace yampi
 
     template <typename OriginValue, typename TargetValue, typename Window>
     static MPI_Request make_accumulate_request(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -257,8 +211,8 @@ namespace yampi
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     static void do_fetch_accumulate(
       MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -273,39 +227,9 @@ namespace yampi
     }
 
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    static void do_fetch_accumulate(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Rget_accumulate(
-            origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            const_cast<ResultValue*>(result_buffer.data()), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), window.mpi_win(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::rma_request::do_fetch_accumulate", environment);
-    }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     static MPI_Request make_fetch_accumulate_request(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_fetch_accumulate(result, origin_buffer, result_buffer, target, target_buffer, operation, window, environment);
-      return result;
-    }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    static MPI_Request make_fetch_accumulate_request(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -318,8 +242,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_put_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       free(environment);
@@ -329,19 +253,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      free(environment);
-      get(origin_buffer, target, target_buffer, window, environment);
-    }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
-    void reset(
-      ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       free(environment);
@@ -351,8 +264,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -363,20 +276,8 @@ namespace yampi
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      free(environment);
-      fetch_accumulate(origin_buffer, result_buffer, target, target_buffer, operation, window, environment);
-    }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    void reset(
-      ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -386,45 +287,30 @@ namespace yampi
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void put(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     { do_put(mpi_request_, origin_buffer, target, target_buffer, window, environment); }
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void get(
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    { do_get(mpi_request_, origin_buffer, target, target_buffer, window, environment); }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
-    void get(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     { do_get(mpi_request_, origin_buffer, target, target_buffer, window, environment); }
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     { do_accumulate(mpi_request_, origin_buffer, target, target_buffer, operation, window, environment); }
 
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     void fetch_accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    { do_fetch_accumulate(mpi_request_, origin_buffer, result_buffer, target, target_buffer, operation, window, environment); }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    void fetch_accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     { do_fetch_accumulate(mpi_request_, origin_buffer, result_buffer, target, target_buffer, operation, window, environment); }
@@ -463,8 +349,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_put_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       free(environment);
@@ -474,19 +360,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      free(environment);
-      get(origin_buffer, target, target_buffer, window, environment);
-    }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
-    void reset(
-      ::yampi::request_get_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       free(environment);
@@ -496,8 +371,8 @@ namespace yampi
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -508,20 +383,8 @@ namespace yampi
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     void reset(
       ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      free(environment);
-      fetch_accumulate(origin_buffer, result_buffer, target, target_buffer, operation, window, environment);
-    }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    void reset(
-      ::yampi::request_fetch_accumulate_t const,
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -531,8 +394,8 @@ namespace yampi
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void put(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       int const error_code
@@ -546,8 +409,8 @@ namespace yampi
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void get(
-      ::yampi::buffer<OriginValue>& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
       int const error_code
@@ -560,24 +423,9 @@ namespace yampi
     }
 
     template <typename OriginValue, typename TargetValue, typename Window>
-    void get(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Rget(
-            const_cast<OriginValue*>(origin_buffer.data()), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            window.mpi_win(), mpi_request_ptr_);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::rma_request_ref::get", environment);
-    }
-
-    template <typename OriginValue, typename TargetValue, typename Window>
     void accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -592,8 +440,8 @@ namespace yampi
 
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
     void fetch_accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue>& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+      ::yampi::buffer<OriginValue> const origin_buffer, ::yampi::buffer<ResultValue> result_buffer,
+      ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
@@ -601,23 +449,6 @@ namespace yampi
         = MPI_Rget_accumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::rma_request_ref::fetch_accumulate", environment);
-    }
-
-    template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-    void fetch_accumulate(
-      ::yampi::buffer<OriginValue> const& origin_buffer, ::yampi::buffer<ResultValue> const& result_buffer,
-      ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Rget_accumulate(
-            origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            const_cast<ResultValue*>(result_buffer.data()), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
             target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
       if (error_code != MPI_SUCCESS)

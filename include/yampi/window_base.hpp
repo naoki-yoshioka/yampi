@@ -58,7 +58,7 @@ namespace yampi
 
     template <typename T>
     T* base_ptr() const { return derived().do_base_ptr<T>(); }
-    ::yambi::byte_displacement size_bytes() const { return derived().do_size_bytes(); }
+    ::yampi::byte_displacement size_bytes() const { return derived().do_size_bytes(); }
     int displacement_unit() const { return derived().do_displacement_unit(); }
 # if MPI_VERSION >= 3
     YAMPI_FLAVOR flavor() const { return derived().do_flavor(); }

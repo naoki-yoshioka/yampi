@@ -14,6 +14,11 @@
 #   include <boost/type_traits/has_nothrow_constructor.hpp>
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
@@ -35,6 +40,12 @@
 #   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
+# endif
+
 
 namespace yampi
 {
@@ -43,7 +54,7 @@ namespace yampi
     ::yampi::rank source_;
     ::yampi::rank destination_;
     ::yampi::tag tag_;
-    ::yampi::communicator& communicator_;
+    ::yampi::communicator* communicator_ptr_;
 
    public:
     message_envelope(
@@ -55,7 +66,7 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(tag),
-        communicator_(communicator)
+        communicator_ptr_(YAMPI_addressof(communicator))
     { }
 
     message_envelope(
@@ -67,7 +78,7 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(tag),
-        communicator_(const_cast< ::yampi::communicator& >(communicator))
+        communicator_ptr_(const_cast< ::yampi::communicator* >(YAMPI_addressof(communicator)))
     { }
 
     message_envelope(
@@ -79,7 +90,7 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(),
-        communicator_(communicator)
+        communicator_ptr_(YAMPI_addressof(communicator))
     { }
 
     message_envelope(
@@ -91,25 +102,21 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(),
-        communicator_(const_cast< ::yampi::communicator& >(communicator))
+        communicator_ptr_(const_cast< ::yampi::communicator* >(YAMPI_addressof(communicator)))
     { }
 
     ::yampi::rank const& source() const BOOST_NOEXCEPT_OR_NOTHROW { return source_; }
     ::yampi::rank const& destination() const BOOST_NOEXCEPT_OR_NOTHROW { return destination_; }
     ::yampi::tag const& tag() const BOOST_NOEXCEPT_OR_NOTHROW { return tag_; }
-    ::yampi::communicator const& communicator() const BOOST_NOEXCEPT_OR_NOTHROW { return communicator_; }
+    ::yampi::communicator const& communicator() const BOOST_NOEXCEPT_OR_NOTHROW { return *communicator_ptr_; }
 
-    void swap(message_envelope& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable< ::yampi::rank >::value
-        and YAMPI_is_nothrow_swappable< ::yampi::tag >::value
-        and YAMPI_is_nothrow_swappable< ::yampi::communicator& >::value)
+    void swap(message_envelope& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
       using std::swap;
       swap(source_, other.source_);
       swap(destination_, other.destination_);
       swap(tag_, other.tag_);
-      swap(communicator_, other.communicator_);
+      swap(communicator_ptr_, other.communicator_ptr_);
     }
   };
 
@@ -119,6 +126,7 @@ namespace yampi
 }
 
 
+# undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_default_constructible
 # undef YAMPI_is_nothrow_copy_constructible

@@ -36,12 +36,11 @@ namespace yampi
     template <typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     replace_copy_if(
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
       ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
@@ -75,65 +74,10 @@ namespace yampi
     template <typename Value>
     inline boost::optional< ::yampi::status >
     replace_copy_if(
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
-      return ::yampi::algorithm::replace_copy_if(
-        send_buffer, receive_buffer, predicate, new_value,
-        replace_copy_if_buffer.begin(), message_envelope, environment);
-    }
-
-    template <typename Value, typename ContiguousIterator>
-    inline boost::optional< ::yampi::status >
-    replace_copy_if(
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      assert(send_buffer.count() == receive_buffer.count());
-
-      if (message_envelope.source() == message_envelope.destination())
-        return boost::none;
-
-      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
-
-      if (present_rank == message_envelope.destination())
-        return boost::make_optional(
-          ::yampi::receive(
-            receive_buffer, message_envelope.source(), message_envelope.tag(),
-            message_envelope.communicator(), environment));
-      else if (present_rank == message_envelope.source())
-      {
-        std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          replace_copy_if_buffer_first, predicate, new_value);
-
-        ::yampi::send(
-          ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
-            send_buffer.datatype()),
-          message_envelope.destination(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      }
-
-      return boost::none;
-    }
-
-    template <typename Value>
-    inline boost::optional< ::yampi::status >
-    replace_copy_if(
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       return ::yampi::algorithm::replace_copy_if(
@@ -145,12 +89,11 @@ namespace yampi
     inline boost::optional< ::yampi::status >
     replace_copy_if(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
       ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
@@ -186,11 +129,10 @@ namespace yampi
     inline boost::optional< ::yampi::status >
     replace_copy_if(
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       return ::yampi::algorithm::replace_copy_if(
@@ -198,76 +140,16 @@ namespace yampi
         send_buffer, receive_buffer, predicate, new_value,
         replace_copy_if_buffer.begin(), message_envelope, environment);
     }
-
-    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
-    inline boost::optional< ::yampi::status >
-    replace_copy_if(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      assert(send_buffer.count() == receive_buffer.count());
-
-      if (message_envelope.source() == message_envelope.destination())
-        return boost::none;
-
-      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
-
-      if (present_rank == message_envelope.destination())
-        return boost::make_optional(
-          ::yampi::receive(
-            receive_buffer, message_envelope.source(), message_envelope.tag(),
-            message_envelope.communicator(), environment));
-      else if (present_rank == message_envelope.source())
-      {
-        std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          replace_copy_if_buffer_first, predicate, new_value);
-
-        ::yampi::send(
-          YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
-            send_buffer.datatype()),
-          message_envelope.destination(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      }
-
-      return boost::none;
-    }
-
-    template <typename CommunicationMode, typename Value>
-    inline boost::optional< ::yampi::status >
-    replace_copy_if(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
-      return ::yampi::algorithm::replace_copy_if(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, predicate, new_value,
-        replace_copy_if_buffer.begin(), message_envelope, environment);
-    }
-
 
     // ignoring status
     template <typename Value, typename ContiguousIterator>
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
       ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
@@ -299,64 +181,10 @@ namespace yampi
     template <typename Value>
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
-      ::yampi::algorithm::replace_copy_if(
-        ignore_status,
-        send_buffer, receive_buffer, predicate, new_value,
-        replace_copy_if_buffer.begin(), message_envelope, environment);
-    }
-
-    template <typename Value, typename ContiguousIterator>
-    inline void replace_copy_if(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      assert(send_buffer.count() == receive_buffer.count());
-
-      if (message_envelope.source() == message_envelope.destination())
-        return;
-
-      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
-
-      if (present_rank == message_envelope.destination())
-        ::yampi::receive(
-          ignore_status,
-          receive_buffer, message_envelope.source(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      else if (present_rank == message_envelope.source())
-      {
-        std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          replace_copy_if_buffer_first, predicate, new_value);
-
-        ::yampi::send(
-          ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
-            send_buffer.datatype()),
-          message_envelope.destination(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      }
-    }
-
-    template <typename Value>
-    inline void replace_copy_if(
-      ::yampi::ignore_status_t const ignore_status,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       ::yampi::algorithm::replace_copy_if(
@@ -369,12 +197,11 @@ namespace yampi
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
       ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
 
@@ -408,67 +235,10 @@ namespace yampi
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
       YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> const send_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
-      ::yampi::algorithm::replace_copy_if(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-        send_buffer, receive_buffer, predicate, new_value,
-        replace_copy_if_buffer.begin(), message_envelope, environment);
-    }
-
-    template <typename CommunicationMode, typename Value, typename ContiguousIterator>
-    inline void replace_copy_if(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ContiguousIterator const replace_copy_if_buffer_first,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
-    {
-      assert(send_buffer.count() == receive_buffer.count());
-
-      if (message_envelope.source() == message_envelope.destination())
-        return;
-
-      ::yampi::rank const present_rank = message_envelope.communicator().rank(environment);
-
-      if (present_rank == message_envelope.destination())
-        ::yampi::receive(
-          ignore_status,
-          receive_buffer, message_envelope.source(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      else if (present_rank == message_envelope.source())
-      {
-        std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
-          replace_copy_if_buffer_first, predicate, new_value);
-
-        ::yampi::send(
-          YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
-          ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
-            send_buffer.datatype()),
-          message_envelope.destination(), message_envelope.tag(),
-          message_envelope.communicator(), environment);
-      }
-    }
-
-    template <typename CommunicationMode, typename Value>
-    inline void replace_copy_if(
-      ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-      ::yampi::buffer<Value> const& send_buffer,
-      ::yampi::buffer<Value> const& receive_buffer,
-      UnaryPredicate predicate, Value const& new_value,
-      ::yampi::message_envelope const& message_envelope,
-      ::yampi::environment const& environment)
+      ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       ::yampi::algorithm::replace_copy_if(

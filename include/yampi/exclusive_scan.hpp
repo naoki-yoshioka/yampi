@@ -63,7 +63,7 @@ namespace yampi
 {
   template <typename SendValue, typename ContiguousIterator>
   inline void exclusive_scan(
-    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<SendValue> const send_buffer,
     ContiguousIterator const first,
     ::yampi::binary_operation const& operation,
     ::yampi::communicator const& communicator,
@@ -75,12 +75,19 @@ namespace yampi
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
 
+# if MPI_VERSION >= 3
     int const error_code
       = MPI_Exscan(
-          const_cast<SendValue*>(send_buffer.data()),
-          const_cast<SendValue*>(YAMPI_addressof(*first)),
+          send_buffer.data(), YAMPI_addressof(*first),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
+# else // MPI_VERSION >= 3
+    int const error_code
+      = MPI_Exscan(
+          const_cast<SendValue*>(send_buffer.data()), YAMPI_addressof(*first),
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::exclusive_scan", environment);
   }
@@ -88,7 +95,7 @@ namespace yampi
   // only for blocking exclusive_scan
   template <typename SendValue>
   inline SendValue exclusive_scan(
-    ::yampi::buffer<SendValue> const& send_buffer,
+    ::yampi::buffer<SendValue> const send_buffer,
     ::yampi::binary_operation const& operation,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
@@ -103,33 +110,14 @@ namespace yampi
   template <typename Value>
   inline void exclusive_scan(
     ::yampi::in_place_t const,
-    ::yampi::buffer<Value>& receive_buffer,
+    ::yampi::buffer<Value> receive_buffer,
     ::yampi::binary_operation const& operation,
     ::yampi::communicator const& communicator,
     ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Exscan(
-          MPI_IN_PLACE,
-          receive_buffer.data(),
-          receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-          operation.mpi_op(), communicator.mpi_comm());
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::exclusive_scan", environment);
-  }
-
-  template <typename Value>
-  inline void exclusive_scan(
-    ::yampi::in_place_t const,
-    ::yampi::buffer<Value> const& receive_buffer,
-    ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
-  {
-    int const error_code
-      = MPI_Exscan(
-          MPI_IN_PLACE,
-          const_cast<Value*>(receive_buffer.data()),
+          MPI_IN_PLACE, receive_buffer.data(),
           receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
     if (error_code != MPI_SUCCESS)
@@ -159,7 +147,7 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     exclusive_scan_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_exclusive_scan_request(send_buffer, first, operation, communicator, environment))
@@ -168,16 +156,7 @@ namespace yampi
     template <typename Value>
     exclusive_scan_request(
       ::yampi::in_place_t const,
-      ::yampi::buffer<Value>& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_exclusive_scan_in_place_request(receive_buffer, operation, communicator, environment))
-    { }
-
-    template <typename Value>
-    exclusive_scan_request(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_exclusive_scan_in_place_request(receive_buffer, operation, communicator, environment))
@@ -187,7 +166,7 @@ namespace yampi
     template <typename SendValue, typename ContiguousIterator>
     static void do_exclusive_scan(
       MPI_Request& mpi_request,
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -199,8 +178,7 @@ namespace yampi
 
       int const error_code
         = MPI_Iexscan(
-            const_cast<SendValue*>(send_buffer.data()),
-            const_cast<SendValue*>(YAMPI_addressof(*first)),
+            send_buffer.data(), YAMPI_addressof(*first),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
@@ -209,7 +187,7 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     static MPI_Request make_exclusive_scan_request(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -221,7 +199,7 @@ namespace yampi
     template <typename Value>
     static void do_exclusive_scan_in_place(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value>& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -230,28 +208,7 @@ namespace yampi
 
       int const error_code
         = MPI_Iexscan(
-            MPI_IN_PLACE,
-            receive_buffer.data(),
-            receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::exclusive_scan_request::do_exclusive_scan_in_place", environment);
-    }
-
-    template <typename Value>
-    static void do_exclusive_scan_in_place(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      if (communicator.rank(environment) != root)
-        throw ::yampi::root_call_on_nonroot_error("yampi::exclusive_scan_request::do_exclusive_scan_in_place");
-
-      int const error_code
-        = MPI_Iexscan(
-            MPI_IN_PLACE,
-            const_cast<Value*>(receive_buffer.data()),
+            MPI_IN_PLACE, receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
@@ -260,18 +217,7 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_exclusive_scan_in_place_request(
-      ::yampi::buffer<Value>& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_exclusive_scan_in_place(result, receive_buffer, operation, communication, environment);
-      return result;
-    }
-
-    template <typename Value>
-    static MPI_Request make_exclusive_scan_in_place_request(
-      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -283,7 +229,7 @@ namespace yampi
    public:
     template <typename SendValue, typename ContiguousIterator>
     void reset(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -294,18 +240,7 @@ namespace yampi
     template <typename Value>
     void reset(
       ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value>& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      free(environment);
-      exclusive_scan(in_place, receive_buffer, operation, communicator, environment);
-    }
-
-    template <typename Value>
-    void reset(
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
@@ -315,7 +250,7 @@ namespace yampi
 
     template <typename SendValue, typename ContiguousIterator>
     void exclusive_scan(
-      ::yampi::buffer<SendValue> const& send_buffer, ContiguousIterator const first,
+      ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_exclusive_scan(mpi_request_, send_buffer, first, operation, communicator, environment); }
@@ -323,15 +258,7 @@ namespace yampi
     template <typename Value>
     void exclusive_scan(
       ::yampi::in_place_t const,
-      ::yampi::buffer<Value>& receive_buffer,
-      ::yampi::binary_operation const& operation,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    { do_exclusive_scan_in_place(mpi_request_, receive_buffer, operation, communicator, environment); }
-
-    template <typename Value>
-    void exclusive_scan(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> const& receive_buffer,
+      ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_exclusive_scan_in_place(mpi_request_, receive_buffer, operation, communicator, environment); }
