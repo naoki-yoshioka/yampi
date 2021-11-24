@@ -29,15 +29,23 @@ namespace yampi
 {
   template <typename OriginValue, typename TargetValue, typename Window>
   inline void put(
-    ::yampi::buffer<OriginValue> const& origin_buffer,
-    ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+    ::yampi::buffer<OriginValue> const origin_buffer,
+    ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
     ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 3
     int const error_code
       = MPI_Put(
           origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
           target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
           window.mpi_win());
+# else // MPI_VERSION >= 3
+    int const error_code
+      = MPI_Put(
+          const_cast<OriginValue*>(origin_buffer.data()), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
+          target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+          window.mpi_win());
+# endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::put", environment);
   }

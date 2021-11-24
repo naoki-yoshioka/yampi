@@ -52,15 +52,20 @@ namespace yampi
 {
   template <typename Value>
   inline void send(
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 3
+    int const error_code
+      = MPI_Send(
+          buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# else // MPI_VERSION >= 3
     int const error_code
       = MPI_Send(
           const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send", environment);
   }
@@ -76,10 +81,8 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
     };
 
@@ -89,15 +92,20 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
+# if MPI_VERSION >= 3
+        int const error_code
+          = MPI_Bsend(
+              buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# else // MPI_VERSION >= 3
         int const error_code
           = MPI_Bsend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 3
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
       }
@@ -109,15 +117,20 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
+# if MPI_VERSION >= 3
+        int const error_code
+          = MPI_Ssend(
+              buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# else // MPI_VERSION >= 3
         int const error_code
           = MPI_Ssend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 3
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
       }
@@ -129,15 +142,20 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const& buffer,
-        ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator,
-        ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       {
+# if MPI_VERSION >= 3
+        int const error_code
+          = MPI_Rsend(
+              buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+              destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# else // MPI_VERSION >= 3
         int const error_code
           = MPI_Rsend(
               const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 3
         if (error_code != MPI_SUCCESS)
           throw ::yampi::error(error_code, "yampi::send", environment);
       }
@@ -148,10 +166,8 @@ namespace yampi
   template <typename CommunicationMode, typename Value>
   inline void send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::buffer<Value> const& buffer,
-    ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(

@@ -31,9 +31,9 @@ namespace yampi
 {
   template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
   inline void fetch_accumulate(
-    ::yampi::buffer<OriginValue> const& origin_buffer,
-    ::yampi::buffer<ResultValue>& result_buffer,
-    ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
+    ::yampi::buffer<OriginValue> const origin_buffer,
+    ::yampi::buffer<ResultValue> result_buffer,
+    ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
     ::yampi::binary_operation const& operation,
     ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
   {
@@ -41,24 +41,6 @@ namespace yampi
       = MPI_Get_accumulate(
           origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
           result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-          target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-          operation.mpi_op(), window.mpi_win());
-    if (error_code != MPI_SUCCESS)
-      throw ::yampi::error(error_code, "yampi::fetch_accumulate", environment);
-  }
-
-  template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
-  inline void fetch_accumulate(
-    ::yampi::buffer<OriginValue> const& origin_buffer,
-    ::yampi::buffer<ResultValue> const& result_buffer,
-    ::yampi::rank const& target, ::yambi::target_buffer<TargetValue> const& target_buffer,
-    ::yampi::binary_operation const& operation,
-    ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-  {
-    int const error_code
-      = MPI_Get_accumulate(
-          origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-          const_cast<ResultValue*>(result_buffer.data()), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
           target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), window.mpi_win());
     if (error_code != MPI_SUCCESS)

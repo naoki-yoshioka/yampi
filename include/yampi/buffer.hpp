@@ -77,27 +77,27 @@ namespace yampi
   {
     T* data_;
     int count_;
-    ::yampi::datatype& datatype_;
+    ::yampi::datatype* datatype_ptr_;
 
    public:
     buffer(T& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(YAMPI_addressof(value)), count_(1),
-        datatype_(datatype)
+        datatype_ptr_(YAMPI_addressof(datatype))
     { }
 
     buffer(T& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(YAMPI_addressof(value)), count_(1),
-        datatype_(const_cast< ::yampi::datatype& >(datatype))
+        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
     { }
 
     buffer(T const& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
-        datatype_(datatype)
+        datatype_ptr_(YAMPI_addressof(datatype))
     { }
 
     buffer(T const& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
-        datatype_(const_cast< ::yampi::datatype& >(datatype))
+        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
     { }
 
     template <typename ContiguousIterator>
@@ -107,7 +107,7 @@ namespace yampi
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
-        datatype_(datatype)
+        datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(
         (YAMPI_is_same<
@@ -125,7 +125,7 @@ namespace yampi
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
-        datatype_(const_cast< ::yampi::datatype& >(datatype))
+        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
     {
       static_assert(
         (YAMPI_is_same<
@@ -136,24 +136,20 @@ namespace yampi
       assert(last >= first);
     }
 
-    bool operator==(buffer const& other) const BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(datatype_ == other.datatype_))
-    { return data_ == other.data_ and count_ == other.count_ and datatype_ == other.datatype_; }
+    bool operator==(buffer const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    { return data_ == other.data_ and count_ == other.count_ and *datatype_ptr_ == *other.datatype_ptr_; }
 
     T* data() BOOST_NOEXCEPT_OR_NOTHROW { return data_; }
     T const* data() const BOOST_NOEXCEPT_OR_NOTHROW { return data_; }
     int const& count() const BOOST_NOEXCEPT_OR_NOTHROW { return count_; }
-    ::yampi::datatype const& datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return datatype_; }
+    ::yampi::datatype const& datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return *datatype_ptr_; }
 
-    void swap(buffer& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable<T*>::value
-        and YAMPI_is_nothrow_swappable<int>::value
-        and YAMPI_is_nothrow_swappable< ::yampi::datatype& >::value)
+    void swap(buffer& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
       using std::swap;
       swap(data_, other.data_);
       swap(count_, other.count_);
-      swap(datatype_, other.datatype_);
+      swap(datatype_ptr_, other.datatype_ptr_);
     }
   }; // class buffer<T, Enable>
 
@@ -195,10 +191,7 @@ namespace yampi
     int const& count() const BOOST_NOEXCEPT_OR_NOTHROW { return count_; }
     ::yampi::predefined_datatype<T> datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::predefined_datatype<T>(); }
 
-    void swap(buffer& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_swappable<T*>::value
-        and YAMPI_is_nothrow_swappable<int>::value)
+    void swap(buffer& other) BOOST_NOEXCEPT_OR_NOTHROW
     {
       using std::swap;
       swap(data_, other.data_);

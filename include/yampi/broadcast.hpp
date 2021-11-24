@@ -79,22 +79,11 @@ namespace yampi
 
 
     template <typename Value>
-    void call(::yampi::buffer<Value>& buffer, ::yampi::environment const& environment) const
+    void call(::yampi::buffer<Value> buffer, ::yampi::environment const& environment) const
     {
       int const error_code
         = MPI_Bcast(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
-    }
-
-    template <typename Value>
-    void call(::yampi::buffer<Value> const& buffer, ::yampi::environment const& environment) const
-    {
-      int const error_code
-        = MPI_Bcast(
-            const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
             root_.mpi_rank(), communicator_.mpi_comm());
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
@@ -124,14 +113,7 @@ namespace yampi
 
     template <typename Value>
     broadcast_request(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_broadcast_request(buffer, root, communicator, environment))
-    { }
-
-    template <typename Value>
-    broadcast_request(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_broadcast_request(buffer, root, communicator, environment))
     { }
@@ -140,7 +122,7 @@ namespace yampi
     template <typename Value>
     static void do_broadcast(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       int const error_code
@@ -152,32 +134,8 @@ namespace yampi
     }
 
     template <typename Value>
-    static void do_broadcast(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Ibcast(
-            const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::broadcast_request::do_broadcast", environment);
-    }
-
-    template <typename Value>
     static MPI_Request make_broadcast_request(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      MPI_Request result;
-      do_broadcast(result, buffer, root, communicator, environment);
-      return result;
-    }
-
-    template <typename Value>
-    static MPI_Request make_broadcast_request(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
@@ -188,16 +146,7 @@ namespace yampi
    public:
     template <typename Value>
     void reset(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    {
-      free(environment);
-      broadcast(buffer, root, communicator, environment);
-    }
-
-    template <typename Value>
-    void reset(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
@@ -206,13 +155,7 @@ namespace yampi
 
     template <typename Value>
     void broadcast(
-      ::yampi::buffer<Value>& buffer, ::yampi::rank const& root,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-    { do_broadcast(mpi_request_, buffer, root, communicator, environment); }
-
-    template <typename Value>
-    void broadcast(
-      ::yampi::buffer<Value> const& buffer, ::yampi::rank const& root,
+      ::yampi::buffer<Value> buffer, ::yampi::rank const& root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { do_broadcast(mpi_request_, buffer, root, communicator, environment); }
   };
