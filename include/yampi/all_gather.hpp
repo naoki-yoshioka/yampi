@@ -58,7 +58,6 @@
 # endif
 
 
-//TODO: In MPI2, send_buffer.data() is non-const pointer
 namespace yampi
 {
   // TODO: implement MPI_Allgatherv
