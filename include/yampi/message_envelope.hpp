@@ -54,21 +54,9 @@ namespace yampi
     ::yampi::rank source_;
     ::yampi::rank destination_;
     ::yampi::tag tag_;
-    ::yampi::communicator* communicator_ptr_;
+    ::yampi::communicator const* communicator_ptr_;
 
    public:
-    message_envelope(
-      ::yampi::rank const& source, ::yampi::rank const& destination,
-      ::yampi::tag const& tag, ::yampi::communicator& communicator)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value
-        and YAMPI_is_nothrow_copy_constructible< ::yampi::tag >::value)
-      : source_(source),
-        destination_(destination),
-        tag_(tag),
-        communicator_ptr_(YAMPI_addressof(communicator))
-    { }
-
     message_envelope(
       ::yampi::rank const& source, ::yampi::rank const& destination,
       ::yampi::tag const& tag, ::yampi::communicator const& communicator)
@@ -78,18 +66,6 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(tag),
-        communicator_ptr_(const_cast< ::yampi::communicator* >(YAMPI_addressof(communicator)))
-    { }
-
-    message_envelope(
-      ::yampi::rank const& source, ::yampi::rank const& destination,
-      ::yampi::communicator& communicator)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value
-        and YAMPI_is_nothrow_default_constructible< ::yampi::tag >::value)
-      : source_(source),
-        destination_(destination),
-        tag_(),
         communicator_ptr_(YAMPI_addressof(communicator))
     { }
 
@@ -102,7 +78,7 @@ namespace yampi
       : source_(source),
         destination_(destination),
         tag_(),
-        communicator_ptr_(const_cast< ::yampi::communicator* >(YAMPI_addressof(communicator)))
+        communicator_ptr_(YAMPI_addressof(communicator))
     { }
 
     ::yampi::rank const& source() const BOOST_NOEXCEPT_OR_NOTHROW { return source_; }

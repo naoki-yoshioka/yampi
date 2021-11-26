@@ -52,41 +52,22 @@ namespace yampi
   {
     MPI_Aint mpi_displacement_;
     int count_;
-    ::yampi::datatype* datatype_ptr_;
+    ::yampi::datatype const* datatype_ptr_;
 
    public:
     template <typename Integer>
-    target_buffer(Integer const displacement, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1),
-        datatype_ptr_(YAMPI_addressof(datatype))
-    {
-      static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
-      assert(displacement >= Integer{0});
-    }
-
-    template <typename Integer>
     target_buffer(Integer const displacement, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1),
-        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
-    {
-      static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
-      assert(displacement >= Integer{0});
-    }
-
-    template <typename Integer>
-    target_buffer(Integer const displacement, int const count, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count),
         datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
-      assert(count >= 0);
     }
 
     template <typename Integer>
     target_buffer(Integer const displacement, int const count, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count),
-        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
+        datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(YAMPI_is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -150,7 +131,6 @@ namespace yampi
     }
   }; // class target_buffer<T, typename std::enable_if< ::yampi::has_predefined_datatype<T>::value >::type>
 
-
   template <typename T>
   inline bool operator!=(::yampi::target_buffer<T> const& lhs, ::yampi::target_buffer<T> const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
@@ -160,7 +140,6 @@ namespace yampi
   inline void swap(::yampi::target_buffer<T>& lhs, ::yampi::target_buffer<T>& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
-
 
   template <typename T, typename Integer>
   inline
@@ -177,7 +156,6 @@ namespace yampi
   inline ::yampi::target_buffer<T> make_target_buffer(Integer const displacement, ::yampi::datatype const& datatype)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::target_buffer<T>(displacement, datatype)))
   { return ::yampi::target_buffer<T>(displacement, datatype); }
-
 
   template <typename T, typename Integer>
   inline

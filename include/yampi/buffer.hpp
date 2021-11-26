@@ -77,46 +77,18 @@ namespace yampi
   {
     T* data_;
     int count_;
-    ::yampi::datatype* datatype_ptr_;
+    ::yampi::datatype const* datatype_ptr_;
 
    public:
-    buffer(T& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : data_(YAMPI_addressof(value)), count_(1),
-        datatype_ptr_(YAMPI_addressof(datatype))
-    { }
-
     buffer(T& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(YAMPI_addressof(value)), count_(1),
-        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
-    { }
-
-    buffer(T const& value, ::yampi::datatype& datatype) BOOST_NOEXCEPT_OR_NOTHROW
-      : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
         datatype_ptr_(YAMPI_addressof(datatype))
     { }
 
     buffer(T const& value, ::yampi::datatype const& datatype) BOOST_NOEXCEPT_OR_NOTHROW
       : data_(const_cast<T*>(YAMPI_addressof(value))), count_(1),
-        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
-    { }
-
-    template <typename ContiguousIterator>
-    buffer(
-      ContiguousIterator const first, ContiguousIterator const last,
-      ::yampi::datatype& datatype)
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
-      : data_(const_cast<T*>(YAMPI_addressof(*first))),
-        count_(last-first),
         datatype_ptr_(YAMPI_addressof(datatype))
-    {
-      static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
-             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
-      assert(last >= first);
-    }
+    { }
 
     template <typename ContiguousIterator>
     buffer(
@@ -125,7 +97,7 @@ namespace yampi
       BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*first) and BOOST_NOEXCEPT_EXPR(last-first))
       : data_(const_cast<T*>(YAMPI_addressof(*first))),
         count_(last-first),
-        datatype_ptr_(const_cast< ::yampi::datatype* >(YAMPI_addressof(datatype)))
+        datatype_ptr_(YAMPI_addressof(datatype))
     {
       static_assert(
         (YAMPI_is_same<
@@ -199,7 +171,6 @@ namespace yampi
     }
   }; // class buffer<T, typename std::enable_if< ::yampi::has_predefined_datatype<T>::value >::type>
 
-
   template <typename T>
   inline bool operator!=(::yampi::buffer<T> const& lhs, ::yampi::buffer<T> const& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
@@ -209,7 +180,6 @@ namespace yampi
   inline void swap(::yampi::buffer<T>& lhs, ::yampi::buffer<T>& rhs)
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
   { lhs.swap(rhs); }
-
 
   template <typename T>
   inline
@@ -243,7 +213,6 @@ namespace yampi
     BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(::yampi::buffer<T>(value, datatype)))
   { return ::yampi::buffer<T>(value, datatype); }
 
-
   template <typename ContiguousIterator>
   inline
   typename YAMPI_enable_if<
@@ -253,8 +222,7 @@ namespace yampi
     ::yampi::buffer<
       typename YAMPI_remove_cv<
         typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-  >::type make_buffer(
-    ContiguousIterator const first, ContiguousIterator const last)
+  >::type make_buffer(ContiguousIterator const first, ContiguousIterator const last)
     BOOST_NOEXCEPT_IF(
       BOOST_NOEXCEPT_EXPR(
         ::yampi::buffer<
@@ -298,9 +266,7 @@ namespace yampi
   ::yampi::buffer<
     typename YAMPI_remove_cv<
       typename std::iterator_traits<ContiguousIterator>::value_type>::type>
-  make_buffer(
-    ContiguousIterator const first, ContiguousIterator const last,
-    ::yampi::datatype const& datatype)
+  make_buffer(ContiguousIterator const first, ContiguousIterator const last, ::yampi::datatype const& datatype)
     BOOST_NOEXCEPT_IF(
       BOOST_NOEXCEPT_EXPR(
         ::yampi::buffer<
@@ -315,7 +281,6 @@ namespace yampi
       result_type;
     return result_type(first, last, datatype);
   }
-
 
   template <typename ContiguousRange>
   inline
