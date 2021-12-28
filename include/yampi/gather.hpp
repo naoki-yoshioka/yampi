@@ -184,9 +184,18 @@ namespace yampi
       : base_type()
     { }
 
+#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    gather_request(gather_request const&) = delete;
+    gather_request& operator=(gather_request const&) = delete;
+#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    gather_request(gather_request const&);
+    gather_request& operator=(gather_request const&);
+
+   public:
+#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+
 #   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    gather_request(gather_request const&) = default;
-    gather_request& operator=(gather_request const&) = default;
 #     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     gather_request(gather_request&&) = default;
     gather_request& operator=(gather_request&&) = default;

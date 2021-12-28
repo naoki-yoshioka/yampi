@@ -184,9 +184,18 @@ namespace yampi
       : base_type()
     { }
 
+#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    scatter_request(scatter_request const&) = delete;
+    scatter_request& operator=(scatter_request const&) = delete;
+#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    scatter_request(scatter_request const&);
+    scatter_request& operator=(scatter_request const&);
+
+   public:
+#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+
 #   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    scatter_request(scatter_request const&) = default;
-    scatter_request& operator=(scatter_request const&) = default;
 #     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     scatter_request(scatter_request&&) = default;
     scatter_request& operator=(scatter_request&&) = default;

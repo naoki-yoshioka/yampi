@@ -59,9 +59,18 @@ namespace yampi
       : base_type()
     { }
 
+# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    persistent_request(persistent_request const&) = delete;
+    persistent_request& operator=(persistent_request const&) = delete;
+# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    persistent_request(persistent_request const&);
+    persistent_request& operator=(persistent_request const&);
+
+   public:
+# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+
 # ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    persistent_request(persistent_request const&) = default;
-    persistent_request& operator=(persistent_request const&) = default;
 #   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     persistent_request(persistent_request&&) = default;
     persistent_request& operator=(persistent_request&&) = default;

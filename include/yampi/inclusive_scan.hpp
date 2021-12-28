@@ -135,9 +135,18 @@ namespace yampi
       : base_type()
     { }
 
+#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
+    inclusive_scan_request(inclusive_scan_request const&) = delete;
+    inclusive_scan_request& operator=(inclusive_scan_request const&) = delete;
+#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
+   private:
+    inclusive_scan_request(inclusive_scan_request const&);
+    inclusive_scan_request& operator=(inclusive_scan_request const&);
+
+   public:
+#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
+
 #   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    inclusive_scan_request(inclusive_scan_request const&) = default;
-    inclusive_scan_request& operator=(inclusive_scan_request const&) = default;
 #     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     inclusive_scan_request(inclusive_scan_request&&) = default;
     inclusive_scan_request& operator=(inclusive_scan_request&&) = default;
