@@ -19,6 +19,7 @@
 #   include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #   include <boost/type_traits/is_nothrow_move_assignable.hpp>
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
+#   include <boost/utility/enable_if.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -47,6 +48,7 @@
 #   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
 #   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
+#   define YAMPI_enable_if std::enable_if
 # else
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_remove_volatile boost::remove_volatile
@@ -55,6 +57,7 @@
 #   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
 #   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
+#   define YAMPI_enable_if boost::enable_if_c
 # endif
 
 # if __cplusplus >= 201703L
@@ -83,6 +86,44 @@ namespace yampi
   struct make_difference_t { };
   struct make_inclusive_t { };
   struct make_exclusive_t { };
+
+  class strided_rank_range
+  {
+    int data_[3];
+
+   public:
+    BOOST_CONSTEXPR strided_rank_range(::yampi::rank const first_rank, ::yampi::rank const last_rank, int const stride = 1) BOOST_NOEXCEPT_OR_NOTHROW
+      : data_()
+    {
+      data_[0] = first_rank.mpi_rank();
+      data_[1] = last_rank.mpi_rank();
+      data_[2] = stride;
+    }
+
+    BOOST_CONSTEXPR ::yampi::rank first_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(data_[0]); }
+    BOOST_CONSTEXPR ::yampi::rank last_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(data_[1]); }
+    BOOST_CONSTEXPR int stride() const BOOST_NOEXCEPT_OR_NOTHROW { return data_[2]; }
+
+    void swap(strided_rank_range& other) BOOST_NOEXCEPT_OR_NOTHROW
+    {
+      using std::swap;
+      swap(data_, other.data_);
+    }
+  }; // class strided_rank_range
+
+  BOOST_CONSTEXPR inline bool operator==(
+    ::yampi::strided_rank_range const& lhs, ::yampi::strided_rank_range const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { return lhs.first_rank() == rhs.first_rank() and lhs.last_rank() == rhs.last_rank() and lhs.stride() == rhs.stride(); }
+
+  BOOST_CONSTEXPR inline bool operator!=(
+    ::yampi::strided_rank_range const& lhs, ::yampi::strided_rank_range const& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { return not (lhs == rhs); }
+
+  inline void swap(::yampi::strided_rank_range& lhs, ::yampi::strided_rank_range& rhs)
+    BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
 
   class group
   {
@@ -190,8 +231,6 @@ namespace yampi
       : mpi_group_(make_exclusive(original_group, boost::begin(ranks), boost::end(ranks), environment))
     { }
 
-    // TODO: implement MPI_Group_range_incl, MPI_Group_range_excl
-
    private:
     MPI_Group make_union(
       group const& lhs, group const& rhs,
@@ -234,18 +273,17 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    MPI_Group make_inclusive(
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename YAMPI_remove_cv<
+          typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+        ::yampi::rank>::value,
+      MPI_Group>::type
+    make_inclusive(
       group const& original_group,
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
     {
-      static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
-             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           ::yampi::rank>::value),
-        "Value type of ContiguousIterator must be the same to ::yampi::rank");
-
       MPI_Group result;
       int const error_code
         = MPI_Group_incl(
@@ -259,23 +297,70 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    MPI_Group make_exclusive(
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename YAMPI_remove_cv<
+          typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+        ::yampi::strided_rank_range>::value,
+      MPI_Group>::type
+    make_inclusive(
       group const& original_group,
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
     {
-      static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
-             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           ::yampi::rank>::value),
-        "Value type of ContiguousIterator must be the same to ::yampi::rank");
+      MPI_Group result;
+      int const error_code
+        = MPI_Group_range_incl(
+            original_group.mpi_group(), last-first,
+            reinterpret_cast<int [][3]>(YAMPI_addressof(*first)),
+            YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_inclusive", environment);
+    }
 
+    template <typename ContiguousIterator>
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename YAMPI_remove_cv<
+          typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+        ::yampi::rank>::value,
+      MPI_Group>::type
+    make_exclusive(
+      group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::environment const& environment)
+    {
       MPI_Group result;
       int const error_code
         = MPI_Group_excl(
             original_group.mpi_group(), last-first,
             reinterpret_cast<int const*>(YAMPI_addressof(*first)),
+            YAMPI_addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::group::make_exclusive", environment);
+    }
+
+    template <typename ContiguousIterator>
+    typename YAMPI_enable_if<
+      YAMPI_is_same<
+        typename YAMPI_remove_cv<
+          typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+        ::yampi::strided_rank_range>::value,
+      MPI_Group>::type
+    make_exclusive(
+      group const& original_group,
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::environment const& environment)
+    {
+      MPI_Group result;
+      int const error_code
+        = MPI_Group_range_excl(
+            original_group.mpi_group(), last-first,
+            reinterpret_cast<int [][3]>(YAMPI_addressof(*first)),
             YAMPI_addressof(result));
       return error_code == MPI_SUCCESS
         ? result
@@ -376,8 +461,6 @@ namespace yampi
             original_group, boost::begin(ranks), boost::end(ranks), environment);
     }
 
-    // TODO: implement MPI_Group_range_incl, MPI_Group_range_excl
-
     void free(::yampi::environment const& environment)
     {
       if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
@@ -466,6 +549,7 @@ namespace yampi
 # endif
 # undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
+# undef YAMPI_enable_if
 # undef YAMPI_is_nothrow_move_assignable
 # undef YAMPI_is_nothrow_move_constructible
 # undef YAMPI_is_nothrow_copy_assignable
