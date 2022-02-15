@@ -337,7 +337,41 @@ namespace yampi
     }
 # endif
 
-    // TODO: Implement MPI_Comm_split/MPI_Comm_split_type constructors
+    void reset(
+      communicator const& other, ::yampi::color const& color, ::yampi::rank const& key,
+      ::yampi::environment const& environment)
+    {
+      if (this == YAMPI_addressof(other))
+        return;
+
+      free(environment);
+      mpi_comm_ = split(other, color, key, environment);
+    }
+
+# if MPI_VERSION >= 3
+    void reset(
+      communicator const& other, ::yampi::split_type const& split_type,
+      ::yampi::rank const& key, ::yampi::information const& information,
+      ::yampi::environment const& environment)
+    {
+      if (this == YAMPI_addressof(other))
+        return;
+
+      free(environment);
+      mpi_comm_ = split(other, split_type, key, information, environment);
+    }
+
+    void reset(
+      communicator const& other, ::yampi::split_type const& split_type, ::yampi::rank const& key,
+      ::yampi::environment const& environment)
+    {
+      if (this == YAMPI_addressof(other))
+        return;
+
+      free(environment);
+      mpi_comm_ = split(other, split_type, key, ::yampi::information(), environment);
+    }
+# endif
 
     void free(::yampi::environment const& environment)
     {
