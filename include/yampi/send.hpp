@@ -21,7 +21,7 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
@@ -52,8 +52,8 @@ namespace yampi
 {
   template <typename Value>
   inline void send(
-    ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
 # if MPI_VERSION >= 3
     int const error_code
@@ -81,8 +81,8 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
     };
 
@@ -92,8 +92,8 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
 # if MPI_VERSION >= 3
         int const error_code
@@ -117,8 +117,8 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
 # if MPI_VERSION >= 3
         int const error_code
@@ -142,8 +142,8 @@ namespace yampi
       template <typename CommunicationMode, typename Value>
       static void call(
         YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
-        ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-        ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+        ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+        ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
 # if MPI_VERSION >= 3
         int const error_code
@@ -166,8 +166,8 @@ namespace yampi
   template <typename CommunicationMode, typename Value>
   inline void send(
     YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
-    ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(

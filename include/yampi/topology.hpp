@@ -6,8 +6,12 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
+#   if __cplusplus < 201703L
+#     include <boost/type_traits/is_nothrow_swappable.hpp>
+#   endif
 # else
 #   include <boost/type_traits/has_nothrow_copy.hpp>
+#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -24,6 +28,12 @@
 #   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 # else
 #   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+# endif
+
+# if __cplusplus >= 201703L
+#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
+# else
+#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -81,7 +91,6 @@ namespace yampi
       : communicator_(mpi_comm)
     { }
 
-   public:
     void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)
     { communicator_.reset(mpi_comm, environment); }
 
@@ -93,13 +102,24 @@ namespace yampi
     void free(::yampi::environment const& environment)
     { communicator_.free(environment); }
 
-
     ::yampi::communicator const& communicator() const BOOST_NOEXCEPT_OR_NOTHROW { return communicator_; }
+
+    void swap(topology& other)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable< ::yampi::communicator >::value)
+    {
+      using std::swap;
+      swap(communicator_, other.communicator_);
+    }
   };
+
+  inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  { lhs.swap(rhs); }
 }
 
 
 # undef YAMPI_addressof
+# undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_copy_constructible
 
 #endif

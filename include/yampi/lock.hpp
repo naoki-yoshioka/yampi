@@ -74,17 +74,17 @@ namespace yampi
     ~lock_guard() BOOST_NOEXCEPT
     { MPI_Win_unlock(rank_.mpi_rank(), window_.mpi_win()); }
 
-    lock_guard(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
+    lock_guard(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_(window)
     { do_lock(0, environment); }
 
     lock_guard(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_(window)
     { do_lock(static_cast<int>(assertion), environment); }
 
-    lock_guard(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
+    lock_guard(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_(window)
     { }
 
@@ -149,25 +149,25 @@ namespace yampi
         MPI_Win_unlock(rank_.mpi_rank(), window_ptr_->mpi_win());
     }
 
-    explicit unique_lock(::yampi::rank const& rank)
+    explicit unique_lock(::yampi::rank const rank)
       : rank_(rank), window_ptr_(nullptr), owns_(false)
     { }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
+    unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(environment); }
 
     unique_lock(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
+    unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    unique_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
+    unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 
@@ -269,25 +269,25 @@ namespace yampi
         MPI_Win_unlock(rank_.mpi_rank(), window_ptr_->mpi_win());
     }
 
-    explicit shared_lock(::yampi::rank const& rank)
+    explicit shared_lock(::yampi::rank const rank)
       : rank_(rank), window_ptr_(nullptr), owns_(false)
     { }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
+    shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(environment); }
 
     shared_lock(
-      ::yampi::rank const& rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
+    shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { }
 
-    shared_lock(::yampi::rank const& rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
+    shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(true)
     { }
 

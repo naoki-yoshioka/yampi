@@ -51,11 +51,9 @@ namespace yampi
 {
   template <typename SendValue, typename ContiguousIterator>
   inline void inclusive_scan(
-    ::yampi::buffer<SendValue> const send_buffer,
-    ContiguousIterator const first,
+    ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -85,8 +83,7 @@ namespace yampi
   inline SendValue inclusive_scan(
     ::yampi::buffer<SendValue> const send_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     assert(send_buffer.count() == 1);
 
@@ -100,8 +97,7 @@ namespace yampi
     ::yampi::in_place_t const,
     ::yampi::buffer<Value> receive_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Scan(

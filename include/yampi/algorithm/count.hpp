@@ -40,26 +40,23 @@ namespace yampi
     boost::optional<typename std::iterator_traits<Value const*>::difference_type>
     count(
       ::yampi::buffer<Value> const buffer,
-      Value const& value, ::yampi::rank const& root,
+      Value const& value, ::yampi::rank const root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
-      count_type result
-        = std::count(buffer.data(), buffer.data() + buffer.count(), value);
-
-      ::yampi::reduce const reducer(root, communicator);
+      count_type result = std::count(buffer.data(), buffer.data() + buffer.count(), value);
 
       if (communicator.rank(environment) == root)
       {
-        reducer.call(
+        ::yampi::reduce(
           ::yampi::make_buffer(result), YAMPI_addressof(result),
-          ::yampi::binary_operation(::yampi::plus_t()), environment);
+          ::yampi::binary_operation(::yampi::plus_t()), root, communicator, environment);
         return boost::make_optional(result);
       }
 
-      reducer.call(
+      ::yampi::reduce(
         ::yampi::make_buffer(result),
-        ::yampi::binary_operation(::yampi::plus_t()), environment);
+        ::yampi::binary_operation(::yampi::plus_t()), root, communicator, environment);
       return boost::none;
     }
 

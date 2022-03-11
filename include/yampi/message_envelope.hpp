@@ -58,8 +58,8 @@ namespace yampi
 
    public:
     message_envelope(
-      ::yampi::rank const& source, ::yampi::rank const& destination,
-      ::yampi::tag const& tag, ::yampi::communicator const& communicator)
+      ::yampi::rank const source, ::yampi::rank const destination,
+      ::yampi::tag const tag, ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_IF(
         YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value
         and YAMPI_is_nothrow_copy_constructible< ::yampi::tag >::value)
@@ -70,7 +70,7 @@ namespace yampi
     { }
 
     message_envelope(
-      ::yampi::rank const& source, ::yampi::rank const& destination,
+      ::yampi::rank const source, ::yampi::rank const destination,
       ::yampi::communicator const& communicator)
       BOOST_NOEXCEPT_IF(
         YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value

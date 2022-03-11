@@ -15,7 +15,7 @@
 namespace yampi
 {
   template <typename Derived>
-  inline void flush(::yampi::rank const& rank, ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
+  inline void flush(::yampi::rank const rank, ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code = MPI_Win_flush(rank.mpi_rank(), window.mpi_win());
     if (error_code != MPI_SUCCESS)

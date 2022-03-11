@@ -37,25 +37,22 @@ namespace yampi
     template <typename Value, typename UnaryPredicate>
     inline boost::optional<bool> all_of(
       ::yampi::buffer<Value> const buffer,
-      UnaryPredicate unary_predicate, ::yampi::rank const& root,
+      UnaryPredicate unary_predicate, ::yampi::rank const root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
-      bool result
-        = std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
-
-      ::yampi::reduce const reducer(root, communicator);
+      bool result = std::all_of(buffer.data(), buffer.data() + buffer.count(), unary_predicate);
 
       if (communicator.rank(environment) == root)
       {
-        reducer.call(
+        ::yampi::reduce(
           ::yampi::make_buffer(result), YAMPI_addressof(result),
-          ::yampi::binary_operation(::yampi::logical_and_t()), environment);
+          ::yampi::binary_operation(::yampi::logical_and_t()), root, communicator, environment);
         return boost::make_optional(result);
       }
 
-      reducer.call(
+      ::yampi::reduce(
         ::yampi::make_buffer(result),
-        ::yampi::binary_operation(::yampi::logical_and_t()), environment);
+        ::yampi::binary_operation(::yampi::logical_and_t()), root, communicator, environment);
       return boost::none;
     }
 

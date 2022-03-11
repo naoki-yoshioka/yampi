@@ -12,7 +12,7 @@
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/status.hpp>
@@ -29,8 +29,8 @@
 namespace yampi
 {
   inline ::yampi::status wait_for_probe(
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Status mpi_status;
     int const error_code
@@ -44,19 +44,19 @@ namespace yampi
   }
 
   inline ::yampi::status wait_for_probe(
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(source, ::yampi::any_tag(), communicator, environment); }
 
   inline ::yampi::status wait_for_probe(
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 # if MPI_VERSION >= 3
 
   inline void wait_for_probe(
     ::yampi::ignore_status_t const,
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Probe(
@@ -69,19 +69,19 @@ namespace yampi
 
   inline void wait_for_probe(
     ::yampi::ignore_status_t const ignore_status,
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(ignore_status, source, ::yampi::any_tag(), communicator, environment); }
 
   inline void wait_for_probe(
     ::yampi::ignore_status_t const ignore_status,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(ignore_status, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 
   inline std::pair< ::yampi::message, ::yampi::status > wait_for_probe(
     ::yampi::return_message_t const,
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Message mpi_message;
     MPI_Status mpi_status;
@@ -98,19 +98,19 @@ namespace yampi
 
   inline std::pair< ::yampi::message, ::yampi::status > wait_for_probe(
     ::yampi::return_message_t const return_message,
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(return_message, source, ::yampi::any_tag(), communicator, environment); }
 
   inline std::pair< ::yampi::message, ::yampi::status > wait_for_probe(
     ::yampi::return_message_t const return_message,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(return_message, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 
   inline ::yampi::message wait_for_probe(
     ::yampi::return_message_t const, ::yampi::ignore_status_t const,
-    ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Message mpi_message;
     int const error_code
@@ -125,13 +125,13 @@ namespace yampi
 
   inline ::yampi::message wait_for_probe(
     ::yampi::return_message_t const return_message, ::yampi::ignore_status_t const ignore_status,
-    ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(return_message, ignore_status, source, ::yampi::any_tag(), communicator, environment); }
 
   inline ::yampi::message wait_for_probe(
     ::yampi::return_message_t const return_message, ::yampi::ignore_status_t const ignore_status,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::wait_for_probe(return_message, ignore_status, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 # endif
 }

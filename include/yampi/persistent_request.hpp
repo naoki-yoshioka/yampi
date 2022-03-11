@@ -20,7 +20,7 @@
 # include <yampi/buffer.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/communication_mode.hpp>
 # include <yampi/message.hpp>
 # include <yampi/request_base.hpp>
@@ -78,11 +78,18 @@ namespace yampi
     ~persistent_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
 # endif
 
+    //using base_type::base_type;
+    explicit persistent_request(MPI_Request const& mpi_request)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Request>::value)
+      : base_type(mpi_request)
+    { }
+
+    // send
     template <typename Value>
     persistent_request(
       ::yampi::request_send_t const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
     { }
 
@@ -90,8 +97,8 @@ namespace yampi
     persistent_request(
       ::yampi::request_send_t const,
       ::yampi::mode::standard_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
     { }
 
@@ -99,8 +106,8 @@ namespace yampi
     persistent_request(
       ::yampi::request_send_t const,
       ::yampi::mode::buffered_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_buffered_send_request(buffer, destination, tag, communicator, environment))
     { }
 
@@ -108,8 +115,8 @@ namespace yampi
     persistent_request(
       ::yampi::request_send_t const,
       ::yampi::mode::synchronous_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_synchronous_send_request(buffer, destination, tag, communicator, environment))
     { }
 
@@ -117,24 +124,25 @@ namespace yampi
     persistent_request(
       ::yampi::request_send_t const,
       ::yampi::mode::ready_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_ready_send_request(buffer, destination, tag, communicator, environment))
     { }
 
+    // receive
     template <typename Value>
     persistent_request(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_receive_request(buffer, source, tag, communicator, environment))
     { }
 
     template <typename Value>
     persistent_request(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_receive_request(buffer, source, ::yampi::any_tag(), communicator, environment))
     { }
 
@@ -142,16 +150,17 @@ namespace yampi
     persistent_request(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_receive_request(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment))
     { }
 
    private:
+    // send
     template <typename Value>
     static void do_standard_send(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -172,8 +181,8 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_standard_send_request(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
       do_standard_send(result, buffer, destination, tag, communicator, environment);
@@ -183,8 +192,8 @@ namespace yampi
     template <typename Value>
     static void do_buffered_send(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -205,8 +214,8 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_buffered_send_request(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
       do_buffered_send(result, buffer, destination, tag, communicator, environment);
@@ -216,8 +225,8 @@ namespace yampi
     template <typename Value>
     static void do_synchronous_send(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -238,8 +247,8 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_synchronous_send_request(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
       do_synchronous_send(result, buffer, destination, tag, communicator, environment);
@@ -249,8 +258,8 @@ namespace yampi
     template <typename Value>
     static void do_ready_send(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -271,19 +280,20 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_ready_send_request(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
       do_ready_send(result, buffer, destination, tag, communicator, environment);
       return result;
     }
 
+    // receive
     template <typename Value>
     static void do_receive(
       MPI_Request& mpi_request,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       int const error_code
         = MPI_Recv_init(
@@ -296,8 +306,8 @@ namespace yampi
 
     template <typename Value>
     static MPI_Request make_receive_request(
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       MPI_Request result;
       do_receive(result, buffer, source, tag, communicator, environment);
@@ -312,11 +322,14 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::persistent_request::start", environment);
     }
 
+    using base_type::reset;
+
+    // send
     template <typename Value>
     void reset(
       ::yampi::request_send_t const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       send(buffer, destination, tag, communicator, environment);
@@ -325,18 +338,19 @@ namespace yampi
     template <typename Mode, typename Value>
     void reset(
       ::yampi::request_send_t const, Mode const mode,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       send(mode, buffer, destination, tag, communicator, environment);
     }
 
+    // receive
     template <typename Value>
     void reset(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, source, tag, communicator, environment);
@@ -345,8 +359,8 @@ namespace yampi
     template <typename Value>
     void reset(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, source, communicator, environment);
@@ -356,64 +370,69 @@ namespace yampi
     void reset(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, communicator, environment);
     }
 
+    // send
     template <typename Value>
     void send(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_standard_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
       ::yampi::mode::standard_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_standard_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
       ::yampi::mode::buffered_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_buffered_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
       ::yampi::mode::synchronous_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_synchronous_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
       ::yampi::mode::ready_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_ready_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
+    // receive
     template <typename Value>
     void receive(
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_receive(mpi_request_, buffer, source, tag, communicator, environment); }
 
     template <typename Value>
     void receive(
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_receive(mpi_request_, buffer, source, ::yampi::any_tag(), communicator, environment); }
 
     template <typename Value>
     void receive(
       ::yampi::buffer<Value> buffer,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { do_receive(mpi_request_, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
   };
+
+  inline void swap(::yampi::persistent_request& lhs, ::yampi::persistent_request& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
 
   class persistent_request_ref
     : public ::yampi::request_ref_base
@@ -436,6 +455,20 @@ namespace yampi
     ~persistent_request_ref() BOOST_NOEXCEPT_OR_NOTHROW { }
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
+    //using base_type::base_type;
+    explicit persistent_request_ref(MPI_Request& mpi_request)
+      : base_type(mpi_request)
+    { }
+
+    void start(::yampi::environment const& environment)
+    {
+      int const error_code = MPI_Start(mpi_request_ptr_);
+      if (error_code == MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::persistent_request_ref::start", environment);
+    }
+
+    using base_type::reset;
+
 # ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(::yampi::persistent_request&& request, ::yampi::environment const& environment)
     {
@@ -445,18 +478,12 @@ namespace yampi
     }
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
-    void start(::yampi::environment const& environment)
-    {
-      int const error_code = MPI_Start(mpi_request_ptr_);
-      if (error_code == MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::persistent_request_ref::start", environment);
-    }
-
+    // send
     template <typename Value>
     void reset(
       ::yampi::request_send_t const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       send(buffer, destination, tag, communicator, environment);
@@ -465,18 +492,19 @@ namespace yampi
     template <typename Mode, typename Value>
     void reset(
       ::yampi::request_send_t const, Mode const mode,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       send(mode, buffer, destination, tag, communicator, environment);
     }
 
+    // receive
     template <typename Value>
     void reset(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, source, tag, communicator, environment);
@@ -485,8 +513,8 @@ namespace yampi
     template <typename Value>
     void reset(
       ::yampi::request_receive_t const,
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, source, communicator, environment);
@@ -496,23 +524,24 @@ namespace yampi
     void reset(
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       receive(buffer, communicator, environment);
     }
 
+    // send
     template <typename Value>
     void send(
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { send(::yampi::mode::standard_communication(), buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
       ::yampi::mode::standard_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -534,8 +563,8 @@ namespace yampi
     template <typename Value>
     void send(
       ::yampi::mode::buffered_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -557,8 +586,8 @@ namespace yampi
     template <typename Value>
     void send(
       ::yampi::mode::synchronous_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -580,8 +609,8 @@ namespace yampi
     template <typename Value>
     void send(
       ::yampi::mode::ready_communication const,
-      ::yampi::buffer<Value> const buffer, ::yampi::rank const& destination, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
 # if MPI_VERSION >= 3
       int const error_code
@@ -600,10 +629,11 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::persistent_request_ref::send", environment);
     }
 
+    // receive
     template <typename Value>
     void receive(
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       int const error_code
         = MPI_Recv_init(
@@ -616,16 +646,19 @@ namespace yampi
 
     template <typename Value>
     void receive(
-      ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
 
     template <typename Value>
     void receive(
       ::yampi::buffer<Value> buffer,
-      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { receive(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
   };
+
+  inline void swap(::yampi::persistent_request_ref& lhs, ::yampi::persistent_request_ref& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
 
   class persistent_request_cref
     : public ::yampi::request_cref_base
@@ -647,6 +680,15 @@ namespace yampi
 # else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     ~persistent_request_cref() BOOST_NOEXCEPT_OR_NOTHROW { }
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
+
+    //using base_type::base_type;
+    explicit persistent_request_cref(MPI_Request const& mpi_request)
+      : base_type(mpi_request)
+    { }
+
+    explicit persistent_request_cref(request_ref_base const& request)
+      : base_type(request)
+    { }
   };
 }
 

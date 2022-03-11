@@ -30,7 +30,7 @@ namespace yampi
   template <typename OriginValue, typename TargetValue, typename Window>
   inline void get(
     ::yampi::buffer<OriginValue> origin_buffer,
-    ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
+    ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
     ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
   {
     int const error_code
