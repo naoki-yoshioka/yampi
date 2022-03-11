@@ -23,13 +23,11 @@
 # endif
 
 # include <yampi/buffer.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/binary_operation.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/in_place.hpp>
-# if MPI_VERSION >= 3
-#   include <yampi/request_base.hpp>
-# endif
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
@@ -54,11 +52,9 @@ namespace yampi
 {
   template <typename SendValue, typename ContiguousIterator>
   inline void all_reduce(
-    ::yampi::buffer<SendValue> const send_buffer,
-    ContiguousIterator const first,
+    ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -86,10 +82,8 @@ namespace yampi
   // only for blocking all_reduce
   template <typename SendValue>
   inline SendValue all_reduce(
-    ::yampi::buffer<SendValue> const send_buffer,
-    ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::buffer<SendValue> const send_buffer, ::yampi::binary_operation const& operation,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     assert(send_buffer.count() == 1);
 
@@ -101,10 +95,8 @@ namespace yampi
   template <typename Value>
   inline void all_reduce(
     ::yampi::in_place_t const,
-    ::yampi::buffer<Value> receive_buffer,
-    ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator,
-    ::yampi::environment const& environment)
+    ::yampi::buffer<Value> receive_buffer, ::yampi::binary_operation const& operation,
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Allreduce(

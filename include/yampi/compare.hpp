@@ -5,7 +5,7 @@
 
 # include <mpi.h>
 
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/group.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
@@ -55,7 +55,7 @@ namespace yampi
 
 
   inline YAMPI_COMMUNICATORS_ARE compare(
-    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
+    ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   {
     int result;
@@ -81,7 +81,7 @@ namespace yampi
 
 
   inline bool is_identical(
-    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
+    ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::identical; }
 
@@ -91,12 +91,12 @@ namespace yampi
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::groups_are::identical; }
 
   inline bool is_congruent(
-    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
+    ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::congruent; }
 
   inline bool is_similar(
-    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
+    ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::similar; }
 
@@ -106,7 +106,7 @@ namespace yampi
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::groups_are::similar; }
 
   inline bool is_unequal(
-    ::yampi::communicator const& lhs, ::yampi::communicator const& rhs,
+    ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   { return ::yampi::compare(lhs, rhs, environment) == ::yampi::communicators_are::unequal; }
 

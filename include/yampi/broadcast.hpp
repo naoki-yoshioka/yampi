@@ -5,76 +5,62 @@
 
 # include <mpi.h>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/has_nothrow_copy.hpp>
+# ifdef BOOST_NO_CXX11_NULLPTR
+#   include <cstddef>
 # endif
 
 # include <yampi/buffer.hpp>
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
+# include <yampi/intercommunicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-# else
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
+# ifdef BOOST_NO_CXX11_NULLPTR
+#   define nullptr NULL
 # endif
 
 
 namespace yampi
 {
-  class broadcast
+  template <typename Value>
+  inline void broadcast(
+    ::yampi::buffer<Value> buffer, ::yampi::rank const root,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
-    ::yampi::rank root_;
-    ::yampi::communicator const& communicator_;
+    int const error_code
+      = MPI_Bcast(
+          buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::broadcast", environment);
+  }
 
-   public:
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
-    broadcast() = delete;
-    broadcast(broadcast const&) = delete;
-    broadcast& operator=(broadcast const&) = delete;
-# else
-   private:
-    broadcast();
-    broadcast(broadcast const&);
-    broadcast& operator=(broadcast const&);
+  template <typename SendValue>
+  inline void broadcast(
+    ::yampi::buffer<SendValue> const send_buffer,
+    ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
+  {
+    int const error_code
+      = MPI_Bcast(
+          send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          MPI_ROOT, communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::broadcast", environment);
+  }
 
-   public:
-# endif
-
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    broadcast(broadcast&&) = default;
-    broadcast& operator=(broadcast&&) = default;
-#   endif
-    ~broadcast() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
-
-    broadcast(
-      ::yampi::rank const& root, ::yampi::communicator const& communicator)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible< ::yampi::rank >::value)
-      : root_(root), communicator_(communicator)
-    { }
-
-
-    template <typename Value>
-    void call(::yampi::buffer<Value> buffer, ::yampi::environment const& environment) const
-    {
-      int const error_code
-        = MPI_Bcast(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-            root_.mpi_rank(), communicator_.mpi_comm());
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::broadcast::call", environment);
-    }
-  };
+  inline void broadcast(::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
+  {
+    int const error_code = MPI_Bcast(nullptr, 0, MPI_DATATYPE_NULL, MPI_PROC_NULL, communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::broadcast", environment);
+  }
 }
 
 
-# undef YAMPI_is_nothrow_copy_constructible
+# ifdef BOOST_NO_CXX11_NULLPTR
+#   undef nullptr
+# endif
 
 #endif
 

@@ -22,6 +22,7 @@
 # endif
 
 # include <yampi/buffer.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/in_place.hpp>
@@ -51,7 +52,7 @@ namespace yampi
   inline void reduce_scatter(
     ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
@@ -79,7 +80,7 @@ namespace yampi
   inline void reduce_scatter(
     ::yampi::buffer<Value> const send_buffer, ::yampi::buffer<Value> receive_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     assert(send_buffer.count() == communicator.size(environment) * receive_buffer.count());
     assert(send_buffer.datatype() == receive_buffer.datatype());
@@ -101,7 +102,8 @@ namespace yampi
 
   template <typename Value>
   inline void reduce_scatter(
-    ::yampi::in_place_t const, ::yampi::buffer<Value> receive_buffer,
+    ::yampi::in_place_t const,
+    ::yampi::buffer<Value> receive_buffer,
     ::yampi::binary_operation const& operation,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {

@@ -13,7 +13,7 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
-# include <yampi/communicator.hpp>
+# include <yampi/communicator_base.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/tag.hpp>
 # include <yampi/status.hpp>
@@ -32,8 +32,8 @@ namespace yampi
   // Blocking receive
   template <typename Value>
   inline ::yampi::status receive(
-    ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Status stat;
     int const error_code
@@ -47,14 +47,14 @@ namespace yampi
 
   template <typename Value>
   inline ::yampi::status receive(
-    ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::receive(buffer, source, ::yampi::any_tag(), communicator, environment); }
 
   template <typename Value>
   inline ::yampi::status receive(
     ::yampi::buffer<Value> buffer,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { return ::yampi::receive(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 # if MPI_VERSION >= 3
 
@@ -78,8 +78,8 @@ namespace yampi
   template <typename Value>
   inline void receive(
     ::yampi::ignore_status_t const,
-    ::yampi::buffer<Value> buffer, ::yampi::rank const& source, ::yampi::tag const& tag,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Recv(
@@ -92,15 +92,15 @@ namespace yampi
   template <typename Value>
   inline void receive(
     ::yampi::ignore_status_t const ignore_status,
-    ::yampi::buffer<Value> buffer, ::yampi::rank const& source,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::buffer<Value> buffer, ::yampi::rank const source,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { ::yampi::receive(ignore_status, buffer, source, ::yampi::any_tag(), communicator, environment); }
 
   template <typename Value>
   inline void receive(
     ::yampi::ignore_status_t const ignore_status,
     ::yampi::buffer<Value> buffer,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   { ::yampi::receive(ignore_status, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
 # if MPI_VERSION >= 3
 
