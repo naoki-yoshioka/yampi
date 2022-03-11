@@ -109,6 +109,7 @@ namespace yampi
     }
 # endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
+   protected:
     ~request_base() BOOST_NOEXCEPT_OR_NOTHROW
     {
       if (mpi_request_ == MPI_REQUEST_NULL)
@@ -117,6 +118,7 @@ namespace yampi
       MPI_Request_free(YAMPI_addressof(mpi_request_));
     }
 
+   public:
     explicit request_base(MPI_Request const& mpi_request)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Request>::value)
       : mpi_request_(mpi_request)

@@ -431,6 +431,9 @@ namespace yampi
     { do_receive(mpi_request_, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
   };
 
+  inline void swap(::yampi::persistent_request& lhs, ::yampi::persistent_request& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
+
   class persistent_request_ref
     : public ::yampi::request_ref_base
   {
@@ -653,6 +656,9 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { receive(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
   };
+
+  inline void swap(::yampi::persistent_request_ref& lhs, ::yampi::persistent_request_ref& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
 
   class persistent_request_cref
     : public ::yampi::request_cref_base

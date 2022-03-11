@@ -2866,6 +2866,9 @@ namespace yampi
 # endif // MPI_VERSION >= 3
   };
 
+  inline void swap(::yampi::immediate_request& lhs, ::yampi::immediate_request& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
+
   class immediate_request_ref
     : public ::yampi::request_ref_base
   {
@@ -3788,6 +3791,9 @@ namespace yampi
     { ::yampi::immediate_request_detail::duplicate_communicator(mpi_request_, old_communicator, new_communicator, environment); }
 # endif // MPI_VERSION >= 3
   };
+
+  inline void swap(::yampi::immediate_request_ref& lhs, ::yampi::immediate_request_ref& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  { lhs.swap(rhs); }
 
   class immediate_request_cref
     : public ::yampi::request_cref_base

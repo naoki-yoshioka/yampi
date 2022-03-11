@@ -194,6 +194,10 @@ namespace yampi
     }
 # endif
   };
+
+  inline void swap(::yampi::communicator& lhs, ::yampi::communicator& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  { lhs.swap(rhs); }
 }
 
 

@@ -9,16 +9,13 @@
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
 # else
 #   include <boost/type_traits/remove_cv.hpp>
 #   include <boost/type_traits/remove_volatile.hpp>
 #   include <boost/type_traits/is_same.hpp>
+#   include <boost/type_traits/has_nothrow_copy.hpp>
 #   include <boost/type_traits/is_nothrow_move_constructible.hpp>
 #   include <boost/type_traits/is_nothrow_move_assignable.hpp>
-#   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
@@ -41,19 +38,15 @@
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   define YAMPI_remove_cv std::remove_cv
 #   define YAMPI_is_same std::is_same
+#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
 #   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
 # else
 #   define YAMPI_remove_cv boost::remove_cv
 #   define YAMPI_is_same boost::is_same
+#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
 #   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
 #   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
-# endif
-
-# if __cplusplus >= 201703L
-#   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
-# else
-#   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
 # endif
 
 # ifndef BOOST_NO_CXX11_ADDRESSOF
@@ -86,7 +79,7 @@ namespace yampi
   class cartesian
     : public ::yampi::topology
   {
-    using ::yampi::topology::communicator_;
+    typedef ::yampi::topology base_type;
 
    public:
 # ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
@@ -108,7 +101,7 @@ namespace yampi
 #   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     cartesian(cartesian&& other)
       BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_move_constructible< ::yampi::topology >::value)
-      : ::yampi::topology(std::move(other))
+      : base_type(std::move(other))
     { }
 
     cartesian& operator=(cartesian&& other)
@@ -126,13 +119,19 @@ namespace yampi
     ~cartesian() { }
 # endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
+    //using base_type::base_type;
+    explicit cartesian(MPI_Comm const& mpi_comm)
+      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
+      : base_type(mpi_comm)
+    { }
+
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     cartesian(
       ::yampi::communicator const& old_communicator,
       ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
       ContiguousIterator2 const is_periodic_first,
       ::yampi::environment const& environment)
-      : ::yampi::topology(
+      : base_type(
           create(
             environment, old_communicator, size_first, size_last,
             is_periodic_first, true, environment))
@@ -145,7 +144,7 @@ namespace yampi
       ContiguousIterator2 const is_periodic_first,
       bool const is_reorderable,
       ::yampi::environment const& environment)
-      : ::yampi::topology(
+      : base_type(
           create(
             old_communicator, size_first, size_last,
             is_periodic_first, is_reorderable, environment))
@@ -156,7 +155,7 @@ namespace yampi
       cartesian const& other,
       ContiguousIterator const remains_first, ContiguousIterator const remains_last,
       ::yampi::environment const& environment)
-      : ::yampi::topology(make_subcommunicator(other, remains_first, remains_last, environment))
+      : base_type(make_subcommunicator(other, remains_first, remains_last, environment))
     { }
 
    private:
@@ -223,8 +222,7 @@ namespace yampi
     }
 
    public:
-    using ::yampi::topology::reset;
-    using ::yampi::topology::free;
+    using base_type::reset;
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     void reset(
@@ -358,13 +356,6 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::coordinates", environment);
     }
-
-    void swap(cartesian& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable< ::yampi::communicator >::value)
-    {
-      using std::swap;
-      swap(communicator_, other.communicator_);
-    }
   };
 
   inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs)
@@ -377,9 +368,9 @@ namespace yampi
 #   undef static_assert
 # endif
 # undef YAMPI_addressof
-# undef YAMPI_is_nothrow_swappable
 # undef YAMPI_is_nothrow_move_assignable
 # undef YAMPI_is_nothrow_move_constructible
+# undef YAMPI_is_nothrow_copy_constructible
 # undef YAMPI_remove_cv
 # undef YAMPI_is_same
 

@@ -190,6 +190,10 @@ namespace yampi
       group.reset(mpi_group, environment);
     }
   };
+
+  inline void swap(::yampi::intercommunicator& lhs, ::yampi::intercommunicator& rhs)
+    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  { lhs.swap(rhs); }
 }
 
 
