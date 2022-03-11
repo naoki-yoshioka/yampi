@@ -31,7 +31,7 @@ namespace yampi
   template <typename OriginValue, typename TargetValue, typename Window>
   inline void accumulate(
     ::yampi::buffer<OriginValue> const origin_buffer,
-    ::yampi::rank const& target, ::yampi::target_buffer<TargetValue> const target_buffer,
+    ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
     ::yampi::binary_operation const& operation,
     ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
   {

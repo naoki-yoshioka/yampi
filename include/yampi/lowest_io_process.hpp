@@ -20,8 +20,7 @@
 namespace yampi
 {
   // return the rank that is lowest in the group of world communicator
-  inline boost::optional< ::yampi::rank > lowest_io_process(
-    ::yampi::environment const& environment)
+  inline boost::optional< ::yampi::rank > lowest_io_process(::yampi::environment const& environment)
   {
     BOOST_CONSTEXPR_OR_CONST ::yampi::rank zero_rank = ::yampi::rank(0);
     ::yampi::rank const io_process = ::yampi::io_process(environment);

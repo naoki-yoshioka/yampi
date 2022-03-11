@@ -45,7 +45,7 @@ namespace yampi
   typename YAMPI_enable_if< ::yampi::has_predefined_datatype<Value>::value, void >::type
   compare_swap(
     Value const& origin_value, Value const& compare_value, Value& result_value,
-    ::yampi::rank const& target, Integer const target_displacement,
+    ::yampi::rank const target, Integer const target_displacement,
     ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
     int const error_code

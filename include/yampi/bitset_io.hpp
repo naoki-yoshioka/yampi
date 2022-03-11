@@ -16,8 +16,7 @@ namespace yampi
 {
   template <typename Character, typename CharacterTraits, std::size_t N, typename DataElement>
   inline std::basic_ostream<Character, CharacterTraits>& operator<<(
-    std::basic_ostream<Character, CharacterTraits>& output_stream,
-    ::yampi::bitset<N, DataElement> const& bits)
+    std::basic_ostream<Character, CharacterTraits>& output_stream, ::yampi::bitset<N, DataElement> const& bits)
   {
     std::ctype<Character> const& character_type = std::use_facet< std::ctype<Character> >(output_stream.getloc());
     return output_stream << bits.to_string(character_type.widen('0'), character_type.widen('1'));
@@ -25,8 +24,7 @@ namespace yampi
 
   template <typename Character, typename CharacterTraits, std::size_t N, typename DataElement>
   inline std::basic_istream<Character, CharacterTraits>& operator>>(
-    std::basic_istream<Character, CharacterTraits>& input_stream,
-    ::yampi::bitset<N, DataElement>& bits)
+    std::basic_istream<Character, CharacterTraits>& input_stream, ::yampi::bitset<N, DataElement>& bits)
   {
     typedef typename CharacterTraits::char_type char_type;
     typedef typename CharacterTraits::int_type int_type;
