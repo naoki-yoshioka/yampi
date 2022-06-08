@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # ifndef BOOST_NO_CXX11_ADDRESSOF
 #   include <memory>
 # else
@@ -49,6 +50,8 @@ namespace yampi
     ::yampi::binary_operation const& operation,
     ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   {
+    assert(YAMPI_addressof(origin_value) != YAMPI_addressof(result_value));
+
     int const error_code
       = MPI_Fetch_and_op(
           YAMPI_addressof(origin_value), YAMPI_addressof(result_value), ::yampi::predefined_datatype<Value>(),

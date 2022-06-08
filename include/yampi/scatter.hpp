@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # ifdef BOOST_NO_CXX11_NULLPTR
 #   include <cstddef>
 # endif
@@ -67,6 +68,7 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          ReceiveValue>::value),
       "value_type of ContiguousIterator must be the same to ReceiveValue");
+    assert(YAMPI_addressof(*first) != receive_buffer.data());
 
     int const error_code
       = MPI_Scatter(
@@ -82,6 +84,8 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
+    assert(send_buffer.data() != receive_buffer.data());
+
 # if MPI_VERSION >= 3
     int const error_code
       = MPI_Scatter(
@@ -107,14 +111,28 @@ namespace yampi
     if (communicator.rank(environment) == root)
       throw ::yampi::nonroot_call_on_root_error("yampi::scatter");
 
-    ::yampi::scatter(nullptr, receive_buffer, root, communicator, environment);
+    int const error_code
+      = MPI_Scatter(
+          nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::scatter", environment);
   }
 
   template <typename ReceiveValue>
   inline void scatter(
     ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
     ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-  { ::yampi::scatter(nullptr, receive_buffer, root, communicator, environment); }
+  {
+    int const error_code
+      = MPI_Scatter(
+          nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::scatter", environment);
+  }
 
   template <typename Value>
   inline void scatter(

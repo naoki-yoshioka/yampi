@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # ifdef BOOST_NO_CXX11_NULLPTR
 #   include <cstddef>
 # endif
@@ -63,13 +64,14 @@ namespace yampi
   inline void reduce(
     ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
     ::yampi::binary_operation const& operation, ::yampi::rank const root,
-    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
       (YAMPI_is_same<
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
+    assert(send_buffer.data() != YAMPI_addressof(*first));
 
 # if MPI_VERSION >= 3
     int const error_code
@@ -97,7 +99,21 @@ namespace yampi
     if (communicator.rank(environment) == root)
       throw ::yampi::nonroot_call_on_root_error("yampi::reduce");
 
-    ::yampi::reduce(send_buffer, nullptr, operation, root, communicator, environment);
+# if MPI_VERSION >= 3
+    int const error_code
+      = MPI_Reduce(
+          send_buffer.data(), nullptr,
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
+# else //MPI_VERSION >= 3
+    int const error_code
+      = MPI_Reduce(
+          const_cast<SendValue*>(send_buffer.data()), nullptr,
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
+# endif //MPI_VERSION >= 3
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::reduce", environment);
   }
 
   template <typename SendValue>
@@ -105,7 +121,23 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer,
     ::yampi::binary_operation const& operation, ::yampi::rank const root,
     ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-  { ::yampi::reduce(send_buffer, nullptr, operation, root, communicator, environment); }
+  {
+# if MPI_VERSION >= 3
+    int const error_code
+      = MPI_Reduce(
+          send_buffer.data(), nullptr,
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
+# else //MPI_VERSION >= 3
+    int const error_code
+      = MPI_Reduce(
+          const_cast<SendValue*>(send_buffer.data()), nullptr,
+          send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
+# endif //MPI_VERSION >= 3
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error(error_code, "yampi::reduce", environment);
+  }
 
   template <typename Value>
   inline void reduce(
@@ -130,7 +162,7 @@ namespace yampi
   inline void reduce(
     ::yampi::buffer<ReceiveValue> receive_buffer,
     ::yampi::binary_operation const& operation,
-    ::yampi::communicator const& communicator, ::yampi::environment const& environment)
+    ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Reduce(
@@ -141,7 +173,7 @@ namespace yampi
       throw ::yampi::error(error_code, "yampi::reduce", environment);
   }
 
-  inline void reduce(::yampi::communicator const& communicator, ::yampi::environment const& environment)
+  inline void reduce(::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
   {
     int const error_code
       = MPI_Reduce(

@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
 # else
@@ -59,6 +60,7 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to Value");
+    assert(send_buffer.data() != YAMPI_addressof(*first));
     assert(send_buffer.count() == communicator.size(environment));
 
 # if MPI_VERSION >= 3
@@ -82,6 +84,7 @@ namespace yampi
     ::yampi::binary_operation const& operation,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
+    assert(send_buffer.data() != receive_buffer.data());
     assert(send_buffer.count() == communicator.size(environment) * receive_buffer.count());
     assert(send_buffer.datatype() == receive_buffer.datatype());
 
