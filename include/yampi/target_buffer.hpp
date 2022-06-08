@@ -15,6 +15,11 @@
 #   include <boost/utility/enable_if.hpp>
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   include <memory>
+# else
+#   include <boost/core/addressof.hpp>
+# endif
 
 # include <mpi.h>
 
@@ -42,6 +47,12 @@
 
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   define static_assert BOOST_STATIC_ASSERT_MSG
+# endif
+
+# ifndef BOOST_NO_CXX11_ADDRESSOF
+#   define YAMPI_addressof std::addressof
+# else
+#   define YAMPI_addressof boost::addressof
 # endif
 
 
@@ -74,8 +85,8 @@ namespace yampi
       assert(count >= 0);
     }
 
-    bool operator==(target_buffer const& other) const BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(datatype_ == other.datatype_))
-    { return mpi_displacement_ == other.mpi_displacement_ and count_ == other.count_ and *datatype_ptr_ == *other.datatype_ptr_; }
+    bool operator==(target_buffer const& other) const BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(*datatype_ptr_ == *(other.datatype_ptr_)))
+    { return mpi_displacement_ == other.mpi_displacement_ and count_ == other.count_ and *datatype_ptr_ == *(other.datatype_ptr_); }
 
     MPI_Aint const& mpi_displacement() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_displacement_; }
     int const& count() const BOOST_NOEXCEPT_OR_NOTHROW { return count_; }
@@ -175,6 +186,7 @@ namespace yampi
 }
 
 
+# undef YAMPI_addressof
 # ifdef BOOST_NO_CXX11_STATIC_ASSERT
 #   undef static_assert
 # endif
