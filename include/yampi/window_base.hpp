@@ -57,12 +57,12 @@ namespace yampi
     MPI_Win const& mpi_win() const BOOST_NOEXCEPT_OR_NOTHROW { return derived().do_mpi_win(); }
 
     template <typename T>
-    T* base_ptr() const { return derived().do_base_ptr<T>(); }
-    ::yampi::byte_displacement size_bytes() const { return derived().do_size_bytes(); }
-    int displacement_unit() const { return derived().do_displacement_unit(); }
+    T* base_ptr(::yampi::environment const& environment) const { return derived().template do_base_ptr<T>(environment); }
+    ::yampi::byte_displacement size_bytes(::yampi::environment const& environment) const { return derived().do_size_bytes(environment); }
+    int displacement_unit(::yampi::environment const& environment) const { return derived().do_displacement_unit(environment); }
 # if MPI_VERSION >= 3
-    YAMPI_FLAVOR flavor() const { return derived().do_flavor(); }
-    YAMPI_MEMORY_MODEL memory_model() const { return derived().do_memory_model(); }
+    YAMPI_FLAVOR flavor(::yampi::environment const& environment) const { return derived().do_flavor(environment); }
+    YAMPI_MEMORY_MODEL memory_model(::yampi::environment const& environment) const { return derived().do_memory_model(environment); }
 #   undef YAMPI_MEMORY_MODEL
 #   undef YAMPI_FLAVOR
 # endif // MPI_VERSION >= 3

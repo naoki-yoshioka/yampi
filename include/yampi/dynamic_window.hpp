@@ -164,7 +164,7 @@ namespace yampi
     { return mpi_win_; }
 
     template <typename T>
-    T* do_base_ptr() const
+    T* do_base_ptr(::yampi::environment const& environment) const
     {
       T* base_ptr;
       int flag;
@@ -175,7 +175,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_base_ptr", environment);
     }
 
-    ::yampi::byte_displacement do_size_bytes() const
+    ::yampi::byte_displacement do_size_bytes(::yampi::environment const& environment) const
     {
       MPI_Aint size_bytes;
       int flag;
@@ -186,7 +186,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_size_bytes", environment);
     }
 
-    int do_displacement_unit() const
+    int do_displacement_unit(::yampi::environment const& environment) const
     {
       int displacement_unit;
       int flag;
@@ -197,7 +197,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_displacement_unit", environment);
     }
 
-    YAMPI_FLAVOR do_flavor() const
+    YAMPI_FLAVOR do_flavor(::yampi::environment const& environment) const
     {
       int flavor;
       int flag;
@@ -208,7 +208,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::window::do_flavor", environment);
     }
 
-    YAMPI_MEMORY_MODEL do_memory_model() const
+    YAMPI_MEMORY_MODEL do_memory_model(::yampi::environment const& environment) const
     {
       int memory_model;
       int flag;
@@ -288,9 +288,10 @@ namespace yampi
     {
       MPI_Info result;
       int const error_code = MPI_Win_get_info(mpi_win_, YAMPI_addressof(result));
-      return error_code == MPI_SUCCESS
-        ? yampi::information(result)
-        : throw ::yampi::error(error_code, "yampi::dynamic_window::get_information", environment);
+
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::dynamic_window::get_information", environment);
+      information.reset(result, environment);
     }
 
     void swap(dynamic_window& other)
