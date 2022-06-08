@@ -1,5 +1,5 @@
-#ifndef YAMPI_WINDOW_HPP
-# define YAMPI_WINDOW_HPP
+#ifndef YAMPI_LOCK_HPP
+# define YAMPI_LOCK_HPP
 
 # include <boost/config.hpp>
 
@@ -17,7 +17,7 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/window_base.hpp>
-# include <yampi/mode.hpp>
+# include <yampi/assertion_mode.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/error.hpp>
 
@@ -32,9 +32,9 @@
 # endif
 
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode
 # else // BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode::mode_
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode::assertion_mode_
 # endif // BOOST_NO_CXX11_SCOPED_ENUMS
 
 
@@ -79,7 +79,7 @@ namespace yampi
     { do_lock(0, environment); }
 
     lock_guard(
-      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_(window)
     { do_lock(static_cast<int>(assertion), environment); }
@@ -158,7 +158,7 @@ namespace yampi
     { lock(environment); }
 
     unique_lock(
-      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
@@ -174,7 +174,7 @@ namespace yampi
     void lock(::yampi::environment const& environment) const
     { do_lock(0, environment); }
 
-    void lock(YAMPI_MODE const assertion, ::yampi::environment const& environment) const
+    void lock(YAMPI_ASSERTION_MODE const assertion, ::yampi::environment const& environment) const
     { do_lock(static_cast<int>(assertion), environment); }
 
    private:
@@ -278,7 +278,7 @@ namespace yampi
     { lock(environment); }
 
     shared_lock(
-      ::yampi::rank const rank, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::rank const rank, YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : rank_(rank), window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
@@ -294,7 +294,7 @@ namespace yampi
     void lock(::yampi::environment const& environment) const
     { do_lock(0, environment); }
 
-    void lock(YAMPI_MODE const assertion, ::yampi::environment const& environment) const
+    void lock(YAMPI_ASSERTION_MODE const assertion, ::yampi::environment const& environment) const
     { do_lock(static_cast<int>(assertion), environment); }
 
    private:
@@ -393,7 +393,7 @@ namespace yampi
     { lock(environment); }
 
     all_shared_lock(
-      YAMPI_MODE const assertion, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
+      YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { lock(assertion, environment); }
 
@@ -408,7 +408,7 @@ namespace yampi
     void lock(::yampi::environment const& environment) const
     { do_lock(0, environment); }
 
-    void lock(YAMPI_MODE const assertion, ::yampi::environment const& environment) const
+    void lock(YAMPI_ASSERTION_MODE const assertion, ::yampi::environment const& environment) const
     { do_lock(static_cast<int>(assertion), environment); }
 
    private:
@@ -453,7 +453,7 @@ namespace yampi
 }
 
 
-# undef YAMPI_MODE
+# undef YAMPI_ASSERTION_MODE
 # ifdef BOOST_NO_CXX11_NULLPTR
 #   undef nullptr
 # endif
