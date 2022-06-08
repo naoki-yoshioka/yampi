@@ -6,14 +6,14 @@
 # include <mpi.h>
 
 # include <yampi/window_base.hpp>
-# include <yampi/mode.hpp>
+# include <yampi/assertion_mode.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode
 # else // BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode::mode_
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode::assertion_mode_
 # endif // BOOST_NO_CXX11_SCOPED_ENUMS
 
 
@@ -35,12 +35,12 @@ namespace yampi
   { ::yampi::yampi_fence_detail::fence(0, window, environment); }
 
   template <typename Derived>
-  inline void fence(YAMPI_MODE const assertion, ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
+  inline void fence(YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Derived> const& window, ::yampi::environment const& environment)
   { ::yampi::yampi_fence_detail::fence(static_cast<int>(assertion), window, environment); }
 }
 
 
-# undef YAMPI_MODE
+# undef YAMPI_ASSERTION_MODE
 
 #endif
 

@@ -17,7 +17,7 @@
 
 # include <yampi/window_base.hpp>
 # include <yampi/group.hpp>
-# include <yampi/mode.hpp>
+# include <yampi/assertion_mode.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
@@ -32,9 +32,9 @@
 # endif
 
 # ifndef BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode
 # else // BOOST_NO_CXX11_SCOPED_ENUMS
-#   define YAMPI_MODE ::yampi::mode::mode_
+#   define YAMPI_ASSERTION_MODE ::yampi::assertion_mode::assertion_mode_
 # endif // BOOST_NO_CXX11_SCOPED_ENUMS
 
 
@@ -78,7 +78,7 @@ namespace yampi
     { do_post(group, 0, environment); }
 
     exposure_guard(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::group const& group, YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_(window)
     { do_post(group, static_assert<int>(assertion), environment); }
@@ -152,7 +152,7 @@ namespace yampi
     { post(group, environment); }
 
     unique_exposure(
-      ::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::window_base<Window>& window,
+      ::yampi::group const& group, YAMPI_ASSERTION_MODE const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
       : window_ptr_(YAMPI_addressof(window)), owns_(false)
     { post(group, assertion, environment); }
@@ -168,7 +168,7 @@ namespace yampi
     void post(::yampi::group const& group, ::yampi::environment const& environment) const
     { do_post(group, 0, environment); }
 
-    void post(::yampi::group const& group, YAMPI_MODE const assertion, ::yampi::environment const& environment) const
+    void post(::yampi::group const& group, YAMPI_ASSERTION_MODE const assertion, ::yampi::environment const& environment) const
     { do_post(group, static_cast<int>(assertion), environment); }
 
    private:
@@ -228,7 +228,7 @@ namespace yampi
 }
 
 
-# undef YAMPI_MODE
+# undef YAMPI_ASSERTION_MODE
 # ifdef BOOST_NO_CXX11_NULLPTR
 #   undef nullptr
 # endif
