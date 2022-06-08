@@ -60,6 +60,7 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
+    assert(send_buffer.data() != YAMPI_addressof(*first));
 
 # if MPI_VERSION >= 3
     int const error_code

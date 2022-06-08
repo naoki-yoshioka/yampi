@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # include <utility>
 # ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
 #   include <type_traits>
@@ -231,6 +232,8 @@ namespace yampi
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+      assert(origin_buffer.data() != result_buffer.data());
+
       int const error_code
         = MPI_Rget_accumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
@@ -472,6 +475,8 @@ namespace yampi
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+      assert(origin_buffer.data() != result_buffer.data());
+
       int const error_code
         = MPI_Rget_accumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),

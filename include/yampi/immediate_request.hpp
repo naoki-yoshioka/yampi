@@ -3,6 +3,7 @@
 
 # include <boost/config.hpp>
 
+# include <cassert>
 # ifdef BOOST_NO_CXX11_NULLPTR
 #   include <cstddef>
 # endif
@@ -263,6 +264,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Igather(
@@ -279,6 +281,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Igather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -297,7 +301,13 @@ namespace yampi
       if (communicator.rank(environment) == root)
         throw ::yampi::nonroot_call_on_root_error("yampi::immediate_request_detail::gather");
 
-      ::yampi::immediate_request_detail::gather(mpi_request, send_buffer, nullptr, root, communicator, environment);
+      int const error_code
+        = MPI_Igather(
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            nullptr, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
 
     template <typename SendValue>
@@ -305,7 +315,15 @@ namespace yampi
       MPI_Request& mpi_request,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::gather(mpi_request, send_buffer, nullptr, root, communicator, environment); }
+    {
+      int const error_code
+        = MPI_Igather(
+            send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            nullptr, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
+    }
 
     template <typename Value>
     inline void gather_in_place(
@@ -364,6 +382,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            ReceiveValue>::value),
         "value_type of ContiguousIterator must be the same to ReceiveValue");
+      assert(YAMPI_addressof(*first) != receive_buffer.data());
 
       int const error_code
         = MPI_Iscatter(
@@ -380,6 +399,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Iscatter(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -398,7 +419,13 @@ namespace yampi
       if (communicator.rank(environment) == root)
         throw ::yampi::nonroot_call_on_root_error("yampi::immediate_request_detail::scatter");
 
-      ::yampi::immediate_request_detail::scatter(mpi_request, nullptr, receive_buffer, root, communicator, environment);
+      int const error_code
+        = MPI_Iscatter(
+            nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
 
     template <typename ReceiveValue>
@@ -406,7 +433,15 @@ namespace yampi
       MPI_Request& mpi_request,
       ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::scatter(mpi_request, nullptr, receive_buffer, root, communicator, environment); }
+    {
+      int const error_code
+        = MPI_Iscatter(
+            nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
+    }
 
     template <typename Value>
     inline void scatter_in_place(
@@ -465,6 +500,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Iallgather(
@@ -481,6 +517,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Iallgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -517,6 +555,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Ineighbor_allgather(
@@ -533,6 +572,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Ineighbor_allgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -542,21 +583,6 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather", environment);
     }
 
-    template <typename Value>
-    inline void all_gather_in_place(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Ineighbor_allgather(
-            MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
-            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather_in_place", environment);
-    }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     inline void complete_exchange(
@@ -564,6 +590,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Ialltoall(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -595,6 +623,8 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
+
       int const error_code
         = MPI_Ineighbor_alltoall(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -604,34 +634,20 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::complete_exchange", environment);
     }
 
-    template <typename Value>
-    inline void complete_exchange_in_place(
-      MPI_Request& mpi_request,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      int const error_code
-        = MPI_Ineighbor_alltoall(
-            MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
-            receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
-      if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::immediate_request_detail::complete_exchange_in_place", environment);
-    }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     inline void reduce(
       MPI_Request& mpi_request,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
         (YAMPI_is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Ireduce(
@@ -653,7 +669,14 @@ namespace yampi
       if (communicator.rank(environment) == root)
         throw ::yampi::nonroot_call_on_root_error("yampi::immediate_request_detail::reduce");
 
-      ::yampi::immediate_request_detail::reduce(mpi_request, send_buffer, nullptr, operation, root, communicator, environment);
+      int const error_code
+        = MPI_Ireduce(
+            send_buffer.data(), nullptr,
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
+            YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
 
     template <typename SendValue>
@@ -662,7 +685,16 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::reduce(mpi_request, send_buffer, nullptr, operation, root, communicator, environment); }
+    {
+      int const error_code
+        = MPI_Ireduce(
+            send_buffer.data(), nullptr,
+            send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
+            YAMPI_addressof(mpi_request));
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
+    }
 
     template <typename Value>
     inline void reduce_in_place(
@@ -727,6 +759,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Iallreduce(
@@ -766,6 +799,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            Value>::value),
         "value_type of ContiguousIterator must be the same to Value");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
       assert(send_buffer.count() == communicator.size(environment));
 
       int const error_code
@@ -783,6 +817,7 @@ namespace yampi
       ::yampi::binary_operation const& operation,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
+      assert(send_buffer.data() != receive_buffer.data());
       assert(send_buffer.count() == communicator.size(environment) * receive_buffer.count());
       assert(send_buffer.datatype() == receive_buffer.datatype());
 
@@ -822,6 +857,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Iscan(
@@ -861,6 +897,7 @@ namespace yampi
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
+      assert(send_buffer.data() != YAMPI_addressof(*first));
 
       int const error_code
         = MPI_Iexscan(
@@ -1258,15 +1295,6 @@ namespace yampi
       : base_type(make_all_gather_request(send_buffer, receive_buffer, topology, environment))
     { }
 
-    template <typename Value>
-    immediate_request(
-      ::yampi::request_all_gather_t const,
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-      : base_type(make_all_gather_in_place_request(receive_buffer, topology, environment))
-    { }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     immediate_request(
@@ -1294,22 +1322,13 @@ namespace yampi
       : base_type(make_complete_exchange_request(send_buffer, receive_buffer, topology, environment))
     { }
 
-    template <typename Value>
-    immediate_request(
-      ::yampi::request_complete_exchange_t const,
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-      : base_type(make_complete_exchange_in_place_request(receive_buffer, topology, environment))
-    { }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     immediate_request(
       ::yampi::request_reduce_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
       : base_type(make_reduce_request(send_buffer, first, operation, root, communicator, environment))
     { }
 
@@ -1745,16 +1764,6 @@ namespace yampi
       return result;
     }
 
-    template <typename Value>
-    MPI_Request make_all_gather_in_place_request(
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment) const
-    {
-      MPI_Request result;
-      ::yampi::immediate_request_detail::all_gather_in_place(result, receive_buffer, topology, environment);
-      return result;
-    }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     MPI_Request make_complete_exchange_request(
@@ -1787,22 +1796,12 @@ namespace yampi
       return result;
     }
 
-    template <typename Value>
-    MPI_Request make_complete_exchange_in_place_request(
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment) const
-    {
-      MPI_Request result;
-      ::yampi::immediate_request_detail::complete_exchange_in_place_request(result, receive_buffer, topology, environment);
-      return result;
-    }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     MPI_Request make_reduce_request(
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment) const
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment) const
     {
       MPI_Request result;
       ::yampi::immediate_request_detail::reduce(result, send_buffer, first, operation, root, communicator, environment);
@@ -2275,17 +2274,6 @@ namespace yampi
       all_gather(send_buffer, receive_buffer, topology, environment);
     }
 
-    template <typename Value>
-    void reset(
-      ::yampi::request_all_gather_t const,
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      free(environment);
-      all_gather(in_place, receive_buffer, topology, environment);
-    }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     void reset(
@@ -2319,24 +2307,13 @@ namespace yampi
       complete_exchange(send_buffer, receive_buffer, topology, environment);
     }
 
-    template <typename Value>
-    void reset(
-      ::yampi::request_complete_exchange_t const,
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      free(environment);
-      complete_exchange(in_place, receive_buffer, topology, environment);
-    }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     void reset(
       ::yampi::request_reduce_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       reduce(send_buffer, first, operation, root, communicator, environment);
@@ -2711,13 +2688,6 @@ namespace yampi
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::all_gather(mpi_request_, send_buffer, receive_buffer, topology, environment); }
 
-    template <typename Value>
-    void all_gather(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::all_gather_in_place(mpi_request_, receive_buffer, topology, environment); }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     void complete_exchange(
@@ -2739,19 +2709,12 @@ namespace yampi
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::complete_exchange(mpi_request_, send_buffer, receive_buffer, topology, environment); }
 
-    template <typename Value>
-    void complete_exchange(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::complete_exchange_in_place(mpi_request_, receive_buffer, topology, environment); }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     void reduce(
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::reduce(mpi_request_, send_buffer, first, operation, root, communicator, environment); }
 
     template <typename SendValue>
@@ -3201,17 +3164,6 @@ namespace yampi
       all_gather(send_buffer, receive_buffer, topology, environment);
     }
 
-    template <typename Value>
-    void reset(
-      ::yampi::request_all_gather_t const,
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      free(environment);
-      all_gather(in_place, receive_buffer, topology, environment);
-    }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     void reset(
@@ -3245,24 +3197,13 @@ namespace yampi
       complete_exchange(send_buffer, receive_buffer, topology, environment);
     }
 
-    template <typename Value>
-    void reset(
-      ::yampi::request_complete_exchange_t const,
-      ::yampi::in_place_t const in_place,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    {
-      free(environment);
-      complete_exchange(in_place, receive_buffer, topology, environment);
-    }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     void reset(
       ::yampi::request_reduce_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       free(environment);
       reduce(send_buffer, first, operation, root, communicator, environment);
@@ -3637,13 +3578,6 @@ namespace yampi
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::all_gather(mpi_request_, send_buffer, receive_buffer, topology, environment); }
 
-    template <typename Value>
-    void all_gather(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::all_gather_in_place(mpi_request_, receive_buffer, topology, environment); }
-
     // complete_exchange
     template <typename SendValue, typename ReceiveValue>
     void complete_exchange(
@@ -3665,19 +3599,12 @@ namespace yampi
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::complete_exchange(mpi_request_, send_buffer, receive_buffer, topology, environment); }
 
-    template <typename Value>
-    void complete_exchange(
-      ::yampi::in_place_t const,
-      ::yampi::buffer<Value> receive_buffer,
-      ::yampi::topology const& topology, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::complete_exchange_in_place(mpi_request_, receive_buffer, topology, environment); }
-
     // reduce
     template <typename SendValue, typename ContiguousIterator>
     void reduce(
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
-      ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+      ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::reduce(mpi_request_, send_buffer, first, operation, root, communicator, environment); }
 
     template <typename SendValue>
