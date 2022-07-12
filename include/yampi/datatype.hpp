@@ -35,7 +35,7 @@ namespace yampi
 
    public:
     constexpr strided_block(int const length, int const stride) noexcept
-      : length_(length), stride_(stride)
+      : length_{length}, stride_{stride}
     { }
 
     constexpr int const& length() const noexcept { return length_; }
@@ -69,7 +69,7 @@ namespace yampi
    public:
     constexpr heterogeneous_strided_block(int const length, ::yampi::byte_displacement const& stride_bytes)
       noexcept(std::is_nothrow_copy_constructible< ::yampi::byte_displacement >::value)
-      : length_(length), stride_bytes_(stride_bytes)
+      : length_{length}, stride_bytes_{stride_bytes}
     { }
 
     constexpr int const& length() const noexcept { return length_; }
@@ -140,7 +140,7 @@ namespace yampi
 
    public:
     datatype() noexcept(std::is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(MPI_DATATYPE_NULL)
+      : mpi_datatype_{MPI_DATATYPE_NULL}
     { }
 
     datatype(datatype const&) = delete;
@@ -150,7 +150,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Datatype>::value
         and std::is_nothrow_copy_assignable<MPI_Datatype>::value)
-      : mpi_datatype_(std::move(other.mpi_datatype_))
+      : mpi_datatype_{std::move(other.mpi_datatype_)}
     { other.mpi_datatype_ = MPI_DATATYPE_NULL; }
 
     datatype& operator=(datatype&& other)
@@ -180,14 +180,14 @@ namespace yampi
 
     explicit datatype(MPI_Datatype const& mpi_datatype)
       noexcept(std::is_nothrow_copy_constructible<MPI_Datatype>::value)
-      : mpi_datatype_(mpi_datatype)
+      : mpi_datatype_{mpi_datatype}
     { }
 
     template <typename DerivedDatatype>
     datatype(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::environment const& environment)
-      : mpi_datatype_(duplicate(base_datatype, environment))
+      : mpi_datatype_{duplicate(base_datatype, environment)}
     { }
 
     // MPI_Type_contiguous
@@ -195,7 +195,7 @@ namespace yampi
     datatype(
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, count, environment))
+      : mpi_datatype_{derive(base_datatype, count, environment)}
     { }
 
     // MPI_Type_vector
@@ -204,7 +204,7 @@ namespace yampi
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::strided_block const& block, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, block, count, environment))
+      : mpi_datatype_{derive(base_datatype, block, count, environment)}
     { }
 
     // MPI_Type_create_hvector
@@ -213,7 +213,7 @@ namespace yampi
       ::yampi::datatype_base<DerivedDatatype> const& base_datatype,
       ::yampi::heterogeneous_strided_block const& block, int const count,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(base_datatype, block, count, environment))
+      : mpi_datatype_{derive(base_datatype, block, count, environment)}
     { }
 
     // MPI_Type_indexed, MPI_Type_create_hindexed
@@ -224,10 +224,10 @@ namespace yampi
       ContiguousIterator1 const displacement_last,
       ContiguousIterator2 const block_length_first,
       ::yampi::environment const& environment)
-      : mpi_datatype_(
+      : mpi_datatype_{
           derive(
             base_datatype, displacement_first, displacement_last, block_length_first,
-            environment))
+            environment)}
     { }
 
     // MPI_Type_create_indexed_block, MPI_Type_create_hindexed_block
@@ -238,10 +238,10 @@ namespace yampi
       ContiguousIterator const displacement_last,
       int const block_length,
       ::yampi::environment const& environment)
-      : mpi_datatype_(
+      : mpi_datatype_{
           derive(
             base_datatype, displacement_first, displacement_last, block_length,
-            environment))
+            environment)}
     { }
 
     // MPI_Type_create_struct
@@ -254,10 +254,10 @@ namespace yampi
       ContiguousIterator2 const byte_displacement_first,
       ContiguousIterator3 const block_length_first,
       ::yampi::environment const& environment)
-      : mpi_datatype_(
+      : mpi_datatype_{
           derive(
             datatype_first, datatype_last, byte_displacement_first, block_length_first,
-            environment))
+            environment)}
     { }
 
     // MPI_Type_create_subarray
@@ -272,12 +272,12 @@ namespace yampi
       ContiguousIterator2 const array_subsize_first,
       ContiguousIterator3 const array_start_index_first,
       ::yampi::environment const& environment)
-      : mpi_datatype_(
+      : mpi_datatype_{
           derive(
             array_element_datatype,
             array_size_first, array_size_last,
             array_subsize_first, array_start_index_first,
-            environment))
+            environment)}
     { }
 
     template <typename DerivedDatatype>
@@ -285,7 +285,7 @@ namespace yampi
       ::yampi::datatype_base<DerivedDatatype> const& old_datatype,
       ::yampi::bounds const& new_bounds,
       ::yampi::environment const& environment)
-      : mpi_datatype_(derive(old_datatype, new_bounds, environment))
+      : mpi_datatype_{derive(old_datatype, new_bounds, environment)}
     { }
 
    private:

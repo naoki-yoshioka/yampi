@@ -43,18 +43,18 @@ namespace yampi
     int mpi_split_type_;
 
    public:
-    constexpr split_type() noexcept : mpi_split_type_(0) { }
+    constexpr split_type() noexcept : mpi_split_type_{0} { }
 
     explicit constexpr split_type(int const mpi_split_type) noexcept
-      : mpi_split_type_(mpi_split_type)
+      : mpi_split_type_{mpi_split_type}
     { }
 
     explicit constexpr split_type(::yampi::shared_memory_split_type_t const) noexcept
-      : mpi_split_type_(MPI_COMM_TYPE_SHARED)
+      : mpi_split_type_{MPI_COMM_TYPE_SHARED}
     { }
 
     explicit constexpr split_type(::yampi::undefined_split_type_t const) noexcept
-      : mpi_split_type_(MPI_UNDEFINED)
+      : mpi_split_type_{MPI_UNDEFINED}
     { }
 
     split_type(split_type const&) = default;

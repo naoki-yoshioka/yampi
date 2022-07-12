@@ -14,8 +14,8 @@ namespace yampi
   {
    public:
     explicit error_in_error(std::string const& where)
-      : std::runtime_error(
-          (std::string("In ") + where + ": error occured in MPI_Error_class/string").c_str())
+      : std::runtime_error{
+          (std::string("In ") + where + ": error occured in MPI_Error_class/string").c_str()}
     { }
   };
 
@@ -29,8 +29,8 @@ namespace yampi
    public:
     error(
       int const error_code, std::string const& where, ::yampi::environment const& environment)
-     : std::runtime_error(generate_what_string(error_code, where, environment).c_str()),
-       error_class_(generate_error_class(error_code, where, environment))
+     : std::runtime_error{generate_what_string(error_code, where, environment).c_str()},
+       error_class_{generate_error_class(error_code, where, environment)}
     { }
 
     int error_class() const { return error_class_; }

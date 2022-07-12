@@ -34,7 +34,7 @@ namespace yampi
 
    public:
     communicator_base() noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
-      : mpi_comm_(MPI_COMM_NULL)
+      : mpi_comm_{MPI_COMM_NULL}
     { }
 
     communicator_base(communicator_base const&) = delete;
@@ -44,7 +44,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Comm>::value
         and std::is_nothrow_copy_assignable<MPI_Comm>::value)
-      : mpi_comm_(std::move(other.mpi_comm_))
+      : mpi_comm_{std::move(other.mpi_comm_)}
     { other.mpi_comm_ = MPI_COMM_NULL; }
 
     communicator_base& operator=(communicator_base&& other)
@@ -74,31 +74,31 @@ namespace yampi
    public:
     explicit communicator_base(MPI_Comm const& mpi_comm)
       noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
-      : mpi_comm_(mpi_comm)
+      : mpi_comm_{mpi_comm}
     { }
 
     communicator_base(communicator_base const& other, ::yampi::environment const& environment)
-      : mpi_comm_(duplicate(other, environment))
+      : mpi_comm_{duplicate(other, environment)}
     { }
 
 # if MPI_VERSION >= 3
     communicator_base(
       communicator_base const& other, ::yampi::information const& information,
       ::yampi::environment const& environment)
-      : mpi_comm_(duplicate(other, information, environment))
+      : mpi_comm_{duplicate(other, information, environment)}
     { }
 # endif
 
     communicator_base(
       communicator_base const& other, ::yampi::group const& group,
       ::yampi::environment const& environment)
-      : mpi_comm_(create(other, group, environment))
+      : mpi_comm_{create(other, group, environment)}
     { }
 
     communicator_base(
       communicator_base const& other, ::yampi::color const color, int const key,
       ::yampi::environment const& environment)
-      : mpi_comm_(split(other, color, key, environment))
+      : mpi_comm_{split(other, color, key, environment)}
     { }
 
 # if MPI_VERSION >= 3
@@ -106,13 +106,13 @@ namespace yampi
       communicator_base const& other, ::yampi::split_type const split_type,
       int const key, ::yampi::information const& information,
       ::yampi::environment const& environment)
-      : mpi_comm_(split(other, split_type, key, information, environment))
+      : mpi_comm_{split(other, split_type, key, information, environment)}
     { }
 
     communicator_base(
       communicator_base const& other, ::yampi::split_type const split_type, int const key,
       ::yampi::environment const& environment)
-      : mpi_comm_(split(other, split_type, key, ::yampi::information(), environment))
+      : mpi_comm_{split(other, split_type, key, ::yampi::information(), environment)}
     { }
 # endif
 

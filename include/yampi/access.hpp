@@ -20,7 +20,7 @@ namespace yampi
   {
    public:
     unexpected_access_status_error()
-      : std::runtime_error("Error occurred because of strange access member variables")
+      : std::runtime_error{"Error occurred because of strange access member variables"}
     { }
   };
 
@@ -47,17 +47,17 @@ namespace yampi
     ~access_guard() noexcept { MPI_Win_complete(window_.mpi_win()); }
 
     access_guard(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_(window)
+      : window_{window}
     { do_start(group, 0, environment); }
 
     access_guard(
       ::yampi::group const& group, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : window_(window)
+      : window_{window}
     { do_start(group, static_cast<int>(assertion), environment); }
 
     access_guard(::yampi::window_base<Window>& window, ::yampi::adopt_access_t const)
-      : window_(window)
+      : window_{window}
     { }
 
    private:
@@ -78,13 +78,13 @@ namespace yampi
     bool owns_;
 
    public:
-    access() noexcept : window_ptr_(nullptr), owns_(false) { }
+    access() noexcept : window_ptr_{nullptr}, owns_{false} { }
 
     unique_access(unique_access const&) = delete;
     unique_access& operator=(unique_access const&) = delete;
 
     unique_access(unique_access&& other)
-      : window_ptr_(std::move(other.window_ptr_)), owns_(std::move(other.owns_))
+      : window_ptr_{std::move(other.window_ptr_)}, owns_{std::move(other.owns_)}
     { other.window_ptr_ = nullptr; other.owns_ = false; }
 
     unique_access& operator=(unique_access&& other)
@@ -108,21 +108,21 @@ namespace yampi
     }
 
     unique_access(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { start(group, environment); }
 
     unique_access(
       ::yampi::group const& group, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { start(group, assertion, environment); }
 
     unique_access(::yampi::window_base<Window>& window, ::yampi::defer_access_t const)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { }
 
     unique_access(::yampi::window_base<Window>& window, ::yampi::adopt_access_t const)
-      : window_ptr_(std::addressof(window)), owns_(true)
+      : window_ptr_{std::addressof(window)}, owns_{true}
     { }
 
     void start(::yampi::group const& group, ::yampi::environment const& environment) const

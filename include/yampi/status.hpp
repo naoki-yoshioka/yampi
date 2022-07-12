@@ -31,7 +31,7 @@ namespace yampi
   {
    public:
     count_value_undefined_error()
-      : std::runtime_error("count in MPI_GET_COUNT is MPI_UNDEFINED")
+      : std::runtime_error{"count in MPI_GET_COUNT is MPI_UNDEFINED"}
     { }
   };
 
@@ -44,7 +44,7 @@ namespace yampi
 
     explicit status(MPI_Status const& stat)
       noexcept(std::is_nothrow_copy_constructible<MPI_Status>::value)
-      : mpi_status_(stat)
+      : mpi_status_{stat}
     { }
 
     status(status const&) = default;

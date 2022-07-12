@@ -38,12 +38,8 @@ namespace yampi
 
    public:
     constexpr strided_rank_range(::yampi::rank const first_rank, ::yampi::rank const last_rank, int const stride = 1) noexcept
-      : data_()
-    {
-      data_[0] = first_rank.mpi_rank();
-      data_[1] = last_rank.mpi_rank();
-      data_[2] = stride;
-    }
+      : data_{first_rank.mpi_rank(), last_rank.mpi_rank(), stride}
+    { }
 
     constexpr ::yampi::rank first_rank() const noexcept { return ::yampi::rank(data_[0]); }
     constexpr ::yampi::rank last_rank() const noexcept { return ::yampi::rank(data_[1]); }
@@ -75,7 +71,7 @@ namespace yampi
 
    public:
     group() noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
-      : mpi_group_(MPI_GROUP_NULL)
+      : mpi_group_{MPI_GROUP_NULL}
     { }
 
     group(group const&) = delete;
@@ -85,7 +81,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Group>::value
         and std::is_nothrow_copy_assignable<MPI_Group>::value)
-      : mpi_group_(std::move(other.mpi_group_))
+      : mpi_group_{std::move(other.mpi_group_)}
     { other.mpi_group_ = MPI_GROUP_NULL; }
 
     group& operator=(group&& other)
@@ -113,24 +109,24 @@ namespace yampi
 
     explicit group(MPI_Group const& mpi_group)
       noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
-      : mpi_group_(mpi_group)
+      : mpi_group_{mpi_group}
     { }
 
     explicit group(::yampi::empty_group_t const)
       noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
-      : mpi_group_(MPI_GROUP_EMPTY)
+      : mpi_group_{MPI_GROUP_EMPTY}
     { }
 
     group(::yampi::make_union_t const, group const& lhs, group const& rhs, ::yampi::environment const& environment)
-      : mpi_group_(make_union(lhs, rhs, environment))
+      : mpi_group_{make_union(lhs, rhs, environment)}
     { }
 
     group(::yampi::make_intersection_t const, group const& lhs, group const& rhs, ::yampi::environment const& environment)
-      : mpi_group_(make_intersection(lhs, rhs, environment))
+      : mpi_group_{make_intersection(lhs, rhs, environment)}
     { }
 
     group(::yampi::make_difference_t const, group const& lhs, group const& rhs, ::yampi::environment const& environment)
-      : mpi_group_(make_difference(lhs, rhs, environment))
+      : mpi_group_{make_difference(lhs, rhs, environment)}
     { }
 
     template <typename ContiguousIterator>
@@ -138,7 +134,7 @@ namespace yampi
       ::yampi::make_inclusive_t const,
       group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
-      : mpi_group_(make_inclusive(original_group, first, last, environment))
+      : mpi_group_{make_inclusive(original_group, first, last, environment)}
     { }
 
     template <typename ContiguousRange>
@@ -146,7 +142,7 @@ namespace yampi
       ::yampi::make_inclusive_t const,
       group const& original_group, ContiguousRange const& ranks,
       ::yampi::environment const& environment)
-      : mpi_group_(make_inclusive(original_group, std::begin(ranks), std::end(ranks), environment))
+      : mpi_group_{make_inclusive(original_group, std::begin(ranks), std::end(ranks), environment)}
     { }
 
     template <typename ContiguousIterator>
@@ -154,7 +150,7 @@ namespace yampi
       ::yampi::make_exclusive_t const,
       group const& original_group, ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::environment const& environment)
-      : mpi_group_(make_exclusive(original_group, first, last, environment))
+      : mpi_group_{make_exclusive(original_group, first, last, environment)}
     { }
 
     template <typename ContiguousRange>
@@ -162,7 +158,7 @@ namespace yampi
       ::yampi::make_exclusive_t const,
       group const& original_group, ContiguousRange const& ranks,
       ::yampi::environment const& environment)
-      : mpi_group_(make_exclusive(original_group, std::begin(ranks), std::end(ranks), environment))
+      : mpi_group_{make_exclusive(original_group, std::begin(ranks), std::end(ranks), environment)}
     { }
 
    private:

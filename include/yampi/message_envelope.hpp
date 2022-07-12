@@ -37,10 +37,10 @@ namespace yampi
       noexcept(
         std::is_nothrow_copy_constructible< ::yampi::rank >::value
         and std::is_nothrow_copy_constructible< ::yampi::tag >::value)
-      : source_(source),
-        destination_(destination),
-        tag_(tag),
-        communicator_ptr_(std::addressof(communicator))
+      : source_{source},
+        destination_{destination},
+        tag_{tag},
+        communicator_ptr_{std::addressof(communicator)}
     { }
 
     message_envelope(
@@ -49,10 +49,10 @@ namespace yampi
       noexcept(
         std::is_nothrow_copy_constructible< ::yampi::rank >::value
         and std::is_nothrow_default_constructible< ::yampi::tag >::value)
-      : source_(source),
-        destination_(destination),
-        tag_(),
-        communicator_ptr_(std::addressof(communicator))
+      : source_{source},
+        destination_{destination},
+        tag_{},
+        communicator_ptr_{std::addressof(communicator)}
     { }
 
     ::yampi::rank const& source() const noexcept { return source_; }

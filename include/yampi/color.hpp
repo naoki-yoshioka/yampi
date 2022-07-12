@@ -39,12 +39,12 @@ namespace yampi
     int mpi_color_;
 
    public:
-    constexpr color() noexcept : mpi_color_(0) { }
+    constexpr color() noexcept : mpi_color_{0} { }
 
-    explicit constexpr color(int const mpi_color) noexcept : mpi_color_(mpi_color) { }
+    explicit constexpr color(int const mpi_color) noexcept : mpi_color_{mpi_color} { }
 
     explicit constexpr color(::yampi::undefined_color_t const) noexcept
-      : mpi_color_(MPI_UNDEFINED)
+      : mpi_color_{MPI_UNDEFINED}
     { }
 
     color(color const&) = default;

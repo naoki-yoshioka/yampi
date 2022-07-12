@@ -27,7 +27,7 @@ namespace yampi
 
    public:
     intercommunicator() noexcept(std::is_nothrow_default_constructible<base_type>::value)
-      : base_type()
+      : base_type{}
     { }
 
     intercommunicator(intercommunicator const&) = delete;
@@ -42,7 +42,7 @@ namespace yampi
       ::yampi::communicator const& local_communicator, ::yampi::rank const local_leader,
       ::yampi::communicator const& peer_communicator, ::yampi::rank const remote_leader,
       ::yampi::tag const tag, ::yampi::environment const& environment)
-      : base_type(create(local_communicator, local_leader, peer_communicator, remote_leader, tag, environment))
+      : base_type{create(local_communicator, local_leader, peer_communicator, remote_leader, tag, environment)}
     { }
 
    private:

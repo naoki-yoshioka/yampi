@@ -26,7 +26,7 @@ namespace yampi
 # endif
 
    public:
-    constexpr count() : mpi_count_() { }
+    constexpr count() : mpi_count_{} { }
 
     count(count const&) = default;
     count& operator=(count const&) = default;
@@ -36,12 +36,12 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     constexpr count(int const mpi_count) noexcept
-      : mpi_count_(static_cast<MPI_Count>(mpi_count))
+      : mpi_count_{static_cast<MPI_Count>(mpi_count)}
     { }
 
     explicit constexpr count(MPI_Count const& mpi_count)
       noexcept(std::is_nothrow_copy_constructible<MPI_Count>::value)
-      : mpi_count_(mpi_count)
+      : mpi_count_{mpi_count}
     { }
 
     constexpr MPI_Count const& mpi_count() const noexcept { return mpi_count_; }

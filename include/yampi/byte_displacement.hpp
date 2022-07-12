@@ -22,7 +22,7 @@ namespace yampi
     MPI_Aint mpi_byte_displacement_;
 
    public:
-    constexpr byte_displacement() : mpi_byte_displacement_() { }
+    constexpr byte_displacement() : mpi_byte_displacement_{} { }
 
     byte_displacement(byte_displacement const&) = default;
     byte_displacement& operator=(byte_displacement const&) = default;
@@ -32,7 +32,7 @@ namespace yampi
 
     explicit constexpr byte_displacement(MPI_Aint const& mpi_byte_displacement)
       noexcept(std::is_nothrow_copy_constructible<MPI_Aint>::value)
-      : mpi_byte_displacement_(mpi_byte_displacement)
+      : mpi_byte_displacement_{mpi_byte_displacement}
     { }
 
     explicit constexpr operator MPI_Aint() const noexcept { return mpi_byte_displacement_; }

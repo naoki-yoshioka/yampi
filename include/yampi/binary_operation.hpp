@@ -85,7 +85,7 @@ namespace yampi
 
    public:
     binary_operation() noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)
-      : mpi_op_(MPI_OP_NULL)
+      : mpi_op_{MPI_OP_NULL}
     { }
 
     binary_operation(binary_operation const&) = delete;
@@ -94,7 +94,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Op>::value
         and std::is_nothrow_copy_assignable<MPI_Op>::value)
-      : mpi_op_(std::move(other.mpi_op_))
+      : mpi_op_{std::move(other.mpi_op_)}
     { other.mpi_op_ = MPI_OP_NULL; }
 
     binary_operation& operator=(binary_operation&& other)
@@ -122,13 +122,13 @@ namespace yampi
 
     explicit binary_operation(MPI_Op const& mpi_op)
       noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)
-      : mpi_op_(mpi_op)
+      : mpi_op_{mpi_op}
     { }
 
 # define YAMPI_DEFINE_OPERATION_CONSTRUCTOR(op, mpiop) \
     explicit binary_operation(::yampi:: op ## _t const)\
       noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)\
-      : mpi_op_(MPI_ ## mpiop )\
+      : mpi_op_{MPI_ ## mpiop }\
     { }
 
     YAMPI_DEFINE_OPERATION_CONSTRUCTOR(maximum, MAX)
@@ -152,7 +152,7 @@ namespace yampi
     binary_operation(
       MPI_User_function* mpi_user_function, bool const is_commutative,
       ::yampi::environment const& environment)
-      : mpi_op_(create(mpi_user_function, is_commutative, environment))
+      : mpi_op_{create(mpi_user_function, is_commutative, environment)}
     { }
 
    private:

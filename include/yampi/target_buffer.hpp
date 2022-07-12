@@ -34,8 +34,8 @@ namespace yampi
    public:
     template <typename Integer>
     target_buffer(Integer const displacement, ::yampi::datatype const& datatype) noexcept
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1),
-        datatype_ptr_(std::addressof(datatype))
+      : mpi_displacement_{static_cast<MPI_Aint>(displacement)}, count_{1},
+        datatype_ptr_{std::addressof(datatype)}
     {
       static_assert(std::is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -43,8 +43,8 @@ namespace yampi
 
     template <typename Integer>
     target_buffer(Integer const displacement, int const count, ::yampi::datatype const& datatype) noexcept
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count),
-        datatype_ptr_(std::addressof(datatype))
+      : mpi_displacement_{static_cast<MPI_Aint>(displacement)}, count_{count},
+        datatype_ptr_{std::addressof(datatype)}
     {
       static_assert(std::is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -76,7 +76,7 @@ namespace yampi
    public:
     template <typename Integer>
     explicit target_buffer(Integer const displacement) noexcept
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(1)
+      : mpi_displacement_{static_cast<MPI_Aint>(displacement)}, count_{1}
     {
       static_assert(std::is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});
@@ -84,7 +84,7 @@ namespace yampi
 
     template <typename Integer>
     target_buffer(Integer const displacement, int const count) noexcept
-      : mpi_displacement_(static_cast<MPI_Aint>(displacement)), count_(count)
+      : mpi_displacement_{static_cast<MPI_Aint>(displacement)}, count_{count}
     {
       static_assert(std::is_integral<Integer>::value, "Integer should be an integral type");
       assert(displacement >= Integer{0});

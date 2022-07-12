@@ -20,7 +20,7 @@ namespace yampi
   {
    public:
     unexpected_exposure_status_error()
-      : std::runtime_error("Error occurred because of strange exposure member variables")
+      : std::runtime_error{"Error occurred because of strange exposure member variables"}
     { }
   };
 
@@ -47,17 +47,17 @@ namespace yampi
     ~exposure_guard() noexcept { MPI_Win_wait(window_.mpi_win()); }
 
     exposure_guard(::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_(window)
+      : window_{window}
     { do_post(group, 0, environment); }
 
     exposure_guard(
       ::yampi::group const& group, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : window_(window)
+      : window_{window}
     { do_post(group, static_assert<int>(assertion), environment); }
 
     exposure_guard(::yampi::window_base<Window>& window, ::yampi::adopt_exposure_t const)
-      : window_(window)
+      : window_{window}
     { }
 
    private:
@@ -78,13 +78,13 @@ namespace yampi
     bool owns_;
 
    public:
-    unique_exposure() noexcept : window_ptr_(nullptr), owns_(false) { }
+    unique_exposure() noexcept : window_ptr_{nullptr}, owns_{false} { }
 
     unique_exposure(unique_exposure const&) = delete;
     unique_exposure& operator=(unique_exposure const&) = delete;
 
     unique_exposure(unique_exposure&& other)
-      : window_ptr_(std::move(other.window_ptr_)), owns_(std::move(other.owns_))
+      : window_ptr_{std::move(other.window_ptr_)}, owns_{std::move(other.owns_)}
     { other.window_ptr_ = nullptr; other.owns_ = false; }
 
     unique_exposure& operator=(unique_exposure&& other)
@@ -109,21 +109,21 @@ namespace yampi
 
     unique_exposure(
       ::yampi::group const& group, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { post(group, environment); }
 
     unique_exposure(
       ::yampi::group const& group, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { post(group, assertion, environment); }
 
     unique_exposure(::yampi::window_base<Window>& window, ::yampi::defer_exposure_t const)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { }
 
     unique_exposure(::yampi::window_base<Window>& window, ::yampi::adopt_exposure_t const)
-      : window_ptr_(std::addressof(window)), owns_(true)
+      : window_ptr_{std::addressof(window)}, owns_{true}
     { }
 
     void post(::yampi::group const& group, ::yampi::environment const& environment) const

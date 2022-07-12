@@ -26,7 +26,7 @@ namespace yampi
 
    public:
     cartesian_shift(int const direction, int const displacement)
-      : direction_(direction), displacement_(displacement)
+      : direction_{direction}, displacement_{displacement}
     { }
 
     int const& direction() const { return direction_; }
@@ -54,10 +54,10 @@ namespace yampi
       ContiguousIterator1 const size_first, ContiguousIterator1 const size_last,
       ContiguousIterator2 const is_periodic_first,
       ::yampi::environment const& environment)
-      : base_type(
+      : base_type{
           create(
             environment, old_communicator, size_first, size_last,
-            is_periodic_first, true, environment))
+            is_periodic_first, true, environment)}
     { }
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
@@ -67,10 +67,10 @@ namespace yampi
       ContiguousIterator2 const is_periodic_first,
       bool const is_reorderable,
       ::yampi::environment const& environment)
-      : base_type(
+      : base_type{
           create(
             old_communicator, size_first, size_last,
-            is_periodic_first, is_reorderable, environment))
+            is_periodic_first, is_reorderable, environment)}
     { }
 
     template <typename ContiguousIterator>
@@ -78,7 +78,7 @@ namespace yampi
       cartesian const& other,
       ContiguousIterator const remains_first, ContiguousIterator const remains_last,
       ::yampi::environment const& environment)
-      : base_type(make_subcommunicator(other, remains_first, remains_last, environment))
+      : base_type{make_subcommunicator(other, remains_first, remains_last, environment)}
     { }
 
    private:

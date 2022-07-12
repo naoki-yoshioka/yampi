@@ -22,7 +22,7 @@ namespace yampi
     MPI_Offset mpi_offset_;
 
    public:
-    constexpr offset() : mpi_offset_() { }
+    constexpr offset() : mpi_offset_{} { }
 
     offset(offset const&) = default;
     offset& operator=(offset const&) = default;
@@ -32,7 +32,7 @@ namespace yampi
 
     explicit constexpr offset(MPI_Offset const& mpi_offset)
       noexcept(std::is_nothrow_copy_constructible<MPI_Offset>::value)
-      : mpi_offset_(mpi_offset)
+      : mpi_offset_{mpi_offset}
     { }
 
     constexpr MPI_Offset const& mpi_offset() const { return mpi_offset_; }

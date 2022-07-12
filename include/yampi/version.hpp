@@ -25,8 +25,8 @@ namespace yampi
 
    public:
     explicit version_error(int const error_code)
-     : std::runtime_error("Error occurred when getting version"),
-       error_code_(error_code)
+     : std::runtime_error{"Error occurred when getting version"},
+       error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }
@@ -47,7 +47,7 @@ namespace yampi
     ~version_t() noexcept = default;
 
     constexpr version_t(int const major, int const minor) noexcept
-      : major_(major), minor_(minor)
+      : major_{major}, minor_{minor}
     { }
 
     int major() const noexcept { return major_; }

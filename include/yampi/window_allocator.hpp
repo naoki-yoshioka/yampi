@@ -30,8 +30,8 @@ namespace yampi
 
    public:
     explicit window_attach_error(int const error_code)
-     : std::runtime_error("Error occurred when attaching to window"),
-       error_code_(error_code)
+     : std::runtime_error{"Error occurred when attaching to window"},
+       error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }
@@ -44,8 +44,8 @@ namespace yampi
 
    public:
     explicit window_detach_error(int const error_code)
-     : std::runtime_error("Error occurred when detaching from window"),
-       error_code_(error_code)
+     : std::runtime_error{"Error occurred when detaching from window"},
+       error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }
@@ -56,7 +56,7 @@ namespace yampi
   {
    public:
     std_malloc_error()
-     : std::runtime_error("Error occurred when allocating using std::malloc")
+     : std::runtime_error{"Error occurred when allocating using std::malloc"}
     { }
   };
 
@@ -170,7 +170,7 @@ namespace yampi
     { typedef dynamic_window_allocator<U> other; };
 
     dynamic_window_allocator()
-      : window_ptr_(nullptr)
+      : window_ptr_{nullptr}
     {
       if (not ::yampi::is_initialized())
         throw ::yampi::not_yet_initialized_error();
@@ -180,16 +180,16 @@ namespace yampi
     }
 
     explicit dynamic_window_allocator(::yampi::dynamic_window& window)
-      : window_ptr_(std::addressof(window))
+      : window_ptr_{std::addressof(window)}
     { }
 
     dynamic_window_allocator(dynamic_window_allocator const& other) noexcept
-      : window_ptr_(other.window_ptr_)
+      : window_ptr_{other.window_ptr_}
     { }
 
     template <typename U>
     dynamic_window_allocator(dynamic_window_allocator<U, uses_special_memory> const& other) noexcept
-      : window_ptr_(std::addressof(other.window()))
+      : window_ptr_{std::addressof(other.window())}
     { }
 
     bool operator==(dynamic_window_allocator const& other) const noexcept

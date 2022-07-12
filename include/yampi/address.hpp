@@ -24,7 +24,7 @@ namespace yampi
     MPI_Aint mpi_address_;
 
    public:
-    constexpr address() : mpi_address_() { }
+    constexpr address() : mpi_address_{} { }
 
     address(address const&) = default;
     address& operator=(address const&) = default;
@@ -34,7 +34,7 @@ namespace yampi
 
     explicit constexpr address(MPI_Aint const& mpi_address)
       noexcept(std::is_nothrow_copy_constructible<MPI_Aint>::value)
-      : mpi_address_(mpi_address)
+      : mpi_address_{mpi_address}
     { }
 
     constexpr bool operator==(address const& other) const
