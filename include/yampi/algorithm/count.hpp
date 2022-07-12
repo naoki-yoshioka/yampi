@@ -1,15 +1,9 @@
 #ifndef YAMPI_ALGORITHM_COUNT_HPP
 # define YAMPI_ALGORITHM_COUNT_HPP
 
-# include <boost/config.hpp>
-
 # include <iterator>
 # include <algorithm>
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <boost/optional.hpp>
 
@@ -23,12 +17,6 @@
 //# if MPI_VERSION >= 3
 //#   include <yampi/request.hpp>
 //# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
 
 
 namespace yampi
@@ -49,7 +37,7 @@ namespace yampi
       if (communicator.rank(environment) == root)
       {
         ::yampi::reduce(
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result), std::addressof(result),
           ::yampi::binary_operation(::yampi::plus_t()), root, communicator, environment);
         return boost::make_optional(result);
       }
@@ -95,7 +83,7 @@ namespace yampi
       {
         reducer.call(
           request,
-          ::yampi::make_buffer(result), YAMPI_addressof(result),
+          ::yampi::make_buffer(result), std::addressof(result),
           ::yampi::binary_operation(::yampi::plus_t()), environment);
         return boost::make_optional(result);
       }
@@ -126,8 +114,6 @@ namespace yampi
   }
 }
 
-
-# undef YAMPI_addressof
 
 #endif
 

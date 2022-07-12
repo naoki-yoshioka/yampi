@@ -1,8 +1,6 @@
 #ifndef YAMPI_ROOT_CALL_ON_NONROOT_ERROR_HPP
 # define YAMPI_ROOT_CALL_ON_NONROOT_ERROR_HPP
 
-# include <boost/config.hpp>
-
 # include <stdexcept>
 # include <string>
 

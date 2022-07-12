@@ -1,21 +1,9 @@
 #ifndef YAMPI_SEND_HPP
 # define YAMPI_SEND_HPP
 
-# include <boost/config.hpp>
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   include <utility>
-# endif
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/remove_reference.hpp>
-# endif
+# include <memory>
+# include <utility>
+# include <type_traits>
 
 # include <mpi.h>
 
@@ -26,26 +14,6 @@
 # include <yampi/tag.hpp>
 # include <yampi/error.hpp>
 # include <yampi/communication_mode.hpp>
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   define YAMPI_RVALUE_REFERENCE_OR_COPY(T) T&&
-#   define YAMPI_FORWARD_OR_COPY(T, x) std::forward<T>(x)
-# else
-#   define YAMPI_RVALUE_REFERENCE_OR_COPY(T) T
-#   define YAMPI_FORWARD_OR_COPY(T, x) x
-# endif
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_remove_reference std::remove_reference
-# else
-#   define YAMPI_remove_reference boost::remove_reference
-# endif
 
 
 namespace yampi
@@ -76,22 +44,22 @@ namespace yampi
     struct send;
 
     template <>
-    struct send< ::yampi::mode::standard_communication >
+    struct send< ::yampi::mode::standard_communication_t >
     {
       template <typename CommunicationMode, typename Value>
       static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
+        CommunicationMode&&,
         ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
         ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       { ::yampi::send(communicator, environment, buffer, destination, tag); }
     };
 
     template <>
-    struct send< ::yampi::mode::buffered_communication >
+    struct send< ::yampi::mode::buffered_communication_t >
     {
       template <typename CommunicationMode, typename Value>
       static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
+        CommunicationMode&&,
         ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
         ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
@@ -112,11 +80,11 @@ namespace yampi
     };
 
     template <>
-    struct send< ::yampi::mode::synchronous_communication >
+    struct send< ::yampi::mode::synchronous_communication_t >
     {
       template <typename CommunicationMode, typename Value>
       static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
+        CommunicationMode&&,
         ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
         ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
@@ -137,11 +105,11 @@ namespace yampi
     };
 
     template <>
-    struct send< ::yampi::mode::ready_communication >
+    struct send< ::yampi::mode::ready_communication_t >
     {
       template <typename CommunicationMode, typename Value>
       static void call(
-        YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode),
+        CommunicationMode&&,
         ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
         ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       {
@@ -165,22 +133,17 @@ namespace yampi
 
   template <typename CommunicationMode, typename Value>
   inline void send(
-    YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
+    CommunicationMode&& communication_mode,
     ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
-    typedef typename YAMPI_remove_reference<CommunicationMode>::type communication_mode_type;
+    typedef typename std::remove_reference<CommunicationMode>::type communication_mode_type;
     ::yampi::send_detail::send<communication_mode_type>::call(
-      YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+      std::forward<CommunicationMode>(communication_mode),
       buffer, destination, tag, communicator, environment);
   }
 }
 
-
-# undef YAMPI_remove_reference
-# undef YAMPI_FORWARD_OR_COPY
-# undef YAMPI_RVALUE_REFERENCE_OR_COPY
-# undef YAMPI_addressof
 
 #endif
 

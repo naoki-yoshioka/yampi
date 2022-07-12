@@ -1,26 +1,12 @@
 #ifndef YAMPI_COMPLETE_EXCHANGE_HPP
 # define YAMPI_COMPLETE_EXCHANGE_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/is_same.hpp>
-# endif
+# include <type_traits>
 # include <iterator>
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
 
 # include <yampi/buffer.hpp>
 # include <yampi/communicator.hpp>
@@ -31,22 +17,6 @@
 # endif
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_same std::is_same
-# else
-#   define YAMPI_is_same boost::is_same
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif
 
 
 namespace yampi
@@ -111,11 +81,5 @@ namespace yampi
 # endif // MPI_VERSION >= 3
 }
 
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_addressof
-# undef YAMPI_is_same
 
 #endif

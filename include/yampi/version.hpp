@@ -1,8 +1,6 @@
 #ifndef YAMPI_VERSION_HPP
 # define YAMPI_VERSION_HPP
 
-# include <boost/config.hpp>
-
 # if __cplusplus >= 201703L
 #   include <type_traits>
 # else
@@ -41,25 +39,21 @@ namespace yampi
     int minor_;
 
    public:
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    BOOST_CONSTEXPR version_t() BOOST_NOEXCEPT_OR_NOTHROW = default;
+    constexpr version_t() noexcept = default;
     version_t(version_t const&) = default;
     version_t& operator=(version_t const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     version_t(version_t&&) = default;
     version_t& operator=(version_t&&) = default;
-#   endif
-    ~version_t() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    ~version_t() noexcept = default;
 
-    BOOST_CONSTEXPR version_t(int const major, int const minor) BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr version_t(int const major, int const minor) noexcept
       : major_(major), minor_(minor)
     { }
 
-    int major() const BOOST_NOEXCEPT_OR_NOTHROW { return major_; }
-    int minor() const BOOST_NOEXCEPT_OR_NOTHROW { return minor_; }
+    int major() const noexcept { return major_; }
+    int minor() const noexcept { return minor_; }
 
-    void swap(version_t& other) BOOST_NOEXCEPT_OR_NOTHROW
+    void swap(version_t& other) noexcept
     {
       using std::swap;
       swap(major_, other.major_);
@@ -67,35 +61,28 @@ namespace yampi
     }
   };
 
-  inline bool operator==(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator==(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   { return lhs.major() == rhs.major() and lhs.minor() == rhs.minor(); }
 
-  inline bool operator!=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator!=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   { return not (lhs == rhs); }
 
-  inline bool operator<(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator<(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   {
     return lhs.major() < rhs.major()
       or (lhs.major() == rhs.major() and lhs.minor() < rhs.minor());
   }
 
-  inline bool operator>=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator<=(::yampi::version_t const& lhs, ::yampi::version_t const& rhs) noexcept
   { return not (rhs < lhs); }
 
-  inline void swap(::yampi::version_t& lhs, ::yampi::version_t& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::version_t& lhs, ::yampi::version_t& rhs) noexcept
   { lhs.swap(rhs); }
 
 

@@ -1,58 +1,20 @@
 #ifndef YAMPI_BITSET_HPP
 # define YAMPI_BITSET_HPP
 
-# include <boost/config.hpp>
-
 # include <cstddef>
 # include <string>
-# ifndef BOOST_NO_CXX11_HDR_ARRAY
-#   include <array>
-# else // BOOST_NO_CXX11_HDR_ARRAY
-#   include <boost/array.hpp>
-# endif // BOOST_NO_CXX11_HDR_ARRAY
+# include <array>
+# include <iterator>
 # include <algorithm>
+# include <functional>
 # include <limits>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else // BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <boost/type_traits/is_integral.hpp>
-#   include <boost/type_traits/is_unsigned.hpp>
-# endif // BOOST_NO_CXX11_HDR_TYPE_TRAITS
+# include <type_traits>
 # include <stdexcept>
 # include <memory>
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
-# include <boost/algorithm/cxx11/all_of.hpp>
-# include <boost/utility.hpp>
 
 # include <yampi/datatype.hpp>
 # include <yampi/predefined_datatype.hpp>
 # include <yampi/environment.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if std::enable_if
-#   define YAMPI_is_integral std::is_integral
-#   define YAMPI_is_unsigned std::is_unsigned
-# else // BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if boost::enable_if_c
-#   define YAMPI_is_integral boost::is_integral
-#   define YAMPI_is_unsigned boost::is_unsigned
-# endif // BOOST_NO_CXX11_HDR_TYPE_TRAITS
-
-# ifndef BOOST_NO_CXX11_HDR_ARRAY
-#   define YAMPI_array std::array
-# else // BOOST_NO_CXX11_HDR_ARRAY
-#   define YAMPI_array boost::array
-# endif // BOOST_NO_CXX11_HDR_ARRAY
-
-# define YAMPI_next boost::next
-# define YAMPI_prev boost::prior
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif //BOOST_NO_CXX11_STATIC_ASSERT
 
 
 namespace yampi
@@ -60,39 +22,39 @@ namespace yampi
   template <std::size_t N, typename DataElement = unsigned long>
   class bitset
   {
-    static_assert(YAMPI_is_integral<DataElement>::value and YAMPI_is_unsigned<DataElement>::value, "DataElement should be an unsigned integral type");
+    static_assert(std::is_integral<DataElement>::value and std::is_unsigned<DataElement>::value, "DataElement should be an unsigned integral type");
 
-    BOOST_STATIC_CONSTEXPR std::size_t num_data_elements_
+    constexpr std::size_t num_data_elements_
       = N / std::numeric_limits<DataElement>::digits
         + (N % std::numeric_limits<DataElement>::digits == 0u ? 0u : 1u);
 
-    YAMPI_array<DataElement, num_data_elements_> data_;
+    std::array<DataElement, num_data_elements_> data_;
 
-    static BOOST_CONSTEXPR std::size_t data_element_index(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    static constexpr std::size_t data_element_index(std::size_t const position) noexcept
     { return position / std::numeric_limits<DataElement>::digits; }
 
-    static BOOST_CONSTEXPR std::size_t bit_position(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    static constexpr std::size_t bit_position(std::size_t const position) noexcept
     { return position % std::numeric_limits<DataElement>::digits; }
 
-    static BOOST_CONSTEXPR std::size_t single_bit_mask(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    static constexpr std::size_t single_bit_mask(std::size_t const position) noexcept
     { return static_cast<DataElement>(1u) << bitset::bit_position(position); }
 
-    DataElement& data_element(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    DataElement& data_element(std::size_t const position) noexcept
     { return data_[bitset::data_element_index(position)]; }
 
-    BOOST_CONSTEXPR DataElement data_element(std::size_t const position) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr DataElement data_element(std::size_t const position) const noexcept
     { return data_[bitset::data_element_index(position)]; }
 
-    BOOST_CONSTEXPR bool unsafe_test(std::size_t const position) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr bool unsafe_test(std::size_t const position) const noexcept
     { return (data_element(position) bitand bitset::single_bit_mask(position)) != static_cast<DataElement>(0u); }
 
-    void unsafe_set(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    void unsafe_set(std::size_t const position) noexcept
     { data_element(position) |= bitset::single_bit_mask(position); }
 
-    void unsafe_reset(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    void unsafe_reset(std::size_t const position) noexcept
     { data_element(position) &= compl bitset::single_bit_mask(position); }
 
-    void unsafe_flip(std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+    void unsafe_flip(std::size_t const position) noexcept
     { data_element(position) ^= bitset::single_bit_mask(position); }
 
    public:
@@ -113,14 +75,14 @@ namespace yampi
       reference();
 
      public:
-      reference(bitset& bits, std::size_t const position) BOOST_NOEXCEPT_OR_NOTHROW
+      reference(bitset& bits, std::size_t const position) noexcept
         : data_element_ptr_(YAMPI_addressof(bits.data_element(position))), bit_position_(bitset::bit_position(position))
       { }
 
-      ~reference() BOOST_NOEXCEPT_OR_NOTHROW { }
+      ~reference() noexcept { }
 
       // b[i] = x;
-      reference& operator=(bool const boolean) BOOST_NOEXCEPT_OR_NOTHROW
+      reference& operator=(bool const boolean) noexcept
       {
         if (boolean)
           *data_element_ptr_ |= bitset::single_bit_mask(bit_position_);
@@ -130,7 +92,7 @@ namespace yampi
       }
 
       // b[i] = b[j];
-      reference& operator=(reference const& other) BOOST_NOEXCEPT_OR_NOTHROW
+      reference& operator=(reference const& other) noexcept
       {
         if (((*(other.data_element_ptr_)) bitand bitset::single_bit_mask(other.bit_position_))
             != static_cast<DataElement>(0u))
@@ -141,35 +103,27 @@ namespace yampi
       }
 
       // return the inverse of the referenced bit
-      bool operator~() const BOOST_NOEXCEPT_OR_NOTHROW
+      bool operator~() const noexcept
       { return (*data_element_ptr_ bitand bitset::single_bit_mask(bit_position_)) == static_cast<DataElement>(0u); }
 
       // return the referenced bit
-      operator bool() const BOOST_NOEXCEPT_OR_NOTHROW
+      operator bool() const noexcept
       { return (*data_element_ptr_ bitand bitset::single_bit_mask(bit_position_)) != static_cast<DataElement>(0u); }
 
       // b[i].flip()
-      reference& flip() BOOST_NOEXCEPT_OR_NOTHROW
+      reference& flip() noexcept
       { *data_element_ptr_ ^= bitset::single_bit_mask(bit_position_); return *this; }
     };
     friend class reference;
 
-    BOOST_CONSTEXPR bitset() BOOST_NOEXCEPT_OR_NOTHROW : data_() { }
+    constexpr bitset() noexcept : data_() { }
 
-# ifndef BOOST_NO_LONG_LONG
-    bitset(unsigned long long const value) BOOST_NOEXCEPT_OR_NOTHROW
-      : data_()
-    { from_ullong(value); }
-# else
-    bitset(unsigned long const value) BOOST_NOEXCEPT_OR_NOTHROW
-      : data_()
-    { from_ulong(value); }
-# endif
+    bitset(unsigned long long const value) noexcept : data_() { from_ullong(value); }
 
     template <
       typename UnsignedInteger,
-      typename = YAMPI_enable_if<YAMPI_is_integral<UnsignedInteger>::value and YAMPI_is_unsigned<UnsignedInteger>::value> >
-    bitset(UnsignedInteger const value) BOOST_NOEXCEPT_OR_NOTHROW
+      typename = std::enable_if<std::is_integral<UnsignedInteger>::value and std::is_unsigned<UnsignedInteger>::value> >
+    bitset(UnsignedInteger const value) noexcept
       : data_()
     { from_unsigned_integer(value); }
 
@@ -189,10 +143,10 @@ namespace yampi
       Character const zero = Character('0'), Character const one = Character('1'))
     { from_characters(string, length, zero, one); }
 
-    bool operator==(bitset const& other) const BOOST_NOEXCEPT_OR_NOTHROW
-    { return std::equal(data_.begin(), data_.end(), other.data_); }
+    bool operator==(bitset const& other) const noexcept
+    { return std::equal(std::begin(data_), std::end(data_), other.data_); }
 
-    BOOST_CONSTEXPR bool operator[](std::size_t const position) const
+    constexpr bool operator[](std::size_t const position) const
     { assert(position < N); return unsafe_test(position); }
 
     reference operator[](std::size_t const position)
@@ -206,29 +160,29 @@ namespace yampi
       return unsafe_test(position);
     }
 
-    bool all() const BOOST_NOEXCEPT_OR_NOTHROW
+    bool all() const noexcept
     {
       std::size_t const offset = N % std::numeric_limits<DataElement>::digits;
       if (offset == static_cast<std::size_t>(0u))
-        return boost::algorithm::all_of_equal(data_.begin(), data_.end(), std::numeric_limits<DataElement>::max());
+        return std::all_of(std::begin(data_), std::end(data_), [](DataElement const& value) { return value == std::numeric_limits<DataElement>::max(); });
 
-      return boost::algorithm::all_of_equal(data_.begin(), YAMPI_prev(data_.end()), std::numeric_limits<DataElement>::max())
+      return std::all_of(std::begin(data_), std::prev(std::end(data_)), [](DataElement const& value) { return value == std::numeric_limits<DataElement>::max(); })
         and (data_.back() == ((static_cast<DataElement>(1u) << offset) - static_cast<DataElement>(1u)));
     }
 
-    bool any() const BOOST_NOEXCEPT_OR_NOTHROW
-    { return not boost::algorithm::all_of_equal(data_.begin(), data_.end(), std::numeric_limits<DataElement>::min()); }
+    bool any() const noexcept
+    { return not std::all_of(std::begin(data_), std::end(data_), [](DataElement const& value) { return value == std::numeric_limits<DataElement>::min(); }); }
 
-    bool none() const BOOST_NOEXCEPT_OR_NOTHROW
-    { return boost::algorithm::all_of_equal(data_.begin(), data_.end(), std::numeric_limits<DataElement>::min()); }
+    bool none() const noexcept
+    { return std::all_of(std::begin(data_), std::end(data_), [](DataElement const& value) { return value == std::numeric_limits<DataElement>::min(); }); }
 
-    std::size_t count() const BOOST_NOEXCEPT_OR_NOTHROW
+    std::size_t count() const noexcept
     {
       std::size_t const offset = N % std::numeric_limits<DataElement>::digits;
       if (offset == static_cast<std::size_t>(0u))
-        return partial_count(data_.begin(), data_.end());
+        return partial_count(std::begin(data_), std::end(data_));
 
-      std::size_t result = partial_count(data_.begin(), YAMPI_prev(data_.end()));
+      std::size_t result = partial_count(std::begin(data_), std::prev(std::end(data_)));
 
       DataElement mask = static_cast<DataElement>(1u);
       for (int bit = 0; bit < offset; ++bit)
@@ -243,9 +197,8 @@ namespace yampi
 
    private:
     template <typename Iterator>
-    std::size_t partial_count(Iterator const first, Iterator const last) const BOOST_NOEXCEPT_OR_NOTHROW
+    std::size_t partial_count(Iterator const first, Iterator const last) const noexcept
     {
-# ifndef BOOST_NO_CXX11_LAMBDAS
       return std::accumulate(
         first, last, static_cast<std::size_t>(0u),
         [](std::size_t partial_sum, DataElement const& data_element)
@@ -260,45 +213,24 @@ namespace yampi
 
           return partial_sum;
         });
-# else // BOOST_NO_CXX11_LAMBDAS
-      return std::accumulate(first, last, static_cast<std::size_t>(0u), do_partial_sum());
-# endif // BOOST_NO_CXX11_LAMBDAS
     }
 
-# ifdef BOOST_NO_CXX11_LAMBDAS
-    struct do_partial_sum
-    {
-      std::size_t operator()(std::size_t partial_sum, DataElement const& data_element) const
-      {
-        DataElement mask = static_cast<DataElement>(1u);
-        for (int bit = 0; bit < std::numeric_limits<DataElement>::digits; ++bit)
-        {
-          if ((data_element bitand mask) != std::numeric_limits<DataElement>::min())
-            ++partial_sum;
-          mask <<= 1u;
-        }
-
-        return partial_sum;
-      }
-    };
-# endif // BOOST_NO_CXX11_LAMBDAS
-
    public:
-    BOOST_CONSTEXPR std::size_t size() const BOOST_NOEXCEPT_OR_NOTHROW { return N; }
+    constexpr std::size_t size() const noexcept { return N; }
 
-    bitset& operator&=(bitset const& other) BOOST_NOEXCEPT_OR_NOTHROW
-    { std::transform(data_.begin(), data_.end(), other.data_.begin(), data_.begin(), std::bit_and<DataElement>()); return *this; }
+    bitset& operator&=(bitset const& other) noexcept
+    { std::transform(std::begin(data_), std::end(data_), std::begin(other.data_), std::begin(data_), std::bit_and<DataElement>()); return *this; }
 
-    bitset& operator|=(bitset const& other) BOOST_NOEXCEPT_OR_NOTHROW
-    { std::transform(data_.begin(), data_.end(), other.data_.begin(), data_.begin(), std::bit_or<DataElement>()); return *this; }
+    bitset& operator|=(bitset const& other) noexcept
+    { std::transform(std::begin(data_), std::end(data_), std::begin(other.data_), std::begin(data_), std::bit_or<DataElement>()); return *this; }
 
-    bitset& operator^=(bitset const& other) BOOST_NOEXCEPT_OR_NOTHROW
-    { std::transform(data_.begin(), data_.end(), other.data_.begin(), data_.begin(), std::bit_xor<DataElement>()); return *this; }
+    bitset& operator^=(bitset const& other) noexcept
+    { std::transform(std::begin(data_), std::end(data_), std::begin(other.data_), std::begin(data_), std::bit_xor<DataElement>()); return *this; }
 
-    bitset operator~() BOOST_NOEXCEPT_OR_NOTHROW
+    bitset operator~() noexcept
     { bitset result = *this; result.flip(); return result; }
 
-    bitset& operator<<=(std::size_t const shift) BOOST_NOEXCEPT_OR_NOTHROW
+    bitset& operator<<=(std::size_t const shift) noexcept
     {
       if (shift == static_cast<std::size_t>(0u))
         return *this;
@@ -311,43 +243,20 @@ namespace yampi
       else
       {
         std::size_t const sub_offset = std::numeric_limits<DataElement>::digits - offset;
-# ifndef BOOST_NO_CXX11_LAMBDAS
         std::transform(
           data_.rbegin() + data_element_shift + 1u, data_.rend(),
           data_.rbegin() + data_element_shift,
           data_.rbegin(),
           [offset, sub_offset](DataElement const& lhs, DataElement const& rhs)
           { return (lhs >> sub_offset) bitor (rhs << offset); });
-# else // BOOST_NO_CXX11_LAMBDAS
-        std::transform(
-          data_.rbegin() + data_element_shift + 1u, data_.rend(),
-          data_.rbegin() + data_element_shift,
-          data_.rbegin(),
-          do_left_shift(offset, sub_offset));
-# endif // BOOST_NO_CXX11_LAMBDAS
         data_[data_element_shift] = data_.front() << offset;
       }
 
-      std::fill(data_.begin(), data_.begin() + data_element_shift, static_cast<DataElement>(0u));
+      std::fill(std::begin(data_), std::begin(data_) + data_element_shift, static_cast<DataElement>(0u));
       return *this;
     }
 
-# ifdef BOOST_NO_CXX11_LAMBDAS
-    struct do_left_shift
-    {
-      std::size_t offset_;
-      std::size_t sub_offset_;
-
-      do_left_shift(std::size_t offset, std::size_t sub_offset)
-        : offset_(offset), sub_offset_(sub_offset)
-      { }
-
-      DataElement operator()(DataElement const& lhs, DataElement const& rhs) const
-      { return (lhs >> sub_offset_) bitor (rhs << offset_); }
-    };
-# endif // BOOST_NO_CXX11_LAMBDAS
-
-    bitset& operator>>=(std::size_t const shift) BOOST_NOEXCEPT_OR_NOTHROW
+    bitset& operator>>=(std::size_t const shift) noexcept
     {
       if (shift == static_cast<std::size_t>(0u))
         return *this;
@@ -356,24 +265,16 @@ namespace yampi
       std::size_t const offset = shift % std::numeric_limits<DataElement>::digits;
 
       if (offset == static_cast<std::size_t>(0u))
-        std::copy(data_.begin() + data_element_shift, data_.end(), data_.begin());
+        std::copy(std::begin(data_) + data_element_shift, std::end(data_), std::begin(data_));
       else
       {
         std::size_t const sub_offset = std::numeric_limits<DataElement>::digits - offset;
-# ifndef BOOST_NO_CXX11_LAMBDAS
         std::transform(
-          data_.begin() + data_element_shift + 1u, data_.end(),
-          data_.begin() + data_element_shift,
-          data_.begin(),
+          std::begin(data_) + data_element_shift + 1u, std::end(data_),
+          std::begin(data_) + data_element_shift,
+          std::begin(data_),
           [offset, sub_offset](DataElement const& lhs, DataElement const& rhs)
           { return (lhs << sub_offset) bitor (rhs >> offset); });
-# else // BOOST_NO_CXX11_LAMBDAS
-        std::transform(
-          data_.begin() + data_element_shift + 1u, data_.end(),
-          data_.begin() + data_element_shift,
-          data_.begin(),
-          do_right_shift(offset, sub_offset));
-# endif // BOOST_NO_CXX11_LAMBDAS
         data_[num_data_elements_ - 1u - data_element_shift] = data_.back() >> offset;
       }
 
@@ -381,31 +282,16 @@ namespace yampi
       return *this;
     }
 
-# ifdef BOOST_NO_CXX11_LAMBDAS
-    struct do_right_shift
-    {
-      std::size_t offset_;
-      std::size_t sub_offset_;
-
-      do_right_shift(std::size_t offset, std::size_t sub_offset)
-        : offset_(offset), sub_offset_(sub_offset)
-      { }
-
-      DataElement operator()(DataElement const& lhs, DataElement const& rhs) const
-      { return (lhs << sub_offset_) bitor (rhs >> offset_); }
-    };
-# endif // BOOST_NO_CXX11_LAMBDAS
-
-    bitset& set() BOOST_NOEXCEPT_OR_NOTHROW
+    bitset& set() noexcept
     {
       std::size_t const offset = N % std::numeric_limits<DataElement>::digits;
       if (offset == static_cast<std::size_t>(0u))
       {
-        std::fill(data_.begin(), data_.end(), std::numeric_limits<DataElement>::max());
+        std::fill(std::begin(data_), std::end(data_), std::numeric_limits<DataElement>::max());
         return *this;
       }
 
-      std::fill(data_.begin(), YAMPI_prev(data_.end()), std::numeric_limits<DataElement>::max());
+      std::fill(std::begin(data_), std::prev(std::end(data_)), std::numeric_limits<DataElement>::max());
       data_.back() = (static_cast<DataElement>(1u) << offset) - static_cast<DataElement>(1u);
       return *this;
     }
@@ -423,9 +309,9 @@ namespace yampi
       return *this;
     }
 
-    bitset& reset() BOOST_NOEXCEPT_OR_NOTHROW
+    bitset& reset() noexcept
     {
-      std::fill(data_.begin(), data_.end(), std::numeric_limits<DataElement>::min());
+      std::fill(std::begin(data_), std::end(data_), std::numeric_limits<DataElement>::min());
       return *this;
     }
 
@@ -438,16 +324,12 @@ namespace yampi
       return *this;
     }
 
-    bitset& flip() BOOST_NOEXCEPT_OR_NOTHROW
+    bitset& flip() noexcept
     {
       // This is implemented by using std::bit_not in C++14
-# ifndef BOOST_NO_CXX11_LAMBDAS
       std::transform(
-        data_.begin(), data_.end(), data_.begin(),
+        std::begin(data_), std::end(data_), std::begin(data_),
         [](DataElement const& data_element) { return compl data_element; });
-# else // BOOST_NO_CXX11_LAMBDAS
-      std::transform(data_.begin(), data_.end(), data_.begin(), do_flip());
-# endif // BOOST_NO_CXX11_LAMBDAS
 
       std::size_t const offset = N % std::numeric_limits<DataElement>::digits;
       if (offset != static_cast<std::size_t>(0u))
@@ -455,14 +337,6 @@ namespace yampi
 
       return *this;
     }
-
-# ifdef BOOST_NO_CXX11_LAMBDAS
-    struct do_flip
-    {
-      DataElement operator()(DataElement const& data_element) const
-      { return compl data_element; }
-    };
-# endif // BOOST_NO_CXX11_LAMBDAS
 
     bitset& flip(std::size_t const position)
     {
@@ -473,7 +347,6 @@ namespace yampi
       return *this;
     }
 
-    /* // For C++11
     template <
       typename Character = char, typename CharacterTraits = std::char_traits<Character>,
       typename Allocator = std::allocator<Character> >
@@ -485,7 +358,6 @@ namespace yampi
         if (unsafe_test(position_plus_one - static_cast<std::size_t>(1u)))
           CharacterTraits::assign(result[N - position_plus_one], one);
     }
-    */
 
     template <typename Character, typename CharacterTraits, typename Allocator>
     std::basic_string<Character, CharacterTraits, Allocator> to_string(
@@ -514,13 +386,11 @@ namespace yampi
     { return to_string<char, std::char_traits<char>, std::allocator<char> >(zero, one); }
 
     unsigned long to_ulong() const { return to_unsigned_integer<unsigned long>(); }
-# ifndef BOOST_NO_LONG_LONG
     unsigned long to_ullong() const { return to_unsigned_integer<unsigned long long>(); }
-# endif
 
     template <typename UnsignedInteger>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<UnsignedInteger>::value and YAMPI_is_unsigned<UnsignedInteger>::value,
+    typename std::enable_if<
+      std::is_integral<UnsignedInteger>::value and std::is_unsigned<UnsignedInteger>::value,
       UnsignedInteger>::type
     to_unsigned_integer() const
     { return do_to_unsigned_integer<UnsignedInteger>::call(); }
@@ -555,10 +425,10 @@ namespace yampi
       static UnsignedInteger call()
       {
         // num_data_elements_ >= 1u
-        if (boost::algorithm::any_of_equal(YAMPI_next(data_.begin()), data_.end(), static_cast<DataElement>(0u)))
+        if (std::any_of(std::next(std::begin(data_)), std::end(data_), [](DataElement const& value) { return value == static_cast<DataElement>(0u); }))
           throw std::overflow_error("bitset<N>::do_to_unsigned_integer<UnsignedInteger, -1>::call");
 
-        BOOST_CONSTEXPR_OR_CONST DataElement mask
+        constexpr DataElement mask
           = compl static_cast<DataElement>(std::numeric_limits<UnsignedInteger>::max());
         if ((data_.front() bitand mask) != static_cast<DataElement>(0u))
           throw std::overflow_error("bitset<N>::do_to_unsigned_integer<UnsignedInteger, -1>::call");
@@ -574,7 +444,7 @@ namespace yampi
       static UnsignedInteger call()
       {
         // num_data_elements_ >= 1u
-        if (boost::algorithm::any_of_equal(YAMPI_next(data_.begin()), data_.end(), static_cast<DataElement>(0u)))
+        if (std::any_of(std::next(std::begin(data_)), std::end(data_), [](DataElement const& value) { return value == static_cast<DataElement>(0u); }))
           throw std::overflow_error("bitset<N>::do_to_unsigned_integer<UnsignedInteger, 0>::call");
 
         return static_cast<UnsignedInteger>(data_.front());
@@ -613,16 +483,16 @@ namespace yampi
     {
       static UnsignedInteger call()
       {
-        BOOST_CONSTEXPR_OR_CONST std::size_t num_residual_bits
+        constexpr std::size_t num_residual_bits
           = num_residual_bytes * std::numeric_limits<unsigned char>::digits;
 
-        if (boost::algorithm::any_of_equal(
-              data_.begin() + num_full_data_elements + 1u, data_.end(), 
-              static_cast<DataElement>(0u)))
+        if (std::any_of(
+              std::begin(data_) + num_full_data_elements + 1u, std::end(data_), 
+              [](DataElement const& value) { return value == static_cast<DataElement>(0u); }))
           throw std::overflow_error(
             "bitset<N>::do_to_unsigned_integer2_1<UnsignedInteger, num_full_data_elements, num_residual_bytes, +1>::call");
 
-        BOOST_CONSTEXPR_OR_CONST DataElement mask
+        constexpr DataElement mask
           = compl ((static_cast<DataElement>(1u) << num_residual_bits)
                    - static_cast<DataElement>(1u));
         if ((data_[num_full_data_elements] bitand mask) != static_cast<DataElement>(0u))
@@ -641,10 +511,10 @@ namespace yampi
     {
       static UnsignedInteger call()
       {
-        BOOST_CONSTEXPR_OR_CONST std::size_t num_residual_bits
+        constexpr std::size_t num_residual_bits
           = num_residual_bytes * std::numeric_limits<unsigned char>::digits;
 
-        BOOST_CONSTEXPR_OR_CONST DataElement mask
+        constexpr DataElement mask
           = compl ((static_cast<DataElement>(1u) << num_residual_bits)
                    - static_cast<DataElement>(1u));
         if ((data_[num_full_data_elements] bitand mask) != static_cast<DataElement>(0u))
@@ -680,9 +550,9 @@ namespace yampi
     {
       static UnsignedInteger call()
       {
-        if (boost::algorithm::any_of_equal(
-              data_.begin() + num_full_data_elements, data_.end(),
-              static_cast<DataElement>(0u)))
+        if (std::any_of(
+              std::begin(data_) + num_full_data_elements, std::end(data_),
+              [](DataElement const& value) { return value == static_cast<DataElement>(0u); }))
           throw std::overflow_error(
             "bitset<N>::do_to_unsigned_integer2_2<UnsignedInteger, num_full_data_elements, checks_overflow>::call");
 
@@ -777,16 +647,14 @@ namespace yampi
       }
     }
 
-    void from_ulong(unsigned long const value) BOOST_NOEXCEPT_OR_NOTHROW { from_unsigned_integer(value); }
-# ifndef BOOST_NO_LONG_LONG
-    void from_ullong(unsigned long long const value) BOOST_NOEXCEPT_OR_NOTHROW { from_unsigned_integer(value); }
-# endif
+    void from_ulong(unsigned long const value) noexcept { from_unsigned_integer(value); }
+    void from_ullong(unsigned long long const value) noexcept { from_unsigned_integer(value); }
 
     template <typename UnsignedInteger>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<UnsignedInteger>::value and YAMPI_is_unsigned<UnsignedInteger>::value,
+    typename std::enable_if<
+      std::is_integral<UnsignedInteger>::value and std::is_unsigned<UnsignedInteger>::value,
       void>::type
-    from_unsigned_integer(UnsignedInteger const value) BOOST_NOEXCEPT_OR_NOTHROW
+    from_unsigned_integer(UnsignedInteger const value) noexcept
     { do_from_unsigned_integer<UnsignedInteger>::call(value); }
 
    private:
@@ -823,40 +691,30 @@ namespace yampi
   };
 
   template <std::size_t N, typename DataElement>
-  inline bool operator!=(::yampi::bitset<N, DataElement> const& lhs, ::yampi::bitset<N, DataElement> const& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator!=(::yampi::bitset<N, DataElement> const& lhs, ::yampi::bitset<N, DataElement> const& rhs) noexcept
   { return not (lhs == rhs); }
 
   template <std::size_t N, typename DataElement>
-  inline ::yampi::bitset<N, DataElement> operator<<(::yampi::bitset<N, DataElement> bits, std::size_t const shift) BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::bitset<N, DataElement> operator<<(::yampi::bitset<N, DataElement> bits, std::size_t const shift) noexcept
   { return bits <<= shift; }
 
   template <std::size_t N, typename DataElement>
-  inline ::yampi::bitset<N, DataElement> operator>>(::yampi::bitset<N, DataElement> bits, std::size_t const shift) BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::bitset<N, DataElement> operator>>(::yampi::bitset<N, DataElement> bits, std::size_t const shift) noexcept
   { return bits >>= shift; }
 
   template <std::size_t N, typename DataElement>
-  inline ::yampi::bitset<N, DataElement> operator&(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::bitset<N, DataElement> operator&(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) noexcept
   { return lhs &= rhs; }
 
   template <std::size_t N, typename DataElement>
-  inline ::yampi::bitset<N, DataElement> operator|(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::bitset<N, DataElement> operator|(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) noexcept
   { return lhs |= rhs; }
 
   template <std::size_t N, typename DataElement>
-  inline ::yampi::bitset<N, DataElement> operator^(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::bitset<N, DataElement> operator^(::yampi::bitset<N, DataElement> lhs, ::yampi::bitset<N, DataElement> const& rhs) noexcept
   { return lhs ^= rhs; }
 }
 
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_prev
-# undef YAMPI_next
-# undef YAMPI_array
-# undef YAMPI_is_unsigned
-# undef YAMPI_is_integral
-# undef YAMPI_enable_if
 
 #endif
 

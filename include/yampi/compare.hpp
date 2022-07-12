@@ -1,8 +1,6 @@
 #ifndef YAMPI_COMPARE_HPP
 # define YAMPI_COMPARE_HPP
 
-# include <boost/config.hpp>
-
 # include <mpi.h>
 
 # include <yampi/communicator_base.hpp>
@@ -13,7 +11,6 @@
 
 namespace yampi
 {
-# ifndef BOOST_NO_CXX11_SCOPED_ENUMS
   enum class communicators_are
     : int
   {
@@ -28,56 +25,28 @@ namespace yampi
     similar = MPI_SIMILAR, unequal = MPI_UNEQUAL
   };
 
-#   define YAMPI_COMMUNICATORS_ARE ::yampi::communicators_are
-#   define YAMPI_GROUPS_ARE ::yampi::groups_are
-# else // BOOST_NO_CXX11_SCOPED_ENUMS
-  namespace communicators_are
-  {
-    enum communicators_are_
-    {
-      identical = MPI_IDENT, congruent = MPI_CONGRUENT,
-      similar = MPI_SIMILAR, unequal = MPI_UNEQUAL
-    };
-  }
 
-  namespace groups_are
-  {
-    enum groups_are_
-    {
-      identical = MPI_IDENT,
-      similar = MPI_SIMILAR, unequal = MPI_UNEQUAL
-    };
-  }
-
-#   define YAMPI_COMMUNICATORS_ARE ::yampi::communicators_are::communicators_are_
-#   define YAMPI_GROUPS_ARE ::yampi::groups_are::groups_are_
-# endif // BOOST_NO_CXX11_SCOPED_ENUMS
-
-
-  inline YAMPI_COMMUNICATORS_ARE compare(
+  inline ::yampi::communicators_are compare(
     ::yampi::communicator_base const& lhs, ::yampi::communicator_base const& rhs,
     ::yampi::environment const& environment)
   {
     int result;
     int const error_code = MPI_Comm_compare(lhs.mpi_comm(), rhs.mpi_comm(), &result);
     return error_code == MPI_SUCCESS
-      ? static_cast<YAMPI_COMMUNICATORS_ARE>(result)
+      ? static_cast< ::yampi::communicators_are >(result)
       : throw ::yampi::error(error_code, "yampi::compare", environment);
   }
 
-  inline YAMPI_GROUPS_ARE compare(
+  inline ::yampi::groups_are compare(
     ::yampi::group const& lhs, ::yampi::group const& rhs,
     ::yampi::environment const& environment)
   {
     int result;
     int const error_code = MPI_Group_compare(lhs.mpi_group(), rhs.mpi_group(), &result);
     return error_code == MPI_SUCCESS
-      ? static_cast<YAMPI_GROUPS_ARE>(result)
+      ? static_cast< ::yampi::groups_are >(result)
       : throw ::yampi::error(error_code, "yampi::compare", environment);
   }
-
-# undef YAMPI_COMMUNICATORS_ARE
-# undef YAMPI_GROUPS_ARE
 
 
   inline bool is_identical(

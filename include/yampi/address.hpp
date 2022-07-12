@@ -1,27 +1,14 @@
 #ifndef YAMPI_ADDRESS_HPP
 # define YAMPI_ADDRESS_HPP
 
-# include <boost/config.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/type_traits/has_nothrow_copy.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 
 # include <yampi/byte_displacement.hpp>
 
 # include <mpi.h>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-# else
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-# endif
 
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
@@ -37,33 +24,29 @@ namespace yampi
     MPI_Aint mpi_address_;
 
    public:
-    BOOST_CONSTEXPR address() : mpi_address_() { }
+    constexpr address() : mpi_address_() { }
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     address(address const&) = default;
     address& operator=(address const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     address(address&&) = default;
     address& operator=(address&&) = default;
-#   endif
-    ~address() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    ~address() noexcept = default;
 
-    BOOST_CONSTEXPR explicit address(MPI_Aint const& mpi_address)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Aint>::value)
+    explicit constexpr address(MPI_Aint const& mpi_address)
+      noexcept(std::is_nothrow_copy_constructible<MPI_Aint>::value)
       : mpi_address_(mpi_address)
     { }
 
-    BOOST_CONSTEXPR bool operator==(address const& other) const
-      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ == other.mpi_address_))*/
+    constexpr bool operator==(address const& other) const
+      noexcept(noexcept(mpi_address_ == other.mpi_address_))
     { return mpi_address_ == other.mpi_address_; }
 
-    BOOST_CONSTEXPR bool operator<(address const& other) const
-      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_address_ < other.mpi_address_))*/
+    constexpr bool operator<(address const& other) const
+      noexcept(noexcept(mpi_address_ < other.mpi_address_))
     { return mpi_address_ < other.mpi_address_; }
 
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    address& operator++() BOOST_NOEXCEPT_OR_NOTHROW
+    address& operator++() noexcept
     {
       mpi_address_ = MPI_Aint_add(mpi_address_, static_cast<MPI_Aint>(1));
       return *this;
@@ -77,7 +60,7 @@ namespace yampi
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
 
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    address& operator--() BOOST_NOEXCEPT_OR_NOTHROW
+    address& operator--() noexcept
     {
       mpi_address_ = MPI_Aint_diff(mpi_address_, static_cast<MPI_Aint>(1));
       return *this;
@@ -91,7 +74,7 @@ namespace yampi
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
 
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    address& operator+=(::yampi::byte_displacement const& displacement) BOOST_NOEXCEPT_OR_NOTHROW
+    address& operator+=(::yampi::byte_displacement const& displacement) noexcept
     {
       mpi_address_ = MPI_Aint_add(mpi_address_, displacement.mpi_byte_displacement());
       return *this;
@@ -105,7 +88,7 @@ namespace yampi
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
 
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    address& operator-=(::yampi::byte_displacement const& displacement) BOOST_NOEXCEPT_OR_NOTHROW
+    address& operator-=(::yampi::byte_displacement const& displacement) noexcept
     {
       mpi_address_ = MPI_Aint_diff(mpi_address_, displacement.mpi_byte_displacement());
       return *this;
@@ -118,75 +101,68 @@ namespace yampi
     }
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
 
-    BOOST_CONSTEXPR MPI_Aint const& mpi_address() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_address_; }
+    constexpr MPI_Aint const& mpi_address() const noexcept { return mpi_address_; }
 
-    void swap(address& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Aint>::value)
+    void swap(address& other) noexcept(YAMPI_is_nothrow_swappable<MPI_Aint>::value)
     {
       using std::swap;
       swap(mpi_address_, other.mpi_address_);
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::address const& lhs, ::yampi::address const& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
+  inline constexpr bool operator!=(::yampi::address const& lhs, ::yampi::address const& rhs) noexcept(noexcept(lhs == rhs))
   { return not (lhs == rhs); }
 
-  inline BOOST_CONSTEXPR bool operator>=(::yampi::address const& lhs, ::yampi::address const& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
+  inline constexpr bool operator>=(::yampi::address const& lhs, ::yampi::address const& rhs) noexcept(noexcept(lhs < rhs))
   { return not (lhs < rhs); }
 
-  inline BOOST_CONSTEXPR bool operator>(::yampi::address const& lhs, ::yampi::address const& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
+  inline constexpr bool operator>(::yampi::address const& lhs, ::yampi::address const& rhs) noexcept(noexcept(lhs < rhs))
   { return rhs < lhs; }
 
-  inline BOOST_CONSTEXPR bool operator<=(::yampi::address const& lhs, ::yampi::address const& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs < rhs))
+  inline constexpr bool operator<=(::yampi::address const& lhs, ::yampi::address const& rhs) noexcept(noexcept(lhs < rhs))
   { return not (rhs < lhs); }
 
   inline ::yampi::address operator++(::yampi::address& self, int)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { ::yampi::address result = self; ++self; return result; }
 
   inline ::yampi::address operator--(::yampi::address& self, int)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { ::yampi::address result = self; --self; return result; }
 
   inline ::yampi::address operator+(::yampi::address address, ::yampi::byte_displacement const& displacement)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { address += displacement; return address; }
 
   inline ::yampi::address operator+(::yampi::byte_displacement const& displacement, ::yampi::address const& address)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { return address + displacement; }
 
   inline ::yampi::address operator-(::yampi::address address, ::yampi::byte_displacement const& displacement)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { address -= displacement; return address; }
 
   inline ::yampi::byte_displacement operator-(::yampi::address const& lhs, ::yampi::address const& rhs)
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
   { return ::yampi::byte_displacement(lhs.mpi_address() - rhs.mpi_address()); }
 
-  inline void swap(::yampi::address& lhs, ::yampi::address& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::address& lhs, ::yampi::address& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
 
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_is_nothrow_copy_constructible
 
 #endif

@@ -1,8 +1,6 @@
 #ifndef YAMPI_IS_FINALIZED_HPP
 # define YAMPI_IS_FINALIZED_HPP
 
-# include <boost/config.hpp>
-
 # include <mpi.h>
 
 

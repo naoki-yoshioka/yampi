@@ -1,45 +1,22 @@
 #ifndef YAMPI_TOPOLOGY_HPP
 # define YAMPI_TOPOLOGY_HPP
 
-# include <boost/config.hpp>
-
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/type_traits/has_nothrow_copy.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
 
 # include <yampi/communicator.hpp>
 # include <yampi/environment.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-# else
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-# endif
-
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
 # else
 #   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
 # endif
 
 
@@ -51,76 +28,45 @@ namespace yampi
     ::yampi::communicator communicator_;
 
    public:
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     topology() = delete;
     topology(topology const&) = delete;
     topology& operator=(topology const&) = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    topology();
-    topology(topology const&);
-    topology& operator=(topology const&);
-
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     topology(topology&&) = default;
     topology& operator=(topology&&) = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    topology(topology&& other) : communicator_(std::move(other.communicator_)) { }
-    topology& operator=(topology&& other)
-    {
-      if (this != YAMPI_addressof(other))
-        communicator_ = std::move(other.communicator_);
-      return *this;
-    }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
    protected:
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     ~topology() = default;
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~topology() { }
-# endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
    public:
     explicit topology(MPI_Comm const& mpi_comm)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
+      noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
       : communicator_(mpi_comm)
     { }
 
     void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)
     { communicator_.reset(mpi_comm, environment); }
 
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(topology&& other, ::yampi::environment const& environment)
     { communicator_.reset(std::move(other.communicator_), environment); }
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     void free(::yampi::environment const& environment)
     { communicator_.free(environment); }
 
-    ::yampi::communicator const& communicator() const BOOST_NOEXCEPT_OR_NOTHROW { return communicator_; }
+    ::yampi::communicator const& communicator() const noexcept { return communicator_; }
 
-    void swap(topology& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable< ::yampi::communicator >::value)
+    void swap(topology& other) noexcept(YAMPI_is_nothrow_swappable< ::yampi::communicator >::value)
     {
       using std::swap;
       swap(communicator_, other.communicator_);
     }
   };
 
-  inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
 
-# undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

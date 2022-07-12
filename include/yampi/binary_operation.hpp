@@ -1,59 +1,22 @@
 #ifndef YAMPI_BINARY_OPERATION_HPP
 # define YAMPI_BINARY_OPERATION_HPP
 
-# include <boost/config.hpp>
-
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/type_traits/has_nothrow_copy.hpp>
-#   include <boost/type_traits/has_nothrow_assign.hpp>
-#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
-#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
-# if __cplusplus >= 201703L
-#   include <type_traits>
-# else
-#   include <boost/type_traits/is_nothrow_swappable.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
-#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
-# else
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
-#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
-# endif
-
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
 # else
 #   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
 # endif
 
 
@@ -74,6 +37,34 @@ namespace yampi
   struct replace_t { }; // for yampi::accumulate, etc.
   struct no_op_t { }; // for yampi::fetch_accumulate, etc.
 
+  namespace tags
+  {
+# if __cplusplus >= 201703L
+#   define YAMPI_DEFINE_TAG(op) \
+    inline constexpr ::yampi:: op ## _t op {};
+# else
+#   define YAMPI_DEFINE_TAG(op) \
+    constexpr ::yampi:: op ## _t op {};
+# endif
+
+    YAMPI_DEFINE_TAG(maximum)
+    YAMPI_DEFINE_TAG(minimum)
+    YAMPI_DEFINE_TAG(plus)
+    YAMPI_DEFINE_TAG(multiplies)
+    YAMPI_DEFINE_TAG(logical_and)
+    YAMPI_DEFINE_TAG(bit_and)
+    YAMPI_DEFINE_TAG(logical_or)
+    YAMPI_DEFINE_TAG(bit_or)
+    YAMPI_DEFINE_TAG(logical_xor)
+    YAMPI_DEFINE_TAG(bit_xor)
+    YAMPI_DEFINE_TAG(maximum_location)
+    YAMPI_DEFINE_TAG(minimum_location)
+    YAMPI_DEFINE_TAG(replace)
+    YAMPI_DEFINE_TAG(no_op)
+
+# undef YAMPI_DEFINE_TAG
+  }
+
   namespace binary_operation_detail
   {
     inline bool is_predefined_binary_operation(MPI_Op const& mpi_op)
@@ -93,61 +84,50 @@ namespace yampi
     MPI_Op mpi_op_;
 
    public:
-    binary_operation()
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Op>::value)
+    binary_operation() noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)
       : mpi_op_(MPI_OP_NULL)
     { }
 
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     binary_operation(binary_operation const&) = delete;
     binary_operation& operator=(binary_operation const&) = delete;
-# else
-   private:
-    binary_operation(binary_operation const&);
-    binary_operation& operator=(binary_operation const&);
-
-   public:
-# endif
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     binary_operation(binary_operation&& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_move_constructible<MPI_Op>::value
-        and YAMPI_is_nothrow_copy_assignable<MPI_Op>::value)
+      noexcept(
+        std::is_nothrow_move_constructible<MPI_Op>::value
+        and std::is_nothrow_copy_assignable<MPI_Op>::value)
       : mpi_op_(std::move(other.mpi_op_))
     { other.mpi_op_ = MPI_OP_NULL; }
 
     binary_operation& operator=(binary_operation&& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_move_assignable<MPI_Op>::value
-        and YAMPI_is_nothrow_copy_assignable<MPI_Op>::value)
+      noexcept(
+        std::is_nothrow_move_assignable<MPI_Op>::value
+        and std::is_nothrow_copy_assignable<MPI_Op>::value)
     {
-      if (this != YAMPI_addressof(other))
+      if (this != std::addressof(other))
       {
         if (mpi_op_ != MPI_OP_NULL and (not ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_)))
-          MPI_Op_free(YAMPI_addressof(mpi_op_));
+          MPI_Op_free(std::addressof(mpi_op_));
         mpi_op_ = std::move(other.mpi_op_);
         other.mpi_op_ = MPI_OP_NULL;
       }
       return *this;
     }
-# endif
 
-    ~binary_operation() BOOST_NOEXCEPT_OR_NOTHROW
+    ~binary_operation() noexcept
     {
       if (mpi_op_ == MPI_OP_NULL or ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_))
         return;
 
-      MPI_Op_free(YAMPI_addressof(mpi_op_));
+      MPI_Op_free(std::addressof(mpi_op_));
     }
 
     explicit binary_operation(MPI_Op const& mpi_op)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Op>::value)
+      noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)
       : mpi_op_(mpi_op)
     { }
 
 # define YAMPI_DEFINE_OPERATION_CONSTRUCTOR(op, mpiop) \
     explicit binary_operation(::yampi:: op ## _t const)\
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Op>::value)\
+      noexcept(std::is_nothrow_copy_constructible<MPI_Op>::value)\
       : mpi_op_(MPI_ ## mpiop )\
     { }
 
@@ -184,7 +164,7 @@ namespace yampi
       int const error_code
         = MPI_Op_create(
             mpi_user_function, static_cast<int>(is_commutative),
-            YAMPI_addressof(result));
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -201,14 +181,12 @@ namespace yampi
       mpi_op_ = mpi_op;
     }
 
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(binary_operation&& other, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_op_ = std::move(other.mpi_op_);
       other.mpi_op_ = MPI_OP_NULL;
     }
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
 # define YAMPI_DEFINE_OPERATION_RESET(op, mpiop) \
     void reset(::yampi:: op ## _t const, ::yampi::environment const& environment)\
@@ -248,45 +226,58 @@ namespace yampi
       if (mpi_op_ == MPI_OP_NULL or ::yampi::binary_operation_detail::is_predefined_binary_operation(mpi_op_))
         return;
 
-      int const error_code = MPI_Op_free(YAMPI_addressof(mpi_op_));
+      int const error_code = MPI_Op_free(std::addressof(mpi_op_));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::binary_operation::free", environment);
     }
 
     bool is_null() const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_op_ == MPI_OP_NULL))
+      noexcept(noexcept(mpi_op_ == MPI_OP_NULL))
     { return mpi_op_ == MPI_OP_NULL; }
 
-    bool operator==(binary_operation const& other) const
-      BOOST_NOEXCEPT_OR_NOTHROW/*BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_op_ == other.mpi_op_))*/
+    bool operator==(binary_operation const& other) const noexcept(noexcept(mpi_op_ == other.mpi_op_))
     { return mpi_op_ == other.mpi_op_; }
 
-    MPI_Op const& mpi_op() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_op_; }
+    MPI_Op const& mpi_op() const noexcept { return mpi_op_; }
 
-    void swap(binary_operation& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Op>::value)
+    void swap(binary_operation& other) noexcept(YAMPI_is_nothrow_swappable<MPI_Op>::value)
     {
       using std::swap;
       swap(mpi_op_, other.mpi_op_);
     }
   };
 
-  inline bool operator!=(
-    ::yampi::binary_operation const& lhs, ::yampi::binary_operation const& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs == rhs))
+  inline bool operator!=(::yampi::binary_operation const& lhs, ::yampi::binary_operation const& rhs) noexcept(noexcept(lhs == rhs))
   { return not (lhs == rhs); }
 
   inline void swap(::yampi::binary_operation& lhs, ::yampi::binary_operation& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+    noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
+
+# if __cplusplus >= 201703L
+#   define YAMPI_DEFINE_OPERATION(op) \
+  inline ::yampi::binary_operation op { ::yampi::tags:: op };
+
+    YAMPI_DEFINE_OPERATION(maximum)
+    YAMPI_DEFINE_OPERATION(minimum)
+    YAMPI_DEFINE_OPERATION(plus)
+    YAMPI_DEFINE_OPERATION(multiplies)
+    YAMPI_DEFINE_OPERATION(logical_and)
+    YAMPI_DEFINE_OPERATION(bit_and)
+    YAMPI_DEFINE_OPERATION(logical_or)
+    YAMPI_DEFINE_OPERATION(bit_or)
+    YAMPI_DEFINE_OPERATION(logical_xor)
+    YAMPI_DEFINE_OPERATION(bit_xor)
+    YAMPI_DEFINE_OPERATION(maximum_location)
+    YAMPI_DEFINE_OPERATION(minimum_location)
+    YAMPI_DEFINE_OPERATION(replace)
+    YAMPI_DEFINE_OPERATION(no_op)
+
+#   undef YAMPI_DEFINE_OPERATION
+# endif
 }
 
 
-# undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_is_nothrow_move_assignable
-# undef YAMPI_is_nothrow_move_constructible
-# undef YAMPI_is_nothrow_copy_assignable
-# undef YAMPI_is_nothrow_copy_constructible
 
 #endif

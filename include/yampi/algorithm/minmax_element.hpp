@@ -1,22 +1,12 @@
 #ifndef YAMPI_ALGORITHM_MINMAX_ELEMENT_HPP
 # define YAMPI_ALGORITHM_MINMAX_ELEMENT_HPP
 
-# include <boost/config.hpp>
-
 # include <array>
 # include <iterator>
 # include <algorithm>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/utility/enable_if.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <type_traits>
+# include <memory>
 
 # include <boost/optional.hpp>
 
@@ -38,18 +28,6 @@
 # include <yampi/algorithm/copy.hpp>
 
 # include <mpi.h>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if std::enable_if
-# else
-#   define YAMPI_enable_if boost::enable_if_c
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
 
 
 namespace yampi
@@ -73,18 +51,18 @@ namespace yampi
       // min_element
       std::pair<Value, int> min_value_rank = std::make_pair(*(minmax_value_ptrs.first), present_rank.mpi_rank());
       ::yampi::reduce(
-        ::yampi::make_buffer(min_value_rank, value_int_datatype), YAMPI_addressof(min_value_rank),
+        ::yampi::make_buffer(min_value_rank, value_int_datatype), std::addressof(min_value_rank),
         ::yampi::binary_operation(::yampi::minimum_location_t()), root, communicator, environment);
 
       ::yampi::rank min_result_rank;
       ::yampi::scatter(
-        YAMPI_addressof(min_malue_rank.second), ::yampi::make_buffer(min_result_rank.mpi_rank()),
+        std::addressof(min_malue_rank.second), ::yampi::make_buffer(min_result_rank.mpi_rank()),
         root, communicator, environment);
 
       int min_index = static_cast<int>(minmax_value_ptrs.first - buffer.data());
       if (min_result_rank != root)
         ::yampi::copy(
-          ::yampi::ignore_status(),
+          ::yampi::ignore_status,
           ::yampi::make_buffer(min_index), ::yampi::make_buffer(min_index),
           ::yampi::message_envelope(min_result_rank, root, communicator),
           environment);
@@ -92,18 +70,18 @@ namespace yampi
       // max_element
       std::pair<Value, int> max_value_rank = std::make_pair(*(minmax_value_ptrs.second), present_rank.mpi_rank());
       ::yampi::reduce(
-        ::yampi::make_buffer(max_value_rank, value_int_datatype), YAMPI_addressof(max_value_rank),
+        ::yampi::make_buffer(max_value_rank, value_int_datatype), std::addressof(max_value_rank),
         ::yampi::binary_operation(::yampi::maximum_location_t()), root, communicator, environment);
 
       ::yampi::rank max_result_rank;
       ::yampi::scatter(
-        YAMPI_addressof(max_value_rank.second), ::yampi::make_buffer(max_result_rank.mpi_rank()),
+        std::addressof(max_value_rank.second), ::yampi::make_buffer(max_result_rank.mpi_rank()),
         root, communicator, environment);
 
       int max_index = static_cast<int>(minmax_value_ptrs.second - buffer.data());
       if (max_result_rank != root)
         ::yampi::copy(
-          ::yampi::ignore_status(),
+          ::yampi::ignore_status,
           ::yampi::make_buffer(max_index), ::yampi::make_buffer(max_index),
           ::yampi::message_envelope(max_result_rank, root, communicator),
           environment);
@@ -120,7 +98,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if<
+    typename std::enable_if<
       ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       boost::optional<
         std::pair<
@@ -137,18 +115,18 @@ namespace yampi
       // min_element
       std::pair<Value, int> min_value_rank = std::make_pair(*(minmax_value_ptrs.first), present_rank.mpi_rank());
       ::yampi::reduce(
-        ::yampi::make_buffer(min_value_rank), YAMPI_addressof(min_value_rank),
+        ::yampi::make_buffer(min_value_rank), std::addressof(min_value_rank),
         ::yampi::binary_operation(::yampi::minimum_location_t()), root, communicator, environment);
 
       ::yampi::rank min_result_rank;
       ::yampi::scatter(
-        YAMPI_addressof(min_value_rank.second), ::yampi::make_buffer(min_result_rank.mpi_rank()),
+        std::addressof(min_value_rank.second), ::yampi::make_buffer(min_result_rank.mpi_rank()),
         root, communicator, environment);
 
       int min_index = static_cast<int>(minmax_value_ptrs.first - buffer.data());
       if (min_result_rank != root)
         ::yampi::copy(
-          ::yampi::ignore_status(),
+          ::yampi::ignore_status,
           ::yampi::make_buffer(min_index), ::yampi::make_buffer(min_index),
           ::yampi::message_envelope(min_result_rank, root, communicator),
           environment);
@@ -156,18 +134,18 @@ namespace yampi
       // max_element
       std::pair<Value, int> max_value_rank = std::make_pair(*(minmax_value_ptrs.second), present_rank.mpi_rank());
       ::yampi::reduce(
-        ::yampi::make_buffer(max_value_rank), YAMPI_addressof(max_value_rank),
+        ::yampi::make_buffer(max_value_rank), std::addressof(max_value_rank),
         ::yampi::binary_operation(::yampi::maximum_location_t()), root, communicator, environment);
 
       ::yampi::rank max_result_rank;
       ::yampi::scatter(
-        YAMPI_addressof(max_value_rank.second), ::yampi::make_buffer(max_result_rank.mpi_rank()),
+        std::addressof(max_value_rank.second), ::yampi::make_buffer(max_result_rank.mpi_rank()),
         root, communicator, environment);
 
       int max_index = static_cast<int>(minmax_value_ptrs.second - buffer.data());
       if (max_result_rank != root)
         ::yampi::copy(
-          ::yampi::ignore_status(),
+          ::yampi::ignore_status,
           ::yampi::make_buffer(max_index), ::yampi::make_buffer(max_index),
           ::yampi::message_envelope(max_result_rank, root, communicator),
           environment);
@@ -184,7 +162,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if<
+    typename std::enable_if<
       not ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       boost::optional<
         std::pair<
@@ -230,7 +208,7 @@ namespace yampi
           communicator, environment).second);
 
       int min_index = static_cast<int>(minmax_value_ptrs.first - buffer.data());
-      ::yampi::scatter(YAMPI_addressof(min_index), ::yampi::make_buffer(min_index), min_result_rank, communicator, environment);
+      ::yampi::scatter(std::addressof(min_index), ::yampi::make_buffer(min_index), min_result_rank, communicator, environment);
 
       // max_element
       std::pair<Value, int> max_value_rank
@@ -242,7 +220,7 @@ namespace yampi
           communicator, environment).second);
 
       int max_index = static_cast<int>(minmax_value_ptrs.second - buffer.data());
-      ::yampi::scatter(YAMPI_addressof(max_index), ::yampi::make_buffer(max_index), max_result_rank, communicator, environment);
+      ::yampi::scatter(std::addressof(max_index), ::yampi::make_buffer(max_index), max_result_rank, communicator, environment);
 
       // return
       return std::make_pair(
@@ -252,7 +230,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if<
+    typename std::enable_if<
       ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       std::pair<
         std::pair< ::yampi::rank, int >,
@@ -275,7 +253,7 @@ namespace yampi
           communicator, environment).second);
 
       int min_index = static_cast<int>(minmax_value_ptrs.first - buffer.data());
-      ::yampi::scatter(YAMPI_addressof(min_index), ::yampi::make_buffer(min_index), min_result_rank, communicator, environment);
+      ::yampi::scatter(std::addressof(min_index), ::yampi::make_buffer(min_index), min_result_rank, communicator, environment);
 
       // max_element
       std::pair<Value, int> max_value_rank
@@ -287,7 +265,7 @@ namespace yampi
           communicator, environment).second);
 
       int max_index = static_cast<int>(minmax_value_ptrs.second - buffer.data());
-      ::yampi::scatter(YAMPI_addressof(max_index), ::yampi::make_buffer(max_index), max_result_rank, communicator, environment);
+      ::yampi::scatter(std::addressof(max_index), ::yampi::make_buffer(max_index), max_result_rank, communicator, environment);
 
       // return
       return std::make_pair(
@@ -297,7 +275,7 @@ namespace yampi
 
     template <typename Value>
     inline
-    typename YAMPI_enable_if<
+    typename std::enable_if<
       not ::yampi::has_predefined_datatype< std::pair<Value, int> >::value,
       std::pair<
         std::pair< ::yampi::rank, int >,
@@ -322,9 +300,6 @@ namespace yampi
   }
 }
 
-
-# undef YAMPI_addressof
-# undef YAMPI_enable_if
 
 #endif
 

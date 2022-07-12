@@ -1,8 +1,6 @@
 #ifndef YAMPI_PREDEFINED_DATATYPE_HPP
 # define YAMPI_PREDEFINED_DATATYPE_HPP
 
-# include <boost/config.hpp>
-
 # include <utility>
 
 # include <mpi.h>
@@ -47,17 +45,13 @@ namespace yampi
     YAMPI_MAKE_MPI_DATATYPE_OF(signed short int, SHORT)
     YAMPI_MAKE_MPI_DATATYPE_OF(signed int, INT)
     YAMPI_MAKE_MPI_DATATYPE_OF(signed long int, LONG)
-# ifndef BOOST_NO_LONG_LONG
     YAMPI_MAKE_MPI_DATATYPE_OF(signed long long int, LONG_LONG)
-# endif
     YAMPI_MAKE_MPI_DATATYPE_OF(signed char, SIGNED_CHAR)
     YAMPI_MAKE_MPI_DATATYPE_OF(unsigned char, UNSIGNED_CHAR)
     YAMPI_MAKE_MPI_DATATYPE_OF(unsigned short int, UNSIGNED_SHORT)
     YAMPI_MAKE_MPI_DATATYPE_OF(unsigned int, UNSIGNED)
     YAMPI_MAKE_MPI_DATATYPE_OF(unsigned long int, UNSIGNED_LONG)
-# ifndef BOOST_NO_LONG_LONG
     YAMPI_MAKE_MPI_DATATYPE_OF(unsigned long long int, UNSIGNED_LONG_LONG)
-# endif
     YAMPI_MAKE_MPI_DATATYPE_OF(float, FLOAT)
     YAMPI_MAKE_MPI_DATATYPE_OF(double, DOUBLE)
     YAMPI_MAKE_MPI_DATATYPE_OF(long double, LONG_DOUBLE)
@@ -105,9 +99,9 @@ namespace yampi
     typedef ::yampi::datatype_base< ::yampi::predefined_datatype<T> > super_type;
 
    public:
-    BOOST_CONSTEXPR bool do_is_null() const BOOST_NOEXCEPT_OR_NOTHROW { return false; }
+    constexpr bool do_is_null() const noexcept { return false; }
 
-    MPI_Datatype do_mpi_datatype() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::predefined_datatype_detail::mpi_datatype_of<T>::call(); }
+    MPI_Datatype do_mpi_datatype() const noexcept { return ::yampi::predefined_datatype_detail::mpi_datatype_of<T>::call(); }
   }; // class predefined_datatype<T>
 } // namespace yampi
 

@@ -1,26 +1,14 @@
 #ifndef YAMPI_DYNAMIC_WINDOW_ALLOCATOR_HPP
 # define YAMPI_DYNAMIC_WINDOW_ALLOCATOR_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
 # include <cstddef>
 # include <cstdlib>
 # include <limits>
 # include <stdexcept>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/integral_constant.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
-# if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
-#   include <utility>
-# endif
+# include <type_traits>
+# include <memory>
+# include <utility>
 
 # include <mpi.h>
 
@@ -30,24 +18,6 @@
 # include <yampi/allocator.hpp> // not_yet_initialized_error, allocate_error, deallocate_error
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_true_type std::true_type
-#   define YAMPI_false_type std::false_type
-# else
-#   define YAMPI_true_type boost::true_type
-#   define YAMPI_false_type boost::false_type
-# endif
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   define nullptr NULL
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
 
 
 # if MPI_VERSION >= 3
@@ -193,7 +163,7 @@ namespace yampi
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    typedef YAMPI_false_type is_always_equal;
+    typedef std::false_type is_always_equal;
 
     template <typename U>
     struct rebind
@@ -210,30 +180,30 @@ namespace yampi
     }
 
     explicit dynamic_window_allocator(::yampi::dynamic_window& window)
-      : window_ptr_(YAMPI_addressof(window))
+      : window_ptr_(std::addressof(window))
     { }
 
-    dynamic_window_allocator(dynamic_window_allocator const& other) BOOST_NOEXCEPT_OR_NOTHROW
+    dynamic_window_allocator(dynamic_window_allocator const& other) noexcept
       : window_ptr_(other.window_ptr_)
     { }
 
     template <typename U>
-    dynamic_window_allocator(dynamic_window_allocator<U, uses_special_memory> const& other) BOOST_NOEXCEPT_OR_NOTHROW
-      : window_ptr_(YAMPI_addressof(other.window()))
+    dynamic_window_allocator(dynamic_window_allocator<U, uses_special_memory> const& other) noexcept
+      : window_ptr_(std::addressof(other.window()))
     { }
 
-    bool operator==(dynamic_window_allocator const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator==(dynamic_window_allocator const& other) const noexcept
     { return window_ptr_ == other.window_ptr_; }
 
     template <typename U>
-    bool operator==(dynamic_window_allocator<U, uses_special_memory> const& other) const BOOST_NOEXCEPT_OR_NOTHROW
-    { return window_ptr_ == YAMPI_addressof(other.window()); }
+    bool operator==(dynamic_window_allocator<U, uses_special_memory> const& other) const noexcept
+    { return window_ptr_ == std::addressof(other.window()); }
 
     ::yampi::dynamic_window const& window() const { return *window_ptr_; }
 
 
-    pointer address(reference x) const { return YAMPI_addressof(x); }
-    const_pointer address(const_reference x) const { return YAMPI_addressof(x); }
+    pointer address(reference x) const { return std::addressof(x); }
+    const_pointer address(const_reference x) const { return std::addressof(x); }
 
     pointer allocate(std::size_t const n, const_void_pointer = nullptr)
     { return ::yampi::dynamic_window_allocator_detail::allocate<T, uses_special_memory>::call(window_ptr_->mpi_win(), n); }
@@ -241,17 +211,12 @@ namespace yampi
     void deallocate(pointer ptr, std::size_t const)
     { return ::yampi::dynamic_window_allocator_detail::deallocate<T, uses_special_memory>::call(window_ptr_->mpi_win(), ptr); }
 
-    size_type max_size() const BOOST_NOEXCEPT_OR_NOTHROW
+    size_type max_size() const noexcept
     { return std::numeric_limits<std::size_t>::max() / sizeof(T); }
 
-# if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
     template <typename U, typename... Arguments>
     void construct(U* ptr, Arguments&&... arguments)
     { ::new((void *)ptr) U(std::forward<Arguments>(arguments)...); }
-# else
-    void construct(pointer ptr, const_reference value)
-    { new((void *)ptr) T(value); }
-# endif
 
     void destroy(pointer ptr) { ((T*)ptr)->~T(); }
     template <typename U>
@@ -268,13 +233,13 @@ namespace yampi
     typedef void const* const_void_pointer;
     typedef void value_type;
 
-    typedef YAMPI_true_type is_always_equal;
+    typedef std::true_type is_always_equal;
 
-    BOOST_CONSTEXPR bool operator==(dynamic_window_allocator const&) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr bool operator==(dynamic_window_allocator const&) const noexcept
     { return true; }
 
     template <typename T, uses_special_memory>
-    BOOST_CONSTEXPR bool operator==(dynamic_window_allocator<T, uses_special_memory> const&) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr bool operator==(dynamic_window_allocator<T, uses_special_memory> const&) const noexcept
     { return true; }
 
     template <typename U>
@@ -285,18 +250,11 @@ namespace yampi
   template <typename T, typename U, bool uses_special_memory>
   inline bool operator!=(
     ::yampi::dynamic_window_allocator<T, uses_special_memory> const& lhs,
-    ::yampi::dynamic_window_allocator<U, uses_special_memory> const& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+    ::yampi::dynamic_window_allocator<U, uses_special_memory> const& rhs) noexcept
   { return not (lhs == rhs); }
 }
 # endif // MPI_VERSION >= 3
 
-
-# undef YAMPI_false_type
-# undef YAMPI_true_type
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   undef nullptr
-# endif
-# undef YAMPI_addressof
 
 #endif
 

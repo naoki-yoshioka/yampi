@@ -1,8 +1,6 @@
 #ifndef YAMPI_ALGORITHM_REPLACE_COPY_IF_HPP
 # define YAMPI_ALGORITHM_REPLACE_COPY_IF_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
 # include <vector>
 # include <algorithm>
@@ -19,14 +17,6 @@
 # include <yampi/rank.hpp>
 # include <yampi/status.hpp>
 # include <yampi/communication_mode.hpp>
-
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   define YAMPI_RVALUE_REFERENCE_OR_COPY(T) T&&
-#   define YAMPI_FORWARD_OR_COPY(T, x) std::forward<T>(x)
-# else
-#   define YAMPI_RVALUE_REFERENCE_OR_COPY(T) T
-#   define YAMPI_FORWARD_OR_COPY(T, x) x
-# endif
 
 
 namespace yampi
@@ -88,7 +78,7 @@ namespace yampi
     template <typename CommunicationMode, typename Value, typename ContiguousIterator>
     inline boost::optional< ::yampi::status >
     replace_copy_if(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
+      CommunicationMode&& communication_mode,
       ::yampi::buffer<Value> const send_buffer,
       ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
@@ -114,7 +104,7 @@ namespace yampi
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
-          YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+          std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
             replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
@@ -128,7 +118,7 @@ namespace yampi
     template <typename CommunicationMode, typename Value>
     inline boost::optional< ::yampi::status >
     replace_copy_if(
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
+      CommunicationMode&& communication_mode,
       ::yampi::buffer<Value> const send_buffer,
       ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
@@ -136,7 +126,7 @@ namespace yampi
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       return ::yampi::algorithm::replace_copy_if(
-        YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+        std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer, predicate, new_value,
         replace_copy_if_buffer.begin(), message_envelope, environment);
     }
@@ -196,7 +186,7 @@ namespace yampi
     template <typename CommunicationMode, typename Value, typename ContiguousIterator>
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
+      CommunicationMode&& communication_mode,
       ::yampi::buffer<Value> const send_buffer,
       ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
@@ -222,7 +212,7 @@ namespace yampi
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
-          YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+          std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
             replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
             send_buffer.datatype()),
@@ -234,7 +224,7 @@ namespace yampi
     template <typename CommunicationMode, typename Value>
     inline void replace_copy_if(
       ::yampi::ignore_status_t const ignore_status,
-      YAMPI_RVALUE_REFERENCE_OR_COPY(CommunicationMode) communication_mode,
+      CommunicationMode&& communication_mode,
       ::yampi::buffer<Value> const send_buffer,
       ::yampi::buffer<Value> receive_buffer,
       UnaryPredicate predicate, Value const& new_value,
@@ -242,16 +232,13 @@ namespace yampi
     {
       std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
       ::yampi::algorithm::replace_copy_if(
-        ignore_status, YAMPI_FORWARD_OR_COPY(CommunicationMode, communication_mode),
+        ignore_status, std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer, predicate, new_value,
         replace_copy_if_buffer.begin(), message_envelope, environment);
     }
   }
 }
 
-
-# undef YAMPI_FORWARD_OR_COPY
-# undef YAMPI_RVALUE_REFERENCE_OR_COPY
 
 #endif
 

@@ -1,19 +1,11 @@
 #ifndef YAMPI_COLOR_HPP
 # define YAMPI_COLOR_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
 # include <string>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/utility/enable_if.hpp>
-#   include <boost/type_traits/is_integral.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 # include <stdexcept>
@@ -21,14 +13,6 @@
 # include <mpi.h>
 
 # include <yampi/environment.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if std::enable_if
-#   define YAMPI_is_integral std::is_integral
-# else
-#   define YAMPI_enable_if boost::enable_if_c
-#   define YAMPI_is_integral boost::is_integral
-# endif
 
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
@@ -41,51 +25,52 @@ namespace yampi
 {
   struct undefined_color_t { };
 
+  namespace tags
+  {
+# if __cplusplus >= 201703L
+    inline constexpr ::yampi::undefined_color_t undefined_color{};
+# else
+    constexpr ::yampi::undefined_color_t undefined_color{};
+# endif
+  }
+
   class color
   {
     int mpi_color_;
 
    public:
-    BOOST_CONSTEXPR color() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_color_(0)
-    { }
+    constexpr color() noexcept : mpi_color_(0) { }
 
-    explicit BOOST_CONSTEXPR color(int const mpi_color) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_color_(mpi_color)
-    { }
+    explicit constexpr color(int const mpi_color) noexcept : mpi_color_(mpi_color) { }
 
-    explicit BOOST_CONSTEXPR color(::yampi::undefined_color_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit constexpr color(::yampi::undefined_color_t const) noexcept
       : mpi_color_(MPI_UNDEFINED)
     { }
 
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     color(color const&) = default;
     color& operator=(color const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     color(color&&) = default;
     color& operator=(color&&) = default;
-#   endif
-    ~color() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    ~color() noexcept = default;
 
-    BOOST_CONSTEXPR bool operator==(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr bool operator==(color const& other) const noexcept
     { return mpi_color_ == other.mpi_color_; }
 
-    bool operator<(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator<(color const& other) const noexcept
     {
       assert(mpi_color_ >= 0);
       assert(other.mpi_color_ >= 0);
       return mpi_color_ < other.mpi_color_;
     }
 
-    color& operator++() BOOST_NOEXCEPT_OR_NOTHROW
+    color& operator++() noexcept
     {
       assert(mpi_color_ >= 0);
       ++mpi_color_;
       return *this;
     }
 
-    color& operator--() BOOST_NOEXCEPT_OR_NOTHROW
+    color& operator--() noexcept
     {
       assert(mpi_color_ >= 0);
       --mpi_color_;
@@ -94,10 +79,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       color&>::type
-    operator+=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator+=(Integer const n) noexcept
     {
       assert(mpi_color_ >= 0);
       mpi_color_ += n;
@@ -106,10 +91,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       color&>::type
-    operator-=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator-=(Integer const n) noexcept
     {
       assert(mpi_color_ >= 0);
       mpi_color_ -= n;
@@ -118,10 +103,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       color&>::type
-    operator*=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator*=(Integer const n) noexcept
     {
       assert(mpi_color_ >= 0);
       assert(n >= static_cast<Integer>(0));
@@ -131,10 +116,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       color&>::type
-    operator/=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator/=(Integer const n) noexcept
     {
       assert(mpi_color_ >= 0);
       assert(n > static_cast<Integer>(0));
@@ -144,10 +129,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       color&>::type
-    operator%=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator%=(Integer const n) noexcept
     {
       assert(mpi_color_ >= 0);
       assert(n > static_cast<Integer>(0));
@@ -156,96 +141,81 @@ namespace yampi
       return *this;
     }
 
-    int operator-(color const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    int operator-(color const& other) const noexcept
     {
       assert(mpi_color_ >= 0);
       assert(other.mpi_color_ >= 0);
       return mpi_color_-other.mpi_color_;
     }
 
-    BOOST_CONSTEXPR int const& mpi_color() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_color_; }
-# ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
-    explicit BOOST_CONSTEXPR operator int() const { return mpi_color_; }
-# else
-    BOOST_CONSTEXPR operator int() const { return mpi_color_; }
-# endif
+    constexpr int const& mpi_color() const noexcept { return mpi_color_; }
+    explicit constexpr operator int() const { return mpi_color_; }
 
-    void swap(color& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<int>::value)
+    void swap(color& other) noexcept(YAMPI_is_nothrow_swappable<int>::value)
     {
       using std::swap;
       swap(mpi_color_, other.mpi_color_);
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::color const& lhs, ::yampi::color const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline constexpr bool operator!=(::yampi::color const& lhs, ::yampi::color const& rhs) noexcept
   { return not (lhs == rhs); }
 
-  inline bool operator>=(::yampi::color const& lhs, ::yampi::color const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>=(::yampi::color const& lhs, ::yampi::color const& rhs) noexcept
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::color const& lhs, ::yampi::color const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>(::yampi::color const& lhs, ::yampi::color const& rhs) noexcept
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::color const& lhs, ::yampi::color const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator<=(::yampi::color const& lhs, ::yampi::color const& rhs) noexcept
   { return not (rhs < lhs); }
 
-  inline ::yampi::color operator++(::yampi::color& lhs, int)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator++(::yampi::color& lhs, int) noexcept
   { ::yampi::color result = lhs; ++lhs; return result; }
 
-  inline ::yampi::color operator--(::yampi::color& lhs, int)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator--(::yampi::color& lhs, int) noexcept
   { ::yampi::color result = lhs; --lhs; return result; }
 
   template <typename Integer>
-  inline ::yampi::color operator+(::yampi::color lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator+(::yampi::color lhs, Integer const rhs) noexcept
   { lhs += rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator-(::yampi::color lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator-(::yampi::color lhs, Integer const rhs) noexcept
   { lhs -= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator*(::yampi::color lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator*(::yampi::color lhs, Integer const rhs) noexcept
   { lhs *= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator/(::yampi::color lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator/(::yampi::color lhs, Integer const rhs) noexcept
   { lhs /= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator%(::yampi::color lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator%(::yampi::color lhs, Integer const rhs) noexcept
   { lhs %= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator+(Integer const lhs, ::yampi::color const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator+(Integer const lhs, ::yampi::color const rhs) noexcept
   { return rhs+lhs; }
 
   template <typename Integer>
-  inline ::yampi::color operator*(Integer const lhs, ::yampi::color const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::color operator*(Integer const lhs, ::yampi::color const rhs) noexcept
   { return rhs*lhs; }
 
-  inline void swap(::yampi::color& lhs, ::yampi::color& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::color& lhs, ::yampi::color& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
+
+# if __cplusplus >= 201703L
+  inline constexpr ::yampi::color undefined_color{::yampi::tags::undefined_color};
+# else
+  constexpr ::yampi::color undefined_color{::yampi::tags::undefined_color};
+# endif
 }
 
 
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_is_integral
-# undef YAMPI_enable_if
 
 #endif
 

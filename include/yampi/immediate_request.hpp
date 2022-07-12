@@ -1,31 +1,12 @@
 #ifndef YAMPI_IMMEDIATE_REQUEST_HPP
 # define YAMPI_IMMEDIATE_REQUEST_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   include <cstddef>
-# endif
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/is_same.hpp>
-#   include <boost/type_traits/has_nothrow_copy.hpp>
-#   include <boost/type_traits/has_nothrow_constructor.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <type_traits>
+# include <memory>
 
 # include <mpi.h>
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
 
 # include <yampi/buffer.hpp>
 # include <yampi/rank.hpp>
@@ -46,30 +27,6 @@
 # include <yampi/nonroot_call_on_root_error.hpp>
 # include <yampi/root_call_on_nonroot_error.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_same std::is_same
-#   define YAMPI_is_nothrow_default_constructible std::is_nothrow_default_constructible
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-# else
-#   define YAMPI_is_same std::is_same
-#   define YAMPI_is_nothrow_default_constructible boost::has_nothrow_default_constructor
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   define nullptr NULL
-# endif
-
 
 namespace yampi
 {
@@ -87,13 +44,13 @@ namespace yampi
         = MPI_Isend(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
       int const error_code
         = MPI_Isend(
             const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::standard_send", environment);
@@ -110,13 +67,13 @@ namespace yampi
         = MPI_Ibsend(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
       int const error_code
         = MPI_Ibsend(
             const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::buffered_send", environment);
@@ -133,13 +90,13 @@ namespace yampi
         = MPI_Issend(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
       int const error_code
         = MPI_Issend(
             const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::synchronous_send", environment);
@@ -156,13 +113,13 @@ namespace yampi
         = MPI_Irsend(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
       int const error_code
         = MPI_Irsend(
             const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::ready_send", environment);
@@ -179,7 +136,7 @@ namespace yampi
         = MPI_Irecv(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
             source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::receive", environment);
     }
@@ -194,7 +151,7 @@ namespace yampi
       int const error_code
         = MPI_Imrecv(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-            YAMPI_addressof(message.mpi_message()), YAMPI_addressof(mpi_request));
+            std::addressof(message.mpi_message()), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::receive", environment);
     }
@@ -206,7 +163,7 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       int const error_code
-        = MPI_Ibarrier(communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+        = MPI_Ibarrier(communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::barrier", environment);
     }
@@ -221,7 +178,7 @@ namespace yampi
       int const error_code
         = MPI_Ibcast(
             buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::broadcast", environment);
     }
@@ -235,7 +192,7 @@ namespace yampi
       int const error_code
         = MPI_Ibcast(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            MPI_ROOT, communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            MPI_ROOT, communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::broadcast", environment);
     }
@@ -247,7 +204,7 @@ namespace yampi
       int const error_code
         = MPI_Ibcast(
             nullptr, 0, MPI_DATATYPE_NULL, MPI_PROC_NULL, communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::broadcast", environment);
     }
@@ -260,17 +217,17 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Igather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            std::addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -287,7 +244,7 @@ namespace yampi
         = MPI_Igather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -305,7 +262,7 @@ namespace yampi
         = MPI_Igather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             nullptr, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -320,7 +277,7 @@ namespace yampi
         = MPI_Igather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             nullptr, send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -338,7 +295,7 @@ namespace yampi
         = MPI_Igather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather_in_place", environment);
     }
@@ -353,7 +310,7 @@ namespace yampi
         = MPI_Igather(
             nullptr, 0, MPI_DATATYPE_NULL,
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            MPI_ROOT, communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            MPI_ROOT, communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -365,7 +322,7 @@ namespace yampi
       int const error_code
         = MPI_Igather(
             nullptr, 0, MPI_DATATYPE_NULL, nullptr, 0, MPI_DATATYPE_NULL,
-            MPI_PROC_NULL, communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            MPI_PROC_NULL, communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::gather", environment);
     }
@@ -378,17 +335,17 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            ReceiveValue>::value),
         "value_type of ContiguousIterator must be the same to ReceiveValue");
-      assert(YAMPI_addressof(*first) != receive_buffer.data());
+      assert(std::addressof(*first) != receive_buffer.data());
 
       int const error_code
         = MPI_Iscatter(
-            YAMPI_addressof(*first), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+            std::addressof(*first), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -405,7 +362,7 @@ namespace yampi
         = MPI_Iscatter(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -423,7 +380,7 @@ namespace yampi
         = MPI_Iscatter(
             nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -438,7 +395,7 @@ namespace yampi
         = MPI_Iscatter(
             nullptr, receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -456,7 +413,7 @@ namespace yampi
         = MPI_Iscatter(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
-            root.mpi_rank(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            root.mpi_rank(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter_in_place", environment);
     }
@@ -471,7 +428,7 @@ namespace yampi
         = MPI_Iscatter(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             nullptr, 0, MPI_DATATYPE_NULL,
-            MPI_ROOT, communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            MPI_ROOT, communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -483,7 +440,7 @@ namespace yampi
       int const error_code
         = MPI_Iscatter(
             nullptr, 0, MPI_DATATYPE_NULL, nullptr, 0, MPI_DATATYPE_NULL,
-            MPI_PROC_NULL, communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            MPI_PROC_NULL, communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::scatter", environment);
     }
@@ -496,17 +453,17 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Iallgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            std::addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather", environment);
     }
@@ -523,7 +480,7 @@ namespace yampi
         = MPI_Iallgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather", environment);
     }
@@ -538,7 +495,7 @@ namespace yampi
         = MPI_Iallgather(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather_in_place", environment);
     }
@@ -551,17 +508,17 @@ namespace yampi
       ::yampi::topology const& topology, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Ineighbor_allgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            YAMPI_addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+            std::addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+            topology.communicator().mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather", environment);
     }
@@ -578,7 +535,7 @@ namespace yampi
         = MPI_Ineighbor_allgather(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+            topology.communicator().mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_gather", environment);
     }
@@ -596,7 +553,7 @@ namespace yampi
         = MPI_Ialltoall(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::complete_exchange", environment);
     }
@@ -611,7 +568,7 @@ namespace yampi
         = MPI_Ialltoall(
             MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::complete_exchange_in_place", environment);
     }
@@ -629,7 +586,7 @@ namespace yampi
         = MPI_Ineighbor_alltoall(
             send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            topology.communicator().mpi_comm(), YAMPI_addressof(mpi_request));
+            topology.communicator().mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::complete_exchange", environment);
     }
@@ -643,18 +600,18 @@ namespace yampi
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Ireduce(
-            send_buffer.data(), YAMPI_addressof(*first),
+            send_buffer.data(), std::addressof(*first),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
@@ -674,7 +631,7 @@ namespace yampi
             send_buffer.data(), nullptr,
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
@@ -691,7 +648,7 @@ namespace yampi
             send_buffer.data(), nullptr,
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
@@ -711,7 +668,7 @@ namespace yampi
             MPI_IN_PLACE, receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce_in_place", environment);
     }
@@ -728,7 +685,7 @@ namespace yampi
             nullptr, receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), MPI_ROOT, communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
@@ -741,7 +698,7 @@ namespace yampi
         = MPI_Ireduce(
             nullptr, nullptr, 0, MPI_DATATYPE_NULL,
             MPI_OP_NULL, MPI_PROC_NULL, communicator.mpi_comm(),
-            YAMPI_addressof(mpi_request));
+            std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce", environment);
     }
@@ -755,17 +712,17 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Iallreduce(
-            send_buffer.data(), YAMPI_addressof(*first),
+            send_buffer.data(), std::addressof(*first),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_reduce", environment);
     }
@@ -781,7 +738,7 @@ namespace yampi
         = MPI_Iallreduce(
             MPI_IN_PLACE,
             receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::all_reduce_in_place", environment);
     }
@@ -795,17 +752,17 @@ namespace yampi
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            Value>::value),
         "value_type of ContiguousIterator must be the same to Value");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
       assert(send_buffer.count() == communicator.size(environment));
 
       int const error_code
         = MPI_Ireduce_scatter_block(
-            send_buffer.data(), YAMPI_addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            send_buffer.data(), std::addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce_scatter", environment);
     }
@@ -824,7 +781,7 @@ namespace yampi
       int const error_code
         = MPI_Ireduce_scatter_block(
             send_buffer.data(), receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce_scatter", environment);
     }
@@ -839,7 +796,7 @@ namespace yampi
       int const error_code
         = MPI_Ireduce_scatter_block(
             MPI_IN_PLACE, receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::reduce_scatter_in_place", environment);
     }
@@ -853,17 +810,17 @@ namespace yampi
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Iscan(
-            send_buffer.data(), YAMPI_addressof(*first),
+            send_buffer.data(), std::addressof(*first),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::inclusive_scan", environment);
     }
@@ -879,7 +836,7 @@ namespace yampi
         = MPI_Iscan(
             MPI_IN_PLACE, receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::inclusive_scan_in_place", environment);
     }
@@ -893,17 +850,17 @@ namespace yampi
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            SendValue>::value),
         "value_type of ContiguousIterator must be the same to SendValue");
-      assert(send_buffer.data() != YAMPI_addressof(*first));
+      assert(send_buffer.data() != std::addressof(*first));
 
       int const error_code
         = MPI_Iexscan(
-            send_buffer.data(), YAMPI_addressof(*first),
+            send_buffer.data(), std::addressof(*first),
             send_buffer.count(), send_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::exclusive_scan", environment);
     }
@@ -919,7 +876,7 @@ namespace yampi
         = MPI_Iexscan(
             MPI_IN_PLACE, receive_buffer.data(),
             receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), communicator.mpi_comm(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), communicator.mpi_comm(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::exclusive_scan_in_place", environment);
     }
@@ -933,7 +890,7 @@ namespace yampi
     {
       new_communicator.free();
       int const error_code
-        = MPI_Comm_idup(old_communicator.mpi_comm(), YAMPI_addressof(new_communicator.mpi_comm()), YAMPI_addressof(mpi_request));
+        = MPI_Comm_idup(old_communicator.mpi_comm(), std::addressof(new_communicator.mpi_comm()), std::addressof(mpi_request));
 
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::immediate_request_detail::duplicate_communicator", environment);
@@ -954,38 +911,31 @@ namespace yampi
   struct request_exclusive_scan_t { };
   struct request_duplicate_communicator_t { };
 
-  inline BOOST_CONSTEXPR ::yampi::request_burrier_t request_barrier() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_barrier_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_broadcast_t request_broadcast() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_broadcast_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_gather_t request_gather() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_gather_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_scatter_t request_scatter() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_scatter_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_all_gather_t request_all_gather() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_all_gather_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_complete_exchange_t request_complete_exchange() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_complete_exchange_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_reduce_t request_reduce() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_reduce_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_all_reduce_t request_all_reduce() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_all_reduce_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_reduce_scatter_t request_reduce_scatter() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_reduce_scatter_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_inclusive_scan_t request_inclusive_scan() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_inclusive_scan_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_exclusive_scan_t request_exclusive_scan() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_exclusive_scan_t(); }
+# if __cplusplus >= 201703L
+  inline constexpr ::yampi::request_barrier_t request_barrier{};
+  inline constexpr ::yampi::request_broadcast_t request_broadcast{};
+  inline constexpr ::yampi::request_gather_t request_gather{};
+  inline constexpr ::yampi::request_scatter_t request_scatter{};
+  inline constexpr ::yampi::request_all_gather_t request_all_gather{};
+  inline constexpr ::yampi::request_complete_exchange_t request_complete_exchange{};
+  inline constexpr ::yampi::request_reduce_t request_reduce{};
+  inline constexpr ::yampi::request_all_reduce_t request_all_reduce{};
+  inline constexpr ::yampi::request_reduce_scatter_t request_reduce_scatter{};
+  inline constexpr ::yampi::request_inclusive_scan_t request_inclusive_scan{};
+  inline constexpr ::yampi::request_exclusive_scan_t request_exclusive_scan{};
+# else
+  constexpr ::yampi::request_barrier_t request_barrier{};
+  constexpr ::yampi::request_broadcast_t request_broadcast{};
+  constexpr ::yampi::request_gather_t request_gather{};
+  constexpr ::yampi::request_scatter_t request_scatter{};
+  constexpr ::yampi::request_all_gather_t request_all_gather{};
+  constexpr ::yampi::request_complete_exchange_t request_complete_exchange{};
+  constexpr ::yampi::request_reduce_t request_reduce{};
+  constexpr ::yampi::request_all_reduce_t request_all_reduce{};
+  constexpr ::yampi::request_reduce_scatter_t request_reduce_scatter{};
+  constexpr ::yampi::request_inclusive_scan_t request_inclusive_scan{};
+  constexpr ::yampi::request_exclusive_scan_t request_exclusive_scan{};
+# endif
 
   class immediate_request_ref;
   class immediate_request_cref;
@@ -1000,34 +950,17 @@ namespace yampi
     typedef ::yampi::immediate_request_ref reference_type;
     typedef ::yampi::immediate_request_cref const_reference_type;
 
-    immediate_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_default_constructible<base_type>::value)
+    immediate_request() noexcept(std::is_nothrow_default_constructible<base_type>::value)
       : base_type()
     { }
 
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     immediate_request(immediate_request const&) = delete;
     immediate_request& operator=(immediate_request const&) = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    immediate_request(immediate_request const&);
-    immediate_request& operator=(immediate_request const&);
-
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     immediate_request(immediate_request&&) = default;
     immediate_request& operator=(immediate_request&&) = default;
-#   endif
-    ~immediate_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    ~immediate_request() noexcept = default;
 
-    //using base_type::base_type;
-    explicit immediate_request(MPI_Request const& mpi_request)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Request>::value)
-      : base_type(mpi_request)
-    { }
+    using base_type::base_type;
 
     // send
     template <typename Value>
@@ -1041,7 +974,7 @@ namespace yampi
     template <typename Value>
     immediate_request(
       ::yampi::request_send_t const,
-      ::yampi::mode::standard_communication const,
+      ::yampi::mode::standard_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
@@ -1050,7 +983,7 @@ namespace yampi
     template <typename Value>
     immediate_request(
       ::yampi::request_send_t const,
-      ::yampi::mode::buffered_communication const,
+      ::yampi::mode::buffered_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_buffered_send_request(buffer, destination, tag, communicator, environment))
@@ -1059,7 +992,7 @@ namespace yampi
     template <typename Value>
     immediate_request(
       ::yampi::request_send_t const,
-      ::yampi::mode::synchronous_communication const,
+      ::yampi::mode::synchronous_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_synchronous_send_request(buffer, destination, tag, communicator, environment))
@@ -1068,7 +1001,7 @@ namespace yampi
     template <typename Value>
     immediate_request(
       ::yampi::request_send_t const,
-      ::yampi::mode::ready_communication const,
+      ::yampi::mode::ready_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
       : base_type(make_ready_send_request(buffer, destination, tag, communicator, environment))
@@ -1088,7 +1021,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const source,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, source, ::yampi::any_tag(), communicator, environment))
+      : base_type(make_receive_request(buffer, source, ::yampi::any_tag, communicator, environment))
     { }
 
     template <typename Value>
@@ -1096,7 +1029,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment))
+      : base_type(make_receive_request(buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment))
     { }
 # if MPI_VERSION >= 3
 
@@ -2500,28 +2433,28 @@ namespace yampi
 
     template <typename Value>
     void send(
-      ::yampi::mode::standard_communication const,
+      ::yampi::mode::standard_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::standard_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::buffered_communication const,
+      ::yampi::mode::buffered_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::buffered_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::synchronous_communication const,
+      ::yampi::mode::synchronous_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::synchronous_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::ready_communication const,
+      ::yampi::mode::ready_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::ready_send(mpi_request_, buffer, destination, tag, communicator, environment); }
@@ -2537,13 +2470,13 @@ namespace yampi
     void receive(
       ::yampi::buffer<Value> buffer, ::yampi::rank const source,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, source, ::yampi::any_tag(), communicator, environment); }
+    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, source, ::yampi::any_tag, communicator, environment); }
 
     template <typename Value>
     void receive(
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 # if MPI_VERSION >= 3
 
     template <typename Value>
@@ -2829,7 +2762,7 @@ namespace yampi
 # endif // MPI_VERSION >= 3
   };
 
-  inline void swap(::yampi::immediate_request& lhs, ::yampi::immediate_request& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::immediate_request& lhs, ::yampi::immediate_request& rhs) noexcept
   { lhs.swap(rhs); }
 
   class immediate_request_ref
@@ -2838,36 +2771,18 @@ namespace yampi
     typedef ::yampi::request_ref_base base_type;
 
    public:
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     immediate_request_ref() = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    immediate_request_ref();
+    ~immediate_request_ref() noexcept = default;
 
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~immediate_request_ref() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~immediate_request_ref() BOOST_NOEXCEPT_OR_NOTHROW { }
-# endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-
-    //using base_type::base_type;
-    explicit immediate_request_ref(MPI_Request& mpi_request)
-      : base_type(mpi_request)
-    { }
-
+    using base_type::base_type;
     using base_type::reset;
 
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(::yampi::immediate_request&& request, ::yampi::environment const& environment)
     {
       free(environment);
       *mpi_request_ptr_ = std::move(request.mpi_request_);
       request.mpi_request_ = MPI_REQUEST_NULL;
     }
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     // send
     template <typename Value>
@@ -3390,28 +3305,28 @@ namespace yampi
 
     template <typename Value>
     void send(
-      ::yampi::mode::standard_communication const,
+      ::yampi::mode::standard_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::standard_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::buffered_communication const,
+      ::yampi::mode::buffered_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::buffered_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::synchronous_communication const,
+      ::yampi::mode::synchronous_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::synchronous_send(mpi_request_, buffer, destination, tag, communicator, environment); }
 
     template <typename Value>
     void send(
-      ::yampi::mode::ready_communication const,
+      ::yampi::mode::ready_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
     { ::yampi::immediate_request_detail::ready_send(mpi_request_, buffer, destination, tag, communicator, environment); }
@@ -3427,13 +3342,13 @@ namespace yampi
     void receive(
       ::yampi::buffer<Value> buffer, ::yampi::rank const source,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, source, ::yampi::any_tag(), communicator, environment); }
+    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, source, ::yampi::any_tag, communicator, environment); }
 
     template <typename Value>
     void receive(
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+    { ::yampi::immediate_request_detail::receive(mpi_request_, buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 # if MPI_VERSION >= 3
 
     template <typename Value>
@@ -3719,7 +3634,7 @@ namespace yampi
 # endif // MPI_VERSION >= 3
   };
 
-  inline void swap(::yampi::immediate_request_ref& lhs, ::yampi::immediate_request_ref& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::immediate_request_ref& lhs, ::yampi::immediate_request_ref& rhs) noexcept
   { lhs.swap(rhs); }
 
   class immediate_request_cref
@@ -3728,43 +3643,13 @@ namespace yampi
     typedef ::yampi::request_cref_base base_type;
 
    public:
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     immediate_request_cref() = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    immediate_request_cref();
+    ~immediate_request_cref() noexcept = default;
 
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~immediate_request_cref() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~immediate_request_cref() BOOST_NOEXCEPT_OR_NOTHROW { }
-# endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-
-    //using base_type::base_type;
-    explicit immediate_request_cref(MPI_Request const& mpi_request)
-      : base_type(mpi_request)
-    { }
-
-    explicit immediate_request_cref(request_ref_base const& request)
-      : base_type(request)
-    { }
+    using base_type::base_type;
   };
 }
 
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   undef nullptr
-# endif
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_addressof
-# undef YAMPI_is_nothrow_copy_constructible
-# undef YAMPI_is_nothrow_default_constructible
-# undef YAMPI_is_same
 
 #endif
 
