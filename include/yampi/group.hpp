@@ -1,79 +1,24 @@
 #ifndef YAMPI_GROUP_HPP
 # define YAMPI_GROUP_HPP
 
-# include <boost/config.hpp>
-
 # include <iterator>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/type_traits/remove_cv.hpp>
-#   include <boost/type_traits/remove_volatile.hpp>
-#   include <boost/type_traits/is_same.hpp>
-#   include <boost/type_traits/has_nothrow_copy.hpp>
-#   include <boost/type_traits/has_nothrow_assign.hpp>
-#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
-#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
-#   include <boost/utility/enable_if.hpp>
 # endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
-
-# include <boost/range/begin.hpp>
-# include <boost/range/end.hpp>
 
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/rank.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_remove_cv std::remove_cv
-#   define YAMPI_remove_volatile std::remove_volatile
-#   define YAMPI_is_same std::is_same
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-#   define YAMPI_is_nothrow_copy_assignable std::is_nothrow_copy_assignable
-#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
-#   define YAMPI_enable_if std::enable_if
-# else
-#   define YAMPI_remove_cv boost::remove_cv
-#   define YAMPI_remove_volatile boost::remove_volatile
-#   define YAMPI_is_same boost::is_same
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-#   define YAMPI_is_nothrow_copy_assignable boost::has_nothrow_assign
-#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
-#   define YAMPI_enable_if boost::enable_if_c
-# endif
-
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
 # else
 #   define YAMPI_is_nothrow_swappable boost::is_nothrow_swappable
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
 # endif
 
 
@@ -92,7 +37,7 @@ namespace yampi
     int data_[3];
 
    public:
-    BOOST_CONSTEXPR strided_rank_range(::yampi::rank const first_rank, ::yampi::rank const last_rank, int const stride = 1) BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr strided_rank_range(::yampi::rank const first_rank, ::yampi::rank const last_rank, int const stride = 1) noexcept
       : data_()
     {
       data_[0] = first_rank.mpi_rank();
@@ -100,29 +45,28 @@ namespace yampi
       data_[2] = stride;
     }
 
-    BOOST_CONSTEXPR ::yampi::rank first_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(data_[0]); }
-    BOOST_CONSTEXPR ::yampi::rank last_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return ::yampi::rank(data_[1]); }
-    BOOST_CONSTEXPR int stride() const BOOST_NOEXCEPT_OR_NOTHROW { return data_[2]; }
+    constexpr ::yampi::rank first_rank() const noexcept { return ::yampi::rank(data_[0]); }
+    constexpr ::yampi::rank last_rank() const noexcept { return ::yampi::rank(data_[1]); }
+    constexpr int stride() const noexcept { return data_[2]; }
 
-    void swap(strided_rank_range& other) BOOST_NOEXCEPT_OR_NOTHROW
+    void swap(strided_rank_range& other) noexcept
     {
       using std::swap;
       swap(data_, other.data_);
     }
   }; // class strided_rank_range
 
-  BOOST_CONSTEXPR inline bool operator==(
+  inline constexpr bool operator==(
     ::yampi::strided_rank_range const& lhs, ::yampi::strided_rank_range const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
   { return lhs.first_rank() == rhs.first_rank() and lhs.last_rank() == rhs.last_rank() and lhs.stride() == rhs.stride(); }
 
-  BOOST_CONSTEXPR inline bool operator!=(
+  inline constexpr bool operator!=(
     ::yampi::strided_rank_range const& lhs, ::yampi::strided_rank_range const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+    noexcept
   { return not (lhs == rhs); }
 
-  inline void swap(::yampi::strided_rank_range& lhs, ::yampi::strided_rank_range& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::strided_rank_range& lhs, ::yampi::strided_rank_range& rhs) noexcept
   { lhs.swap(rhs); }
 
   class group
@@ -130,60 +74,50 @@ namespace yampi
     MPI_Group mpi_group_;
 
    public:
-    group()
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
+    group() noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(MPI_GROUP_NULL)
     { }
 
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     group(group const&) = delete;
     group& operator=(group const&) = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    group(group const&);
-    group& operator=(group const&);
 
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     group(group&& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_move_constructible<MPI_Group>::value
-        and YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
+      noexcept(
+        std::is_nothrow_move_constructible<MPI_Group>::value
+        and std::is_nothrow_copy_assignable<MPI_Group>::value)
       : mpi_group_(std::move(other.mpi_group_))
     { other.mpi_group_ = MPI_GROUP_NULL; }
 
     group& operator=(group&& other)
-      BOOST_NOEXCEPT_IF(
-        YAMPI_is_nothrow_move_assignable<MPI_Group>::value
-        and YAMPI_is_nothrow_copy_assignable<MPI_Group>::value)
+      noexcept(
+        std::is_nothrow_move_assignable<MPI_Group>::value
+        and std::is_nothrow_copy_assignable<MPI_Group>::value)
     {
-      if (this != YAMPI_addressof(other))
+      if (this != std::addressof(other))
       {
         if (mpi_group_ != MPI_GROUP_NULL and mpi_group_ != MPI_GROUP_EMPTY)
-          MPI_Group_free(YAMPI_addressof(mpi_group_));
+          MPI_Group_free(std::addressof(mpi_group_));
         mpi_group_ = std::move(other.mpi_group_);
         other.mpi_group_ = MPI_GROUP_NULL;
       }
       return *this;
     }
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
-    ~group() BOOST_NOEXCEPT_OR_NOTHROW
+    ~group() noexcept
     {
       if (mpi_group_ == MPI_GROUP_NULL or mpi_group_ == MPI_GROUP_EMPTY)
         return;
 
-      MPI_Group_free(YAMPI_addressof(mpi_group_));
+      MPI_Group_free(std::addressof(mpi_group_));
     }
 
     explicit group(MPI_Group const& mpi_group)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
+      noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(mpi_group)
     { }
 
     explicit group(::yampi::empty_group_t const)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Group>::value)
+      noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
       : mpi_group_(MPI_GROUP_EMPTY)
     { }
 
@@ -212,7 +146,7 @@ namespace yampi
       ::yampi::make_inclusive_t const,
       group const& original_group, ContiguousRange const& ranks,
       ::yampi::environment const& environment)
-      : mpi_group_(make_inclusive(original_group, boost::begin(ranks), boost::end(ranks), environment))
+      : mpi_group_(make_inclusive(original_group, std::begin(ranks), std::end(ranks), environment))
     { }
 
     template <typename ContiguousIterator>
@@ -228,7 +162,7 @@ namespace yampi
       ::yampi::make_exclusive_t const,
       group const& original_group, ContiguousRange const& ranks,
       ::yampi::environment const& environment)
-      : mpi_group_(make_exclusive(original_group, boost::begin(ranks), boost::end(ranks), environment))
+      : mpi_group_(make_exclusive(original_group, std::begin(ranks), std::end(ranks), environment))
     { }
 
    private:
@@ -238,7 +172,7 @@ namespace yampi
     {
       MPI_Group result;
       int const error_code
-        = MPI_Group_union(lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
+        = MPI_Group_union(lhs.mpi_group(), rhs.mpi_group(), std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::group::make_union", environment);
@@ -251,7 +185,7 @@ namespace yampi
       MPI_Group result;
       int const error_code
         = MPI_Group_intersection(
-            lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
+            lhs.mpi_group(), rhs.mpi_group(), std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -265,7 +199,7 @@ namespace yampi
       MPI_Group result;
       int const error_code
         = MPI_Group_difference(
-            lhs.mpi_group(), rhs.mpi_group(), YAMPI_addressof(result));
+            lhs.mpi_group(), rhs.mpi_group(), std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -273,9 +207,9 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    typename YAMPI_enable_if<
-      YAMPI_is_same<
-        typename YAMPI_remove_cv<
+    typename std::enable_if<
+      std::is_same<
+        typename std::remove_cv<
           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
         ::yampi::rank>::value,
       MPI_Group>::type
@@ -288,8 +222,8 @@ namespace yampi
       int const error_code
         = MPI_Group_incl(
             original_group.mpi_group(), last-first,
-            reinterpret_cast<int const*>(YAMPI_addressof(*first)),
-            YAMPI_addressof(result));
+            reinterpret_cast<int const*>(std::addressof(*first)),
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -297,9 +231,9 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    typename YAMPI_enable_if<
-      YAMPI_is_same<
-        typename YAMPI_remove_cv<
+    typename std::enable_if<
+      std::is_same<
+        typename std::remove_cv<
           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
         ::yampi::strided_rank_range>::value,
       MPI_Group>::type
@@ -312,8 +246,8 @@ namespace yampi
       int const error_code
         = MPI_Group_range_incl(
             original_group.mpi_group(), last-first,
-            reinterpret_cast<int [][3]>(YAMPI_addressof(*first)),
-            YAMPI_addressof(result));
+            reinterpret_cast<int [][3]>(std::addressof(*first)),
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -321,9 +255,9 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    typename YAMPI_enable_if<
-      YAMPI_is_same<
-        typename YAMPI_remove_cv<
+    typename std::enable_if<
+      std::is_same<
+        typename std::remove_cv<
           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
         ::yampi::rank>::value,
       MPI_Group>::type
@@ -336,8 +270,8 @@ namespace yampi
       int const error_code
         = MPI_Group_excl(
             original_group.mpi_group(), last-first,
-            reinterpret_cast<int const*>(YAMPI_addressof(*first)),
-            YAMPI_addressof(result));
+            reinterpret_cast<int const*>(std::addressof(*first)),
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -345,9 +279,9 @@ namespace yampi
     }
 
     template <typename ContiguousIterator>
-    typename YAMPI_enable_if<
-      YAMPI_is_same<
-        typename YAMPI_remove_cv<
+    typename std::enable_if<
+      std::is_same<
+        typename std::remove_cv<
           typename std::iterator_traits<ContiguousIterator>::value_type>::type,
         ::yampi::strided_rank_range>::value,
       MPI_Group>::type
@@ -360,8 +294,8 @@ namespace yampi
       int const error_code
         = MPI_Group_range_excl(
             original_group.mpi_group(), last-first,
-            reinterpret_cast<int [][3]>(YAMPI_addressof(*first)),
-            YAMPI_addressof(result));
+            reinterpret_cast<int [][3]>(std::addressof(*first)),
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -378,14 +312,12 @@ namespace yampi
       mpi_group_ = mpi_group;
     }
 
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(group&& other, ::yampi::environment const& environment)
     {
       free(environment);
       mpi_group_ = std::move(other.mpi_group_);
       other.mpi_group_ = MPI_GROUP_NULL;
     }
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     void reset(::yampi::empty_group_t const, ::yampi::environment const& environment)
     {
@@ -436,7 +368,7 @@ namespace yampi
       free(environment);
       mpi_group_
         = make_inclusive(
-            original_group, boost::begin(ranks), boost::end(ranks), environment);
+            original_group, std::begin(ranks), std::end(ranks), environment);
     }
 
     template <typename ContiguousIterator>
@@ -458,7 +390,7 @@ namespace yampi
       free(environment);
       mpi_group_
         = make_exclusive(
-            original_group, boost::begin(ranks), boost::end(ranks), environment);
+            original_group, std::begin(ranks), std::end(ranks), environment);
     }
 
     void free(::yampi::environment const& environment)
@@ -471,14 +403,13 @@ namespace yampi
         throw ::yampi::error(error_code, "yampi::group::free", environment);
     }
 
-    bool is_null() const
-      BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(mpi_group_ == MPI_GROUP_NULL))
+    bool is_null() const noexcept(noexcept(mpi_group_ == MPI_GROUP_NULL))
     { return mpi_group_ == MPI_GROUP_NULL; }
 
     int size(::yampi::environment const& environment) const
     {
       int result;
-      int const error_code = MPI_Group_size(mpi_group_, YAMPI_addressof(result));
+      int const error_code = MPI_Group_size(mpi_group_, std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::group::size", environment);
@@ -487,24 +418,22 @@ namespace yampi
     ::yampi::rank rank(::yampi::environment const& environment) const
     {
       int mpi_rank;
-      int const error_code = MPI_Group_rank(mpi_group_, YAMPI_addressof(mpi_rank));
+      int const error_code = MPI_Group_rank(mpi_group_, std::addressof(mpi_rank));
       return error_code == MPI_SUCCESS
         ? ::yampi::rank(mpi_rank)
         : throw ::yampi::error(error_code, "yampi::group::rank", environment);
     }
 
-    MPI_Group const& mpi_group() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_group_; }
+    MPI_Group const& mpi_group() const noexcept { return mpi_group_; }
 
-    void swap(group& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<MPI_Group>::value)
+    void swap(group& other) noexcept(YAMPI_is_nothrow_swappable<MPI_Group>::value)
     {
       using std::swap;
       swap(mpi_group_, other.mpi_group_);
     }
   };
 
-  inline void swap(::yampi::group& lhs, ::yampi::group& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::group& lhs, ::yampi::group& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 
@@ -514,14 +443,14 @@ namespace yampi
     ::yampi::group const& new_group, ContiguousIterator2 out, ::yampi::environment const& environment)
   {
     static_assert(
-      (YAMPI_is_same<
-         typename YAMPI_remove_cv<
+      (std::is_same<
+         typename std::remove_cv<
            typename std::iterator_traits<ContiguousIterator1>::value_type>::type,
          ::yampi::rank>::value),
       "Value type of ContiguousIterator1 must be the same to ::yampi::rank");
     static_assert(
-      (YAMPI_is_same<
-         typename YAMPI_remove_volatile<
+      (std::is_same<
+         typename std::remove_volatile<
            typename std::iterator_traits<ContiguousIterator2>::value_type>::type,
          ::yampi::rank>::value),
       "Value type of ContiguousIterator2 must be the same to ::yampi::rank");
@@ -529,8 +458,8 @@ namespace yampi
     int const error_code
       = MPI_Group_translate_ranks(
           old_group.mpi_group(), last-first,
-          reinterpret_cast<int const*>(YAMPI_addressof(*first)),
-          new_group.mpi_group(), reinterpret_cast<int*>(YAMPI_addressof(*out)));
+          reinterpret_cast<int const*>(std::addressof(*first)),
+          new_group.mpi_group(), reinterpret_cast<int*>(std::addressof(*out)));
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::translate", environment);
   }
@@ -540,24 +469,11 @@ namespace yampi
     ::yampi::group const& old_group, ContiguousRange const& old_ranks,
     ::yampi::group const& new_group, ContiguousIterator out,
     ::yampi::environment const& environment)
-  { translate(old_group, boost::begin(old_ranks), boost::end(old_ranks), new_group, out, environment); }
+  { translate(old_group, std::begin(old_ranks), std::end(old_ranks), new_group, out, environment); }
 }
 
 
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_addressof
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_enable_if
-# undef YAMPI_is_nothrow_move_assignable
-# undef YAMPI_is_nothrow_move_constructible
-# undef YAMPI_is_nothrow_copy_assignable
-# undef YAMPI_is_nothrow_copy_constructible
-# undef YAMPI_remove_cv
-# undef YAMPI_remove_volatile
-# undef YAMPI_is_same
-
 
 #endif
 

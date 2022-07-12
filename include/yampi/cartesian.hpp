@@ -1,63 +1,20 @@
 #ifndef YAMPI_CARTESIAN_HPP
 # define YAMPI_CARTESIAN_HPP
 
-# include <boost/config.hpp>
-
 # include <vector>
 # include <iterator>
 # include <algorithm>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/remove_cv.hpp>
-#   include <boost/type_traits/remove_volatile.hpp>
-#   include <boost/type_traits/is_same.hpp>
-#   include <boost/type_traits/has_nothrow_copy.hpp>
-#   include <boost/type_traits/is_nothrow_move_constructible.hpp>
-#   include <boost/type_traits/is_nothrow_move_assignable.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <type_traits>
+# include <memory>
 
 # include <mpi.h>
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   include <boost/static_assert.hpp>
-# endif
 
 # include <yampi/topology.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 # include <yampi/rank.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_remove_cv std::remove_cv
-#   define YAMPI_is_same std::is_same
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-#   define YAMPI_is_nothrow_move_constructible std::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable std::is_nothrow_move_assignable
-# else
-#   define YAMPI_remove_cv boost::remove_cv
-#   define YAMPI_is_same boost::is_same
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-#   define YAMPI_is_nothrow_move_constructible boost::is_nothrow_move_constructible
-#   define YAMPI_is_nothrow_move_assignable boost::is_nothrow_move_assignable
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   define static_assert BOOST_STATIC_ASSERT_MSG
-# endif
 
 
 namespace yampi
@@ -82,48 +39,14 @@ namespace yampi
     typedef ::yampi::topology base_type;
 
    public:
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     cartesian() = delete;
     cartesian(cartesian const&) = delete;
     cartesian& operator=(cartesian const&) = delete;
-# else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    cartesian();
-    cartesian(cartesian const&);
-    cartesian& operator=(cartesian const&);
-
-   public:
-# endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-# ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     cartesian(cartesian&&) = default;
     cartesian& operator=(cartesian&&) = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    cartesian(cartesian&& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_move_constructible< ::yampi::topology >::value)
-      : base_type(std::move(other))
-    { }
-
-    cartesian& operator=(cartesian&& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_move_assignable< ::yampi::communicator >::value)
-    {
-      if (this != YAMPI_addressof(other))
-        communicator_ = std::move(other.communicator_);
-      return *this;
-    }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-# endif // BOOST_NO_CXX11_RVALUE_REFERENCES
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     ~cartesian() = default;
-# else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~cartesian() { }
-# endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 
-    //using base_type::base_type;
-    explicit cartesian(MPI_Comm const& mpi_comm)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Comm>::value)
-      : base_type(mpi_comm)
-    { }
+    using base_type::base_type;
 
     template <typename ContiguousIterator1, typename ContiguousIterator2>
     cartesian(
@@ -168,14 +91,14 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator1>::value_type>::type,
            int>::value),
         "Value type of ContiguousIterator1 must be the same to int");
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator2>::value_type>::type,
            bool>::value),
         "Value type of ContiguousIterator2 must be the same to bool");
@@ -186,10 +109,10 @@ namespace yampi
       int const error_code
         = MPI_Cart_create(
             old_communicator.mpi_comm(),
-            size_last-size_first, YAMPI_addressof(*size_first),
-            YAMPI_addressof(my_is_periodic.front()),
+            size_last-size_first, std::addressof(*size_first),
+            std::addressof(my_is_periodic.front()),
             static_cast<int>(is_reorderable),
-            YAMPI_addressof(result));
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::cartesian::create", environment);
@@ -202,8 +125,8 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
            bool>::value),
         "Value type of ContiguousIterator must be the same to bool");
@@ -213,8 +136,8 @@ namespace yampi
       MPI_Comm result;
       int const error_code
         = MPI_Cart_sub(
-            other.communicator().mpi_comm(), YAMPI_addressof(my_remains.front()),
-            YAMPI_addressof(result));
+            other.communicator().mpi_comm(), std::addressof(my_remains.front()),
+            std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(
@@ -268,7 +191,7 @@ namespace yampi
     {
       int result;
       int const error_code
-        = MPI_Cartdim_get(communicator_.mpi_comm(), YAMPI_addressof(result));
+        = MPI_Cartdim_get(communicator_.mpi_comm(), std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::cartesian::dimension", environment);
@@ -282,20 +205,20 @@ namespace yampi
       ::yampi::environment const& environment)
     {
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator1>::value_type>::type,
            int>::value),
         "Value type of ContiguousIterator1 must be the same to int");
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator2>::value_type>::type,
            bool>::value),
         "Value type of ContiguousIterator2 must be the same to bool");
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator3>::value_type>::type,
            int>::value),
         "Value type of ContiguousIterator3 must be the same to int");
@@ -305,13 +228,13 @@ namespace yampi
       int const error_code
         = MPI_Cart_get(
             communicator_.mpi_comm(),
-            size_out_last - size_out_first, YAMPI_addressof(*size_out_first),
-            YAMPI_addressof(my_is_periodic.front()),
-            YAMPI_addressof(*coordinates_out));
+            size_out_last - size_out_first, std::addressof(*size_out_first),
+            std::addressof(my_is_periodic.front()),
+            std::addressof(*coordinates_out));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::topology_information", environment);
       std::transform(
-        boost::begin(my_is_periodic), boost::end(my_is_periodic), is_periodic_out);
+        std::begin(my_is_periodic), std::end(my_is_periodic), is_periodic_out);
     }
 
     template <typename ContiguousIterator>
@@ -319,8 +242,8 @@ namespace yampi
       ContiguousIterator const coordinates_first, ::yampi::environment const& environment) const
     {
       static_assert(
-        (YAMPI_is_same<
-           typename YAMPI_remove_cv<
+        (std::is_same<
+           typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
            int>::value),
         "Value type of ContiguousIterator1 must be the same to int");
@@ -328,8 +251,8 @@ namespace yampi
       int mpi_rank;
       int const error_code
         = MPI_Cart_rank(
-            communicator_.mpi_comm(), YAMPI_addressof(*coordinates_first),
-            YAMPI_addressof(mpi_rank));
+            communicator_.mpi_comm(), std::addressof(*coordinates_first),
+            std::addressof(mpi_rank));
       return error_code == MPI_SUCCESS
         ? ::yampi::rank(mpi_rank)
         : throw ::yampi::error(error_code, "yampi::cartesian::rank", environment);
@@ -343,7 +266,7 @@ namespace yampi
       ::yampi::environment const& environment) const
     {
       static_assert(
-        (YAMPI_is_same<
+        (std::is_same<
            typename std::iterator_traits<ContiguousIterator>::value_type,
            int>::value),
         "Value type of ContiguousIterator1 must be the same to int");
@@ -352,27 +275,16 @@ namespace yampi
         = MPI_Cart_coords(
             communicator_.mpi_comm(), rank.mpi_rank(),
             coordinates_out_last - coordinates_out_first,
-            YAMPI_addressof(*coordinates_out_first));
+            std::addressof(*coordinates_out_first));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::coordinates", environment);
     }
   };
 
-  inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::cartesian& lhs, ::yampi::cartesian& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
-
-# ifdef BOOST_NO_CXX11_STATIC_ASSERT
-#   undef static_assert
-# endif
-# undef YAMPI_addressof
-# undef YAMPI_is_nothrow_move_assignable
-# undef YAMPI_is_nothrow_move_constructible
-# undef YAMPI_is_nothrow_copy_constructible
-# undef YAMPI_remove_cv
-# undef YAMPI_is_same
 
 #endif
 

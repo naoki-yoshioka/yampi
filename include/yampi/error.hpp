@@ -1,8 +1,6 @@
 #ifndef YAMPI_ERROR_HPP
 # define YAMPI_ERROR_HPP
 
-# include <boost/config.hpp>
-
 # include <string>
 # include <stdexcept>
 

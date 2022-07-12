@@ -1,20 +1,10 @@
 #ifndef YAMPI_RMA_REQUEST_HPP
 # define YAMPI_RMA_REQUEST_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-# else
-#   include <boost/type_traits/has_nothrow_copy.hpp>
-# endif
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <type_traits>
+# include <memory>
 
 # include <mpi.h>
 
@@ -27,18 +17,6 @@
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
 
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_is_nothrow_copy_constructible std::is_nothrow_copy_constructible
-# else
-#   define YAMPI_is_nothrow_copy_constructible boost::has_nothrow_copy_constructor
-# endif
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
 
 # if MPI_VERSION >= 3
 namespace yampi
@@ -48,17 +26,17 @@ namespace yampi
   struct request_accumulate_t { };
   struct request_fetch_accumulate_t { };
 
-  inline BOOST_CONSTEXPR ::yampi::request_put_t request_put() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_put_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_get_t request_get() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_get_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_accumulate_t request_accumulate() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_accumulate_t(); }
-
-  inline BOOST_CONSTEXPR ::yampi::request_fetch_accumulate_t request_fetch_accumulate() BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::request_fetch_accumulate_t(); }
+# if __cplusplus >= 201703L
+  inline constexpr ::yampi::request_put_t request_put{};
+  inline constexpr ::yampi::request_get_t request_get{};
+  inline constexpr ::yampi::request_accumulate_t request_accumulate{};
+  inline constexpr ::yampi::request_fetch_accumulate_t request_fetch_accumulate{};
+# else
+  constexpr ::yampi::request_put_t request_put{};
+  constexpr ::yampi::request_get_t request_get{};
+  constexpr ::yampi::request_accumulate_t request_accumulate{};
+  constexpr ::yampi::request_fetch_accumulate_t request_fetch_accumulate{};
+# endif
 
   class rma_request_ref;
   class rma_request_cref;
@@ -73,34 +51,17 @@ namespace yampi
     typedef ::yampi::rma_request_ref reference_type;
     typedef ::yampi::rma_request_cref const_reference_type;
 
-    rma_request() BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<base_type>::value)
+    rma_request() noexcept(std::is_nothrow_copy_constructible<base_type>::value)
       : base_type()
     { }
 
-#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     rma_request(rma_request const&) = delete;
     rma_request& operator=(rma_request const&) = delete;
-#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    rma_request(rma_request const&);
-    rma_request& operator=(rma_request const&);
-
-   public:
-#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-#     ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     rma_request(rma_request&&) = default;
     rma_request& operator=(rma_request&&) = default;
-#     endif
-    ~rma_request() BOOST_NOEXCEPT_OR_NOTHROW = default;
-#   endif
+    ~rma_request() noexcept = default;
 
-    //using base_type::base_type;
-    explicit rma_request(MPI_Request const& mpi_request)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_copy_constructible<MPI_Request>::value)
-      : base_type(mpi_request)
-    { }
+    using base_type::base_type;
 
     template <typename OriginValue, typename TargetValue, typename Window>
     rma_request(
@@ -152,7 +113,7 @@ namespace yampi
         = MPI_Rput(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            window.mpi_win(), YAMPI_addressof(mpi_request));
+            window.mpi_win(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_put", environment);
     }
@@ -179,7 +140,7 @@ namespace yampi
         = MPI_Rget(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            window.mpi_win(), YAMPI_addressof(mpi_request));
+            window.mpi_win(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_get", environment);
     }
@@ -207,7 +168,7 @@ namespace yampi
         = MPI_Raccumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), window.mpi_win(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_accumulate", environment);
     }
@@ -239,7 +200,7 @@ namespace yampi
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
             target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
-            operation.mpi_op(), window.mpi_win(), YAMPI_addressof(mpi_request));
+            operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_fetch_accumulate", environment);
     }
@@ -336,7 +297,7 @@ namespace yampi
     { do_fetch_accumulate(mpi_request_, origin_buffer, result_buffer, target, target_buffer, operation, window, environment); }
   };
 
-  inline void swap(::yampi::rma_request& lhs, ::yampi::rma_request& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::rma_request& lhs, ::yampi::rma_request& rhs) noexcept
   { lhs.swap(rhs); }
 
   class rma_request_ref
@@ -345,36 +306,18 @@ namespace yampi
     typedef ::yampi::request_ref_base base_type;
 
    public:
-#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     rma_request_ref() = delete;
-#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    rma_request_ref();
+    ~rma_request_ref() noexcept = default;
 
-   public:
-#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~rma_request_ref() BOOST_NOEXCEPT_OR_NOTHROW = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~rma_request_ref() BOOST_NOEXCEPT_OR_NOTHROW { }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-
-    //using base_type::base_type;
-    explicit rma_request_ref(MPI_Request& mpi_request)
-      : base_type(mpi_request)
-    { }
-
+    using base_type::base_type;
     using base_type::reset;
 
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     void reset(::yampi::rma_request&& request, ::yampi::environment const& environment)
     {
       free(environment);
       *mpi_request_ptr_ = std::move(request.mpi_request_);
       request.mpi_request_ = MPI_REQUEST_NULL;
     }
-#   endif // BOOST_NO_CXX11_RVALUE_REFERENCES
 
     template <typename OriginValue, typename TargetValue, typename Window>
     void reset(
@@ -488,7 +431,7 @@ namespace yampi
     }
   };
 
-  inline void swap(::yampi::rma_request_ref& lhs, ::yampi::rma_request_ref& rhs) BOOST_NOEXCEPT_OR_NOTHROW
+  inline void swap(::yampi::rma_request_ref& lhs, ::yampi::rma_request_ref& rhs) noexcept
   { lhs.swap(rhs); }
 
   class rma_request_cref
@@ -497,36 +440,14 @@ namespace yampi
     typedef ::yampi::request_cref_base base_type;
 
    public:
-#   ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     rma_request_cref() = delete;
-#   else // BOOST_NO_CXX11_DELETED_FUNCTIONS
-   private:
-    rma_request_cref();
+    ~rma_request_cref() noexcept = default;
 
-   public:
-#   endif // BOOST_NO_CXX11_DELETED_FUNCTIONS
-
-#   ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~rma_request_cref() BOOST_NOEXCEPT_OR_NOTHROW = default;
-#   else // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-    ~rma_request_cref() BOOST_NOEXCEPT_OR_NOTHROW { }
-#   endif // BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
-
-    //using base_type::base_type;
-    explicit rma_request_cref(MPI_Request const& mpi_request)
-      : base_type(mpi_request)
-    { }
-
-    explicit rma_request_cref(request_ref_base const& request)
-      : base_type(request)
-    { }
+    using base_type::base_type;
   };
 }
 # endif // MPI_VERSION >= 3
 
-
-# undef YAMPI_addressof
-# undef YAMPI_is_nothrow_copy_constructible
 
 #endif
 

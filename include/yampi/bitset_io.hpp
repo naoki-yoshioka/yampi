@@ -1,8 +1,6 @@
 #ifndef YAMPI_BITSET_IO_HPP
 # define YAMPI_BITSET_IO_HPP
 
-# include <boost/config.hpp>
-
 # include <istream>
 # include <ostream>
 # include <ios>
@@ -48,7 +46,7 @@ namespace yampi
       {
         for (size_type index = static_cast<size_type>(0u); index < N; ++index)
         {
-          BOOST_STATIC_CONSTEXPR int_type eof = CharacterTraits::eof();
+          constexpr int_type eof = CharacterTraits::eof();
 
           int_type const int_character = input_stream.rdbuf()->sbumpc();
           if (CharacterTraits::eq_int_type(int_character, eof))

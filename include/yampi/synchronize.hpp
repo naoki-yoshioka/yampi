@@ -1,8 +1,6 @@
 #ifndef YAMPI_SYNCHRONIZE_HPP
 # define YAMPI_SYNCHRONIZE_HPP
 
-# include <boost/config.hpp>
-
 # include <mpi.h>
 
 # include <yampi/window_base.hpp>

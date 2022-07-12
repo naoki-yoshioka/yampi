@@ -1,13 +1,7 @@
 #ifndef YAMPI_ACCUMULATE_HPP
 # define YAMPI_ACCUMULATE_HPP
 
-# include <boost/config.hpp>
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
 
@@ -18,12 +12,6 @@
 # include <yampi/binary_operation.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
 
 
 namespace yampi
@@ -45,8 +33,6 @@ namespace yampi
   }
 }
 
-
-# undef YAMPI_addressof
 
 #endif
 

@@ -1,7 +1,5 @@
 #ifndef YAMPI_PROCESSOR_NAME_HPP
-# define // YAMPI_PROCESSOR_NAME_HPP
-
-# include <boost/config.hpp>
+# define YAMPI_PROCESSOR_NAME_HPP
 
 # include <string>
 

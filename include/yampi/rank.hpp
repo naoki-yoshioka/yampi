@@ -1,18 +1,10 @@
 #ifndef YAMPI_RANK_HPP
 # define YAMPI_RANK_HPP
 
-# include <boost/config.hpp>
-
 # include <cassert>
 # include <utility>
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   include <type_traits>
-#   if __cplusplus < 201703L
-#     include <boost/type_traits/is_nothrow_swappable.hpp>
-#   endif
-# else
-#   include <boost/utility/enable_if.hpp>
-#   include <boost/type_traits/is_integral.hpp>
+# include <type_traits>
+# if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
 
@@ -20,14 +12,6 @@
 
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if std::enable_if
-#   define YAMPI_is_integral std::is_integral
-# else
-#   define YAMPI_enable_if boost::enable_if_c
-#   define YAMPI_is_integral boost::is_integral
-# endif
 
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
@@ -43,24 +27,35 @@ namespace yampi
   struct any_source_t { };
   struct null_process_t { };
 
+  namespace tags
+  {
+# if __cplusplus >= 201703L
+    inline constexpr ::yampi::host_process_t host_process{};
+    inline constexpr ::yampi::io_process_t io_process{};
+    inline constexpr ::yampi::any_source_t any_source{};
+    inline constexpr ::yampi::null_process_t null_process{};
+# else
+    constexpr ::yampi::host_process_t host_process{};
+    constexpr ::yampi::io_process_t io_process{};
+    constexpr ::yampi::any_source_t any_source{};
+    constexpr ::yampi::null_process_t null_process{};
+# endif
+  }
+
   class rank
   {
     int mpi_rank_;
 
    public:
-    BOOST_CONSTEXPR rank() BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_rank_(0)
-    { }
+    constexpr rank() noexcept : mpi_rank_(0) { }
 
-    explicit BOOST_CONSTEXPR rank(int const mpi_rank) BOOST_NOEXCEPT_OR_NOTHROW
-      : mpi_rank_(mpi_rank)
-    { }
+    explicit constexpr rank(int const mpi_rank) noexcept : mpi_rank_(mpi_rank) { }
 
-    explicit BOOST_CONSTEXPR rank(::yampi::any_source_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit constexpr rank(::yampi::any_source_t const) noexcept
       : mpi_rank_(MPI_ANY_SOURCE)
     { }
 
-    explicit BOOST_CONSTEXPR rank(::yampi::null_process_t const) BOOST_NOEXCEPT_OR_NOTHROW
+    explicit constexpr rank(::yampi::null_process_t const) noexcept
       : mpi_rank_(MPI_PROC_NULL)
     { }
 
@@ -86,22 +81,18 @@ namespace yampi
     }
 
    public:
-# ifndef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     rank(rank const&) = default;
     rank& operator=(rank const&) = default;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     rank(rank&&) = default;
     rank& operator=(rank&&) = default;
-#   endif
-    ~rank() BOOST_NOEXCEPT_OR_NOTHROW = default;
-# endif
+    ~rank() noexcept = default;
 
-    bool is_null() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_rank_ == MPI_PROC_NULL; }
+    bool is_null() const noexcept { return mpi_rank_ == MPI_PROC_NULL; }
 
-    BOOST_CONSTEXPR bool operator==(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    constexpr bool operator==(rank const& other) const noexcept
     { return mpi_rank_ == other.mpi_rank_; }
 
-    bool operator<(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    bool operator<(rank const& other) const noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(
@@ -109,7 +100,7 @@ namespace yampi
       return mpi_rank_ < other.mpi_rank_;
     }
 
-    rank& operator++() BOOST_NOEXCEPT_OR_NOTHROW
+    rank& operator++() noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       ++mpi_rank_;
@@ -117,7 +108,7 @@ namespace yampi
       return *this;
     }
 
-    rank& operator--() BOOST_NOEXCEPT_OR_NOTHROW
+    rank& operator--() noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       --mpi_rank_;
@@ -126,10 +117,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       rank&>::type
-    operator+=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator+=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       mpi_rank_ += n;
@@ -138,10 +129,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       rank&>::type
-    operator-=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator-=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       mpi_rank_ -= n;
@@ -150,10 +141,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       rank&>::type
-    operator*=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator*=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(n >= static_cast<Integer>(0));
@@ -163,10 +154,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       rank&>::type
-    operator/=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator/=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(n > static_cast<Integer>(0));
@@ -176,10 +167,10 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename YAMPI_enable_if<
-      YAMPI_is_integral<Integer>::value,
+    typename std::enable_if<
+      std::is_integral<Integer>::value,
       rank&>::type
-    operator%=(Integer const n) BOOST_NOEXCEPT_OR_NOTHROW
+    operator%=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(n > static_cast<Integer>(0));
@@ -188,7 +179,7 @@ namespace yampi
       return *this;
     }
 
-    int operator-(rank const& other) const BOOST_NOEXCEPT_OR_NOTHROW
+    int operator-(rank const& other) const noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       assert(
@@ -196,88 +187,74 @@ namespace yampi
       return mpi_rank_-other.mpi_rank_;
     }
 
-    BOOST_CONSTEXPR int const& mpi_rank() const BOOST_NOEXCEPT_OR_NOTHROW { return mpi_rank_; }
-# ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
-    explicit BOOST_CONSTEXPR operator int() const { return mpi_rank_; }
-# else
-    BOOST_CONSTEXPR operator int() const { return mpi_rank_; }
-# endif
+    constexpr int const& mpi_rank() const noexcept { return mpi_rank_; }
+    explicit constexpr operator int() const { return mpi_rank_; }
 
-    void swap(rank& other)
-      BOOST_NOEXCEPT_IF(YAMPI_is_nothrow_swappable<int>::value)
+    void swap(rank& other) noexcept(YAMPI_is_nothrow_swappable<int>::value)
     {
       using std::swap;
       swap(mpi_rank_, other.mpi_rank_);
     }
   };
 
-  inline BOOST_CONSTEXPR bool operator!=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline constexpr bool operator!=(::yampi::rank const& lhs, ::yampi::rank const& rhs) noexcept
   { return not (lhs == rhs); }
 
-  inline bool operator>=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>=(::yampi::rank const& lhs, ::yampi::rank const& rhs) noexcept
   { return not (lhs < rhs); }
 
-  inline bool operator>(::yampi::rank const& lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator>(::yampi::rank const& lhs, ::yampi::rank const& rhs) noexcept
   { return rhs < lhs; }
 
-  inline bool operator<=(::yampi::rank const& lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline bool operator<=(::yampi::rank const& lhs, ::yampi::rank const& rhs) noexcept
   { return not (rhs < lhs); }
 
-  inline ::yampi::rank operator++(::yampi::rank& lhs, int)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator++(::yampi::rank& lhs, int) noexcept
   { ::yampi::rank result = lhs; ++lhs; return result; }
 
-  inline ::yampi::rank operator--(::yampi::rank& lhs, int)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator--(::yampi::rank& lhs, int) noexcept
   { ::yampi::rank result = lhs; --lhs; return result; }
 
   template <typename Integer>
-  inline ::yampi::rank operator+(::yampi::rank lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator+(::yampi::rank lhs, Integer const rhs) noexcept
   { lhs += rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator-(::yampi::rank lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator-(::yampi::rank lhs, Integer const rhs) noexcept
   { lhs -= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator*(::yampi::rank lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator*(::yampi::rank lhs, Integer const rhs) noexcept
   { lhs *= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator/(::yampi::rank lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator/(::yampi::rank lhs, Integer const rhs) noexcept
   { lhs /= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator%(::yampi::rank lhs, Integer const rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator%(::yampi::rank lhs, Integer const rhs) noexcept
   { lhs %= rhs; return lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator+(Integer const lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator+(Integer const lhs, ::yampi::rank const& rhs) noexcept
   { return rhs+lhs; }
 
   template <typename Integer>
-  inline ::yampi::rank operator*(Integer const lhs, ::yampi::rank const& rhs)
-    BOOST_NOEXCEPT_OR_NOTHROW
+  inline ::yampi::rank operator*(Integer const lhs, ::yampi::rank const& rhs) noexcept
   { return rhs*lhs; }
 
-  inline void swap(::yampi::rank& lhs, ::yampi::rank& rhs)
-    BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(lhs.swap(rhs)))
+  inline void swap(::yampi::rank& lhs, ::yampi::rank& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 
-  inline BOOST_CONSTEXPR ::yampi::rank any_source()
-    BOOST_NOEXCEPT_OR_NOTHROW
-  { return ::yampi::rank(::yampi::any_source_t()); }
+# if __cplusplus >= 201703L
+  inline constexpr ::yampi::rank any_source{::yampi::tags::any_source};
+  inline constexpr ::yampi::rank null_process{::yampi::tags::null_process};
+# else
+  constexpr ::yampi::rank any_source{::yampi::tags::any_source};
+  constexpr ::yampi::rank null_process{::yampi::tags::null_process};
+# endif
+
 
   inline ::yampi::rank host_process(::yampi::environment const& environment)
   { return ::yampi::rank(::yampi::host_process_t(), environment); }
@@ -298,14 +275,12 @@ namespace yampi
   inline bool is_io_process(::yampi::rank const& self, ::yampi::environment const& environment)
   {
     ::yampi::rank const io = ::yampi::io_process(environment);
-    return io == ::yampi::any_source() or self == io;
+    return io == ::yampi::any_source or self == io;
   }
 }
 
 
 # undef YAMPI_is_nothrow_swappable
-# undef YAMPI_is_integral
-# undef YAMPI_enable_if
 
 #endif
 

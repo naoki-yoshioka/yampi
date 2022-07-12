@@ -1,8 +1,6 @@
 #ifndef YAMPI_BARRIER_HPP
 # define YAMPI_BARRIER_HPP
 
-# include <boost/config.hpp>
-
 # include <mpi.h>
 
 # include <yampi/communicator_base.hpp>

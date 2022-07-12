@@ -1,8 +1,6 @@
 #ifndef YAMPI_ALGORITHM_SWAP_HPP
 # define YAMPI_ALGORITHM_SWAP_HPP
 
-# include <boost/config.hpp>
-
 # include <yampi/environment.hpp>
 # include <yampi/buffer.hpp>
 # include <yampi/send_receive.hpp>
@@ -11,12 +9,6 @@
 # include <yampi/rank.hpp>
 # include <yampi/communicator.hpp>
 # include <yampi/cartesian.hpp>
-
-# ifndef BOOST_NO_CXX11_HDR_TYPE_TRAITS
-#   define YAMPI_enable_if std::enable_if
-# else
-#   define YAMPI_enable_if boost::enable_if_c
-# endif
 
 
 namespace yampi

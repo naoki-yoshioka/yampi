@@ -1,8 +1,6 @@
 #ifndef YAMPI_ENVIRONMENT_HPP
 # define YAMPI_ENVIRONMENT_HPP
 
-# include <boost/config.hpp>
-
 # include <cstddef>
 # include <stdexcept>
 
@@ -51,11 +49,11 @@ namespace yampi
 
   class environment
   {
-    ::YAMPI_THREAD_SUPPORT_TYPE thread_support_;
+    ::yampi::thread_support thread_support_;
 
    public:
-    BOOST_STATIC_CONSTEXPR int major_version = MPI_VERSION;
-    BOOST_STATIC_CONSTEXPR int minor_version = MPI_SUBVERSION;
+    static constexpr int major_version = MPI_VERSION;
+    static constexpr int minor_version = MPI_SUBVERSION;
 
     environment()
       : thread_support_(::yampi::thread_support::single)
@@ -79,7 +77,7 @@ namespace yampi
         throw ::yampi::initialization_error(error_code);
     }
 
-    explicit environment(::YAMPI_THREAD_SUPPORT_TYPE const thread_support)
+    explicit environment(::yampi::thread_support const thread_support)
       : thread_support_()
     {
       if (::yampi::is_initialized())
@@ -93,10 +91,10 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::initialization_error(error_code);
 
-      thread_support_ = static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
+      thread_support_ = static_cast< ::yampi::thread_support >(provided_thread_support);
     }
 
-    environment(int argc, char* argv[], ::YAMPI_THREAD_SUPPORT_TYPE const thread_support)
+    environment(int argc, char* argv[], ::yampi::thread_support const thread_support)
       : thread_support_()
     {
       if (::yampi::is_initialized())
@@ -110,10 +108,10 @@ namespace yampi
       if (error_code != MPI_SUCCESS)
         throw ::yampi::initialization_error(error_code);
 
-      thread_support_ = static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support);
+      thread_support_ = static_cast< ::yampi::thread_support >(provided_thread_support);
     }
 
-    ~environment() BOOST_NOEXCEPT_OR_NOTHROW
+    ~environment() noexcept
     {
       if (::yampi::is_finalized())
         return;
@@ -121,24 +119,10 @@ namespace yampi
       MPI_Finalize();
     }
 
-# ifndef BOOST_NO_CXX11_DELETED_FUNCTIONS
     environment(environment const&) = delete;
     environment& operator=(environment const&) = delete;
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     environment(environment&&) = delete;
     environment& operator=(environment&&) = delete;
-#   endif
-# else
-   private:
-    environment(environment const&);
-    environment& operator=(environment const&);
-#   ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
-    environment(environment&&);
-    environment& operator=(environment&&);
-#   endif
-
-   public:
-# endif
 
     void finalize()
     {
@@ -151,15 +135,14 @@ namespace yampi
     }
 
 
-    YAMPI_THREAD_SUPPORT_TYPE thread_support() const BOOST_NOEXCEPT_OR_NOTHROW
-    { return thread_support_; }
+    ::yampi::thread_support thread_support() const noexcept { return thread_support_; }
 
-    YAMPI_THREAD_SUPPORT_TYPE query_thread_support() const
+    ::yampi::thread_support query_thread_support() const
     {
       int provided_thread_support;
       int const error_code = MPI_Query_thread(&provided_thread_support);
       return error_code == MPI_SUCCESS
-        ? static_cast< ::YAMPI_THREAD_SUPPORT_TYPE >(provided_thread_support)
+        ? static_cast< ::yampi::thread_support >(provided_thread_support)
         : throw ::yampi::error(error_code, "yampi::environment::query_thread_support", *this);
     }
 

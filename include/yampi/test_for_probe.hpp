@@ -1,13 +1,7 @@
 #ifndef YAMPI_TEST_FOR_PROBE_HPP
 # define YAMPI_TEST_FOR_PROBE_HPP
 
-# include <boost/config.hpp>
-
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   include <memory>
-# else
-#   include <boost/core/addressof.hpp>
-# endif
+# include <memory>
 
 # include <mpi.h>
 
@@ -21,12 +15,6 @@
 # include <yampi/error.hpp>
 # include <yampi/message.hpp>
 
-# ifndef BOOST_NO_CXX11_ADDRESSOF
-#   define YAMPI_addressof std::addressof
-# else
-#   define YAMPI_addressof boost::addressof
-# endif
-
 
 namespace yampi
 {
@@ -39,7 +27,7 @@ namespace yampi
     int const error_code
       = MPI_Iprobe(
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(flag), YAMPI_addressof(mpi_status));
+          std::addressof(flag), std::addressof(mpi_status));
 
     return error_code == MPI_SUCCESS
       ? static_cast<bool>(flag)
@@ -51,11 +39,11 @@ namespace yampi
   inline boost::optional< ::yampi::status > test_for_probe(
     ::yampi::rank const source,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(source, ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(source, ::yampi::any_tag, communicator, environment); }
 
   inline boost::optional< ::yampi::status > test_for_probe(
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 # if MPI_VERSION >= 3
 
   inline bool test_for_probe(
@@ -67,7 +55,7 @@ namespace yampi
     int const error_code
       = MPI_Iprobe(
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(flag), MPI_STATUS_IGNORE);
+          std::addressof(flag), MPI_STATUS_IGNORE);
 
     return error_code == MPI_SUCCESS
       ? static_cast<bool>(flag)
@@ -78,12 +66,12 @@ namespace yampi
     ::yampi::ignore_status_t const ignore_status,
     ::yampi::rank const source,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(ignore_status, source, ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(ignore_status, source, ::yampi::any_tag, communicator, environment); }
 
   inline bool test_for_probe(
     ::yampi::ignore_status_t const ignore_status,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(ignore_status, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(ignore_status, ::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 
   inline boost::optional< std::pair< ::yampi::message, ::yampi::status > > test_for_probe(
     ::yampi::return_message_t const,
@@ -96,7 +84,7 @@ namespace yampi
     int const error_code
       = MPI_Improbe(
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(flag), YAMPI_addressof(mpi_message), YAMPI_addressof(mpi_status));
+          std::addressof(flag), std::addressof(mpi_message), std::addressof(mpi_status));
 
     typedef std::pair< ::yampi::message, ::yampi::status > result_type;
     return error_code == MPI_SUCCESS
@@ -110,12 +98,12 @@ namespace yampi
     ::yampi::return_message_t const return_message,
     ::yampi::rank const source,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(return_message, source, ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(return_message, source, ::yampi::any_tag, communicator, environment); }
 
   inline boost::optional< std::pair< ::yampi::message, ::yampi::status > > test_for_probe(
     ::yampi::return_message_t const return_message,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(return_message, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(return_message, ::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 
   inline boost::optional< ::yampi::message > test_for_probe(
     ::yampi::return_message_t const, ::yampi::ignore_status_t const,
@@ -127,7 +115,7 @@ namespace yampi
     int const error_code
       = MPI_Improbe(
           source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
-          YAMPI_addressof(flag), YAMPI_addressof(mpi_message), MPI_STATUS_IGNORE);
+          std::addressof(flag), std::addressof(mpi_message), MPI_STATUS_IGNORE);
 
     return error_code == MPI_SUCCESS
       ? static_cast<bool>(flag)
@@ -140,17 +128,15 @@ namespace yampi
     ::yampi::return_message_t const return_message, ::yampi::ignore_status_t const ignore_status,
     ::yampi::rank const source,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(return_message, ignore_status, source, ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(return_message, ignore_status, source, ::yampi::any_tag, communicator, environment); }
 
   inline boost::optional< ::yampi::message > test_for_probe(
     ::yampi::return_message_t const return_message, ::yampi::ignore_status_t const ignore_status,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-  { return ::yampi::test_for_probe(return_message, ignore_status, ::yampi::any_source(), ::yampi::any_tag(), communicator, environment); }
+  { return ::yampi::test_for_probe(return_message, ignore_status, ::yampi::any_source, ::yampi::any_tag, communicator, environment); }
 # endif
 }
 
-
-# undef YAMPI_addressof
 
 #endif
 

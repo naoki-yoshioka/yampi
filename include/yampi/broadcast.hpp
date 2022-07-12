@@ -1,13 +1,7 @@
 #ifndef YAMPI_BROADCAST_HPP
 # define YAMPI_BROADCAST_HPP
 
-# include <boost/config.hpp>
-
 # include <mpi.h>
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   include <cstddef>
-# endif
 
 # include <yampi/buffer.hpp>
 # include <yampi/communicator_base.hpp>
@@ -15,10 +9,6 @@
 # include <yampi/rank.hpp>
 # include <yampi/environment.hpp>
 # include <yampi/error.hpp>
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   define nullptr NULL
-# endif
 
 
 namespace yampi
@@ -57,10 +47,6 @@ namespace yampi
   }
 }
 
-
-# ifdef BOOST_NO_CXX11_NULLPTR
-#   undef nullptr
-# endif
 
 #endif
 
