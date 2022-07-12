@@ -36,13 +36,13 @@ namespace yampi
 
    public:
     buffer(T& value, ::yampi::datatype const& datatype) noexcept
-      : data_(std::addressof(value)), count_(1),
-        datatype_ptr_(std::addressof(datatype))
+      : data_{std::addressof(value)}, count_{1},
+        datatype_ptr_{std::addressof(datatype)}
     { }
 
     buffer(T const& value, ::yampi::datatype const& datatype) noexcept
-      : data_(const_cast<T*>(std::addressof(value))), count_(1),
-        datatype_ptr_(std::addressof(datatype))
+      : data_{const_cast<T*>(std::addressof(value))}, count_{1},
+        datatype_ptr_{std::addressof(datatype)}
     { }
 
     template <typename ContiguousIterator>
@@ -50,9 +50,9 @@ namespace yampi
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype const& datatype)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_(const_cast<T*>(std::addressof(*first))),
-        count_(last-first),
-        datatype_ptr_(std::addressof(datatype))
+      : data_{const_cast<T*>(std::addressof(*first))},
+        count_{last-first},
+        datatype_ptr_{std::addressof(datatype)}
     {
       static_assert(
         (std::is_same<
@@ -88,18 +88,18 @@ namespace yampi
 
    public:
     explicit buffer(T& value) noexcept
-      : data_(std::addressof(value)), count_(1)
+      : data_{std::addressof(value)}, count_{1}
     { }
 
     explicit buffer(T const& value) noexcept
-      : data_(const_cast<T*>(std::addressof(value))), count_(1)
+      : data_{const_cast<T*>(std::addressof(value))}, count_{1}
     { }
 
     template <typename ContiguousIterator>
     buffer(ContiguousIterator const first, ContiguousIterator const last)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_(const_cast<T*>(std::addressof(*first))),
-        count_(last-first)
+      : data_{const_cast<T*>(std::addressof(*first))},
+        count_{static_cast<int>(last-first)}
     {
       static_assert(
         (std::is_same<

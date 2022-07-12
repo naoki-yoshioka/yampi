@@ -21,8 +21,8 @@ namespace yampi
 
    public:
     explicit initialization_error(int const error_code)
-      : std::runtime_error("Error occurred when initializing"),
-        error_code_(error_code)
+      : std::runtime_error{"Error occurred when initializing"},
+        error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }
@@ -33,7 +33,7 @@ namespace yampi
   {
    public:
     already_initialized_error()
-      : std::logic_error("MPI environment has been already initialized")
+      : std::logic_error{"MPI environment has been already initialized"}
     { }
   };
 
@@ -42,7 +42,7 @@ namespace yampi
   {
    public:
     already_finalized_error()
-      : std::logic_error("MPI environment has been already finalized")
+      : std::logic_error{"MPI environment has been already finalized"}
     { }
   };
 
@@ -56,7 +56,7 @@ namespace yampi
     static constexpr int minor_version = MPI_SUBVERSION;
 
     environment()
-      : thread_support_(::yampi::thread_support::single)
+      : thread_support_{::yampi::thread_support::single}
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();
@@ -67,7 +67,7 @@ namespace yampi
     }
 
     environment(int argc, char* argv[])
-      : thread_support_(::yampi::thread_support::single)
+      : thread_support_{::yampi::thread_support::single}
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();
@@ -78,7 +78,7 @@ namespace yampi
     }
 
     explicit environment(::yampi::thread_support const thread_support)
-      : thread_support_()
+      : thread_support_{}
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();
@@ -95,7 +95,7 @@ namespace yampi
     }
 
     environment(int argc, char* argv[], ::yampi::thread_support const thread_support)
-      : thread_support_()
+      : thread_support_{}
     {
       if (::yampi::is_initialized())
         throw ::yampi::already_initialized_error();

@@ -52,7 +52,7 @@ namespace yampi
     typedef ::yampi::rma_request_cref const_reference_type;
 
     rma_request() noexcept(std::is_nothrow_copy_constructible<base_type>::value)
-      : base_type()
+      : base_type{}
     { }
 
     rma_request(rma_request const&) = delete;
@@ -69,7 +69,7 @@ namespace yampi
       ::yampi::buffer<OriginValue> const origin_buffer,
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_put_request(origin_buffer, target, target_buffer, window, environment))
+      : base_type{make_put_request(origin_buffer, target, target_buffer, window, environment)}
     { }
 
     template <typename OriginValue, typename TargetValue, typename Window>
@@ -78,7 +78,7 @@ namespace yampi
       ::yampi::buffer<OriginValue> origin_buffer,
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_get_request(origin_buffer, target, target_buffer, window, environment))
+      : base_type{make_get_request(origin_buffer, target, target_buffer, window, environment)}
     { }
 
     template <typename OriginValue, typename TargetValue, typename Window>
@@ -88,7 +88,7 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_accumulate_request(origin_buffer, target, target_buffer, operation, window, environment))
+      : base_type{make_accumulate_request(origin_buffer, target, target_buffer, operation, window, environment)}
     { }
 
     template <typename OriginValue, typename ResultValue, typename TargetValue, typename Window>
@@ -98,7 +98,7 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
-      : base_type(make_fetch_accumulate_request(origin_buffer, result_buffer, target, target_buffer, operation, window, environment))
+      : base_type{make_fetch_accumulate_request(origin_buffer, result_buffer, target, target_buffer, operation, window, environment)}
     { }
 
    private:

@@ -42,18 +42,18 @@ namespace yampi
     int mpi_tag_;
 
    public:
-    constexpr tag() noexcept : mpi_tag_(0) { }
+    constexpr tag() noexcept : mpi_tag_{0} { }
 
     explicit constexpr tag(int const mpi_tag) noexcept
-      : mpi_tag_(mpi_tag)
+      : mpi_tag_{mpi_tag}
     { }
 
     explicit constexpr tag(::yampi::any_tag_t const) noexcept
-      : mpi_tag_(MPI_ANY_TAG)
+      : mpi_tag_{MPI_ANY_TAG}
     { }
 
     tag(::yampi::tag_upper_bound_t const, ::yampi::environment const& environment)
-      : mpi_tag_(inquire_upper_bound(environment))
+      : mpi_tag_{inquire_upper_bound(environment)}
     { }
 
    private:

@@ -41,7 +41,7 @@ namespace yampi
 
    public:
     communicator() noexcept(std::is_nothrow_default_constructible<base_type>::value)
-      : base_type()
+      : base_type{}
     { }
 
     communicator(communicator const&) = delete;
@@ -54,12 +54,12 @@ namespace yampi
 
     explicit communicator(::yampi::world_communicator_t const)
       noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
-      : base_type(MPI_COMM_WORLD)
+      : base_type{MPI_COMM_WORLD}
     { }
 
     explicit communicator(::yampi::self_communicator_t const)
       noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
-      : base_type(MPI_COMM_SELF)
+      : base_type{MPI_COMM_SELF}
     { }
 
 # if MPI_VERSION >= 3
@@ -67,7 +67,7 @@ namespace yampi
     communicator(
       communicator const& other, ::yampi::group const& group, ::yampi::tag const tag,
       ::yampi::environment const& environment)
-      : base_type(create(other, group, tag, environment))
+      : base_type{create(other, group, tag, environment)}
     { }
 # endif
 

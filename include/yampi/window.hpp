@@ -40,7 +40,7 @@ namespace yampi
 
    public:
     window() noexcept(std::is_nothrow_copy_constructible<MPI_Win>::value)
-      : mpi_win_(MPI_WIN_NULL)
+      : mpi_win_{MPI_WIN_NULL}
     { }
 
     window(window const&) = delete;
@@ -50,7 +50,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Win>::value
         and std::is_nothrow_copy_assignable<MPI_Win>::value)
-      : mpi_win_(std::move(other.mpi_win_))
+      : mpi_win_{std::move(other.mpi_win_)}
     { other.mpi_win_ = MPI_WIN_NULL; }
 
     window& operator=(window&& other)
@@ -81,7 +81,7 @@ namespace yampi
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
-      : mpi_win_(create(first, last, MPI_INFO_NULL, communicator, environment))
+      : mpi_win_{create(first, last, MPI_INFO_NULL, communicator, environment)}
     { assert(last >= first); }
 
     template <typename ContiguousIterator>
@@ -90,7 +90,7 @@ namespace yampi
       ::yampi::information const& information,
       ::yampi::communicator const& communicator,
       ::yampi::environment const& environment)
-      : mpi_win_(create(first, last, information.mpi_info(), communicator, environment))
+      : mpi_win_{create(first, last, information.mpi_info(), communicator, environment)}
     { assert(last >= first); }
 
    private:

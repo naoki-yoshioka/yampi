@@ -29,8 +29,8 @@ namespace yampi
 
     return static_cast< ::yampi::rank >(
       ::yampi::all_reduce(
-        ::yampi::make_buffer(io_process.mpi_rank()), ::yampi::minimum,
-        ::yampi::world_communicator, environment));
+        ::yampi::make_buffer(io_process.mpi_rank()), ::yampi::binary_operation{::yampi::tags::minimum},
+        ::yampi::communicator{::yampi::tags::world_communicator}, environment));
   }
 }
 

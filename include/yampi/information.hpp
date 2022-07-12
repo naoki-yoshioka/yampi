@@ -31,7 +31,7 @@ namespace yampi
 
    public:
     information() noexcept(std::is_nothrow_copy_constructible<MPI_Info>::value)
-      : mpi_info_(MPI_INFO_NULL)
+      : mpi_info_{MPI_INFO_NULL}
     { }
 
     information(information const&) = delete;
@@ -41,7 +41,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Info>::value
         and std::is_nothrow_copy_assignable<MPI_Info>::value)
-      : mpi_info_(std::move(other.mpi_info_))
+      : mpi_info_{std::move(other.mpi_info_)}
     { other.mpi_info_ = MPI_INFO_NULL; }
 
     information& operator=(information&& other)
@@ -68,15 +68,15 @@ namespace yampi
     }
 
     explicit information(MPI_Info const& mpi_info) noexcept(std::is_nothrow_copy_constructible<MPI_Group>::value)
-      : mpi_info_(mpi_info)
+      : mpi_info_{mpi_info}
     { }
 
     explicit information(::yampi::environment const& environment)
-      : mpi_info_(create(environment))
+      : mpi_info_{create(environment)}
     { }
 
     information(information const& other, ::yampi::environment const& environment)
-      : mpi_info_(duplicate(other, environment))
+      : mpi_info_{duplicate(other, environment)}
     { }
 
    private:

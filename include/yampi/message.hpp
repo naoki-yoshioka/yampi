@@ -33,12 +33,12 @@ namespace yampi
    public:
     message()
       noexcept(std::is_nothrow_copy_constructible<MPI_Message>::value)
-      : mpi_message_(MPI_MESSAGE_NULL)
+      : mpi_message_{MPI_MESSAGE_NULL}
     { }
 
     explicit message(MPI_Message const& mpi_message)
       noexcept(std::is_nothrow_copy_constructible<MPI_Message>::value)
-      : mpi_message_(mpi_message)
+      : mpi_message_{mpi_message}
     { }
 
     bool is_null() const noexcept(noexcept(mpi_message_ == MPI_MESSAGE_NULL))

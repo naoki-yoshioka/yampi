@@ -76,7 +76,7 @@ namespace yampi
 
      public:
       reference(bitset& bits, std::size_t const position) noexcept
-        : data_element_ptr_(YAMPI_addressof(bits.data_element(position))), bit_position_(bitset::bit_position(position))
+        : data_element_ptr_{YAMPI_addressof(bits.data_element(position))}, bit_position_{bitset::bit_position(position)}
       { }
 
       ~reference() noexcept { }
@@ -116,15 +116,15 @@ namespace yampi
     };
     friend class reference;
 
-    constexpr bitset() noexcept : data_() { }
+    constexpr bitset() noexcept : data_{} { }
 
-    bitset(unsigned long long const value) noexcept : data_() { from_ullong(value); }
+    bitset(unsigned long long const value) noexcept : data_{} { from_ullong(value); }
 
     template <
       typename UnsignedInteger,
       typename = std::enable_if<std::is_integral<UnsignedInteger>::value and std::is_unsigned<UnsignedInteger>::value> >
     bitset(UnsignedInteger const value) noexcept
-      : data_()
+      : data_{}
     { from_unsigned_integer(value); }
 
     template <typename Character, typename CharacterTraits, typename Allocator>
@@ -134,6 +134,7 @@ namespace yampi
       typename std::basic_string<Character, CharacterTraits, Allocator>::size_type length
         = std::basic_string<Character, CharacterTraits, Allocator>::npos,
       Character const zero = Character('0'), Character const one = Character('1'))
+      : data_{}
     { from_string(string, position, length, zero, one); }
 
     template <typename Character>
@@ -141,6 +142,7 @@ namespace yampi
       Character const* string,
       typename std::basic_string<Character>::size_type length = std::basic_string<Character>::npos,
       Character const zero = Character('0'), Character const one = Character('1'))
+      : data_{}
     { from_characters(string, length, zero, one); }
 
     bool operator==(bitset const& other) const noexcept

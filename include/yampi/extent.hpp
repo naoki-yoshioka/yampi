@@ -26,7 +26,7 @@ namespace yampi
 # endif
 
    public:
-    constexpr extent() : mpi_extent_() { }
+    constexpr extent() : mpi_extent_{} { }
 
     extent(extent const&) = default;
     extent& operator=(extent const&) = default;
@@ -36,12 +36,12 @@ namespace yampi
 
 # if MPI_VERSION >= 3
     explicit constexpr extent(MPI_Aint const& mpi_extent) noexcept
-      : mpi_extent_(static_cast<MPI_Count>(mpi_extent))
+      : mpi_extent_{static_cast<MPI_Count>(mpi_extent)}
     { }
 
     explicit constexpr extent(MPI_Count const& mpi_extent)
       noexcept(std::is_nothrow_copy_constructible<MPI_Count>::value)
-      : mpi_extent_(mpi_extent)
+      : mpi_extent_{mpi_extent}
     { }
 
     constexpr MPI_Count const& mpi_extent() const { return mpi_extent_; }
@@ -55,7 +55,7 @@ namespace yampi
 # else
     explicit constexpr extent(MPI_Aint const& mpi_extent)
       noexcept(std::is_nothrow_copy_constructible<MPI_Aint>::value)
-      : mpi_extent_(mpi_extent)
+      : mpi_extent_{mpi_extent}
     { }
 
     constexpr MPI_Aint const& mpi_extent() const { return mpi_extent_; }

@@ -12,7 +12,7 @@ namespace yampi
   {
    public:
     nonroot_call_on_root_error(std::string const& where)
-      : std::logic_error((std::string("Non-root call on root in ") + where).c_str())
+      : std::logic_error{(std::string("Non-root call on root in ") + where).c_str()}
     { }
   };
 }

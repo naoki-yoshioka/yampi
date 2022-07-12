@@ -23,7 +23,7 @@ namespace yampi
   {
    public:
     not_yet_initialized_error()
-      : std::logic_error("MPI environment has not been initialized yet")
+      : std::logic_error{"MPI environment has not been initialized yet"}
     { }
   };
 
@@ -35,8 +35,8 @@ namespace yampi
 
    public:
     explicit allocate_error(int const error_code)
-     : std::runtime_error("Error occurred when allocating"),
-       error_code_(error_code)
+     : std::runtime_error{"Error occurred when allocating"},
+       error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }
@@ -49,8 +49,8 @@ namespace yampi
 
    public:
     explicit deallocate_error(int const error_code)
-     : std::runtime_error("Error occurred when deallocating"),
-       error_code_(error_code)
+     : std::runtime_error{"Error occurred when deallocating"},
+       error_code_{error_code}
     { }
 
     int error_code() const { return error_code_; }

@@ -26,7 +26,7 @@ namespace yampi
    public:
     bounds(::yampi::extent const& lower_bound, ::yampi::extent const& extent)
       noexcept(std::is_nothrow_copy_constructible< ::yampi::extent >::value)
-      : lower_bound_(lower_bound), extent_(extent)
+      : lower_bound_{lower_bound}, extent_{extent}
     { }
 
     bool operator==(bounds const& other) const

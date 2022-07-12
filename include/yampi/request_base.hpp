@@ -25,12 +25,13 @@ namespace yampi
 {
   struct request_send_t { };
   struct request_receive_t { };
-
-  inline constexpr ::yampi::request_send_t request_send() noexcept
-  { return ::yampi::request_send_t(); }
-
-  inline constexpr ::yampi::request_receive_t request_receive() noexcept
-  { return ::yampi::request_receive_t(); }
+# if __cplusplus >= 201703L
+  inline constexpr ::yampi::request_send_t request_send{};
+  inline constexpr ::yampi::request_receive_t request_receive{};
+# else
+  constexpr ::yampi::request_send_t request_send{};
+  constexpr ::yampi::request_receive_t request_receive{};
+# endif
 
   class request_base
   {
@@ -39,7 +40,7 @@ namespace yampi
 
    public:
     request_base() noexcept(std::is_nothrow_copy_constructible<MPI_Request>::value)
-      : mpi_request_(MPI_REQUEST_NULL)
+      : mpi_request_{MPI_REQUEST_NULL}
     { }
 
     request_base(request_base const&) = delete;
@@ -49,7 +50,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Request>::value
         and std::is_nothrow_copy_assignable<MPI_Request>::value)
-      : mpi_request_(std::move(other.mpi_request_))
+      : mpi_request_{std::move(other.mpi_request_)}
     { other.mpi_request_ = MPI_REQUEST_NULL; }
 
     request_base& operator=(request_base&& other)
@@ -79,7 +80,7 @@ namespace yampi
    public:
     explicit request_base(MPI_Request const& mpi_request)
       noexcept(std::is_nothrow_copy_constructible<MPI_Request>::value)
-      : mpi_request_(mpi_request)
+      : mpi_request_{mpi_request}
     { }
 
     void reset(::yampi::environment const& environment)
@@ -221,7 +222,7 @@ namespace yampi
     ~request_ref_base() noexcept = default;
 
     explicit request_ref_base(MPI_Request& mpi_request)
-      : mpi_request_ptr_(std::addressof(mpi_request))
+      : mpi_request_ptr_{std::addressof(mpi_request)}
     { }
 
     void reset(::yampi::environment const& environment)
@@ -341,11 +342,11 @@ namespace yampi
     ~request_cref_base() noexcept = default;
 
     explicit request_cref_base(MPI_Request const& mpi_request)
-      : mpi_request_ptr_(std::addressof(mpi_request))
+      : mpi_request_ptr_{std::addressof(mpi_request)}
     { }
 
     explicit request_cref_base(request_ref_base const& request)
-      : mpi_request_ptr_(std::addressof(request.mpi_request()))
+      : mpi_request_ptr_{std::addressof(request.mpi_request())}
     { }
 
     bool is_null() const noexcept(noexcept(*mpi_request_ptr_ == MPI_REQUEST_NULL))

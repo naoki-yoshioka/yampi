@@ -34,7 +34,7 @@ namespace yampi
     typedef ::yampi::persistent_request_cref const_reference_type;
 
     persistent_request() noexcept(std::is_nothrow_copy_constructible<base_type>::value)
-      : base_type()
+      : base_type{}
     { }
 
     persistent_request(persistent_request const&) = delete;
@@ -51,7 +51,7 @@ namespace yampi
       ::yampi::request_send_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_standard_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -60,7 +60,7 @@ namespace yampi
       ::yampi::mode::standard_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_standard_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -69,7 +69,7 @@ namespace yampi
       ::yampi::mode::buffered_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_buffered_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_buffered_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -78,7 +78,7 @@ namespace yampi
       ::yampi::mode::synchronous_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_synchronous_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_synchronous_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -87,7 +87,7 @@ namespace yampi
       ::yampi::mode::ready_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_ready_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_ready_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     // receive
@@ -96,7 +96,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, source, tag, communicator, environment))
+      : base_type{make_receive_request(buffer, source, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -104,7 +104,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const source,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, source, ::yampi::any_tag, communicator, environment))
+      : base_type{make_receive_request(buffer, source, ::yampi::any_tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -112,7 +112,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment))
+      : base_type{make_receive_request(buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment)}
     { }
 
    private:

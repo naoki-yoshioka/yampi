@@ -102,7 +102,7 @@ namespace yampi
 
     window_array()
       noexcept(std::is_nothrow_copy_constructible<MPI_Win>::value)
-      : mpi_win_(MPI_WIN_NULL), base_ptr_(nullptr), num_elements_(std::size_t{0u})
+      : mpi_win_{MPI_WIN_NULL}, base_ptr_{nullptr}, num_elements_{std::size_t{0u}}
     { }
 
     window_array(window_array const&) = delete;
@@ -112,7 +112,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Win>::value
         and std::is_nothrow_copy_assignable<MPI_Win>::value)
-      : mpi_win_(std::move(other.mpi_win_)), base_ptr_(std::move(other.base_ptr_)), num_elements_(std::move(other.num_elements_))
+      : mpi_win_{std::move(other.mpi_win_)}, base_ptr_{std::move(other.base_ptr_)}, num_elements_{std::move(other.num_elements_)}
     { other.mpi_win_ = MPI_WIN_NULL; other.base_ptr_ = nullptr; }
 
     window_array& operator=(window_array&& other)
@@ -145,21 +145,21 @@ namespace yampi
     window_array(
       std::size_t const num_elements,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : mpi_win_(),
-        base_ptr_(
+      : mpi_win_{},
+        base_ptr_{
           ::yampi::window_array_detail::create<T, is_on_shared_memory>::call(
-            mpi_win_, num_elements, MPI_INFO_NULL, communicator, environment)),
-        num_elements_(num_elements)
+            mpi_win_, num_elements, MPI_INFO_NULL, communicator, environment)},
+        num_elements_{num_elements}
     { }
 
     window_array(
       std::size_t const num_elements, ::yampi::information const& information,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : mpi_win_(),
-        base_ptr_(
+      : mpi_win_{},
+        base_ptr_{
           ::yampi::window_array_detail::create<T, is_on_shared_memory>::call(
-            mpi_win_, num_elements, information.mpi_info(), communicator, environment)),
-        num_elements_(num_elements)
+            mpi_win_, num_elements, information.mpi_info(), communicator, environment)},
+        num_elements_{num_elements}
     { }
 
     bool operator==(window_array const& other) const noexcept

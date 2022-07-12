@@ -40,7 +40,7 @@ namespace yampi
    public:
     explicit topology(MPI_Comm const& mpi_comm)
       noexcept(std::is_nothrow_copy_constructible<MPI_Comm>::value)
-      : communicator_(mpi_comm)
+      : communicator_{mpi_comm}
     { }
 
     void reset(MPI_Comm const& mpi_comm, ::yampi::environment const& environment)

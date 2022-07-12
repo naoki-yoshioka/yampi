@@ -951,7 +951,7 @@ namespace yampi
     typedef ::yampi::immediate_request_cref const_reference_type;
 
     immediate_request() noexcept(std::is_nothrow_default_constructible<base_type>::value)
-      : base_type()
+      : base_type{}
     { }
 
     immediate_request(immediate_request const&) = delete;
@@ -968,7 +968,7 @@ namespace yampi
       ::yampi::request_send_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_standard_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -977,7 +977,7 @@ namespace yampi
       ::yampi::mode::standard_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_standard_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_standard_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -986,7 +986,7 @@ namespace yampi
       ::yampi::mode::buffered_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_buffered_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_buffered_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -995,7 +995,7 @@ namespace yampi
       ::yampi::mode::synchronous_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_synchronous_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_synchronous_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1004,7 +1004,7 @@ namespace yampi
       ::yampi::mode::ready_communication_t const,
       ::yampi::buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_ready_send_request(buffer, destination, tag, communicator, environment))
+      : base_type{make_ready_send_request(buffer, destination, tag, communicator, environment)}
     { }
 
     // receive
@@ -1013,7 +1013,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const source, ::yampi::tag const tag,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, source, tag, communicator, environment))
+      : base_type{make_receive_request(buffer, source, tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1021,7 +1021,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const source,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, source, ::yampi::any_tag, communicator, environment))
+      : base_type{make_receive_request(buffer, source, ::yampi::any_tag, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1029,7 +1029,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment))
+      : base_type{make_receive_request(buffer, ::yampi::any_source, ::yampi::any_tag, communicator, environment)}
     { }
 # if MPI_VERSION >= 3
 
@@ -1038,7 +1038,7 @@ namespace yampi
       ::yampi::request_receive_t const,
       ::yampi::buffer<Value> buffer, ::yampi::message& message,
       ::yampi::environment const& environment)
-      : base_type(make_receive_request(buffer, message, environment))
+      : base_type{make_receive_request(buffer, message, environment)}
     { }
 
     // Nonblocking collective operations
@@ -1047,7 +1047,7 @@ namespace yampi
     immediate_request(
       ::yampi::request_barrier_t const,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_barrier_request(communicator, environment))
+      : base_type{make_barrier_request(communicator, environment)}
     { }
 
     // broadcast
@@ -1056,7 +1056,7 @@ namespace yampi
       ::yampi::request_broadcast_t const,
       ::yampi::buffer<Value> buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_broadcast_request(buffer, root, communicator, environment))
+      : base_type{make_broadcast_request(buffer, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1064,13 +1064,13 @@ namespace yampi
       ::yampi::request_broadcast_t const,
       ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_broadcast_request(send_buffer, communicator, environment))
+      : base_type{make_broadcast_request(send_buffer, communicator, environment)}
     { }
 
     immediate_request(
       ::yampi::request_broadcast_t const,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_broadcast_request(communicator, environment))
+      : base_type{make_broadcast_request(communicator, environment)}
     { }
 
     // gather
@@ -1079,7 +1079,7 @@ namespace yampi
       ::yampi::request_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(send_buffer, first, root, communicator, environment))
+      : base_type{make_gather_request(send_buffer, first, root, communicator, environment)}
     { }
 
     template <typename SendValue, typename ReceiveValue>
@@ -1087,7 +1087,7 @@ namespace yampi
       ::yampi::request_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(send_buffer, receive_buffer, root, communicator, environment))
+      : base_type{make_gather_request(send_buffer, receive_buffer, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1095,7 +1095,7 @@ namespace yampi
       ::yampi::request_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(send_buffer, root, communicator, environment))
+      : base_type{make_gather_request(send_buffer, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1103,7 +1103,7 @@ namespace yampi
       ::yampi::request_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(send_buffer, root, communicator, environment))
+      : base_type{make_gather_request(send_buffer, root, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1112,7 +1112,7 @@ namespace yampi
       ::yampi::in_place_t const,
       ::yampi::buffer<Value> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_in_place_request(receive_buffer, root, communicator, environment))
+      : base_type{make_gather_in_place_request(receive_buffer, root, communicator, environment)}
     { }
 
     template <typename ReceiveValue>
@@ -1120,13 +1120,13 @@ namespace yampi
       ::yampi::request_gather_t const,
       ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(receive_buffer, communicator, environment))
+      : base_type{make_gather_request(receive_buffer, communicator, environment)}
     { }
 
     immediate_request(
       ::yampi::request_gather_t const,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_gather_request(communicator, environment))
+      : base_type{make_gather_request(communicator, environment)}
     { }
 
     // scatter
@@ -1135,7 +1135,7 @@ namespace yampi
       ::yampi::request_scatter_t const,
       ContiguousIterator const first, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(first, receive_buffer, root, communicator, environment))
+      : base_type{make_scatter_request(first, receive_buffer, root, communicator, environment)}
     { }
 
     template <typename SendValue, typename ReceiveValue>
@@ -1143,7 +1143,7 @@ namespace yampi
       ::yampi::request_scatter_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(send_buffer, receive_buffer, root, communicator, environment))
+      : base_type{make_scatter_request(send_buffer, receive_buffer, root, communicator, environment)}
     { }
 
     template <typename ReceiveValue>
@@ -1151,7 +1151,7 @@ namespace yampi
       ::yampi::request_scatter_t const,
       ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(receive_buffer, root, communicator, environment))
+      : base_type{make_scatter_request(receive_buffer, root, communicator, environment)}
     { }
 
     template <typename ReceiveValue>
@@ -1159,7 +1159,7 @@ namespace yampi
       ::yampi::request_scatter_t const,
       ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(receive_buffer, root, communicator, environment))
+      : base_type{make_scatter_request(receive_buffer, root, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1168,7 +1168,7 @@ namespace yampi
       ::yampi::in_place_t const,
       ::yampi::buffer<Value> const send_buffer, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_in_place_request(send_buffer, root, communicator, environment))
+      : base_type{make_scatter_in_place_request(send_buffer, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1176,13 +1176,13 @@ namespace yampi
       ::yampi::request_scatter_t const,
       ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(send_buffer, communicator, environment))
+      : base_type{make_scatter_request(send_buffer, communicator, environment)}
     { }
 
     immediate_request(
       ::yampi::request_scatter_t const,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_scatter_request(communicator, environment))
+      : base_type{make_scatter_request(communicator, environment)}
     { }
 
     // all_gather
@@ -1191,7 +1191,7 @@ namespace yampi
       ::yampi::request_all_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_all_gather_request(send_buffer, first, communicator, environment))
+      : base_type{make_all_gather_request(send_buffer, first, communicator, environment)}
     { }
 
     template <typename SendValue, typename ReceiveValue>
@@ -1199,7 +1199,7 @@ namespace yampi
       ::yampi::request_all_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_all_gather_request(send_buffer, receive_buffer, communicator, environment))
+      : base_type{make_all_gather_request(send_buffer, receive_buffer, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1208,7 +1208,7 @@ namespace yampi
       ::yampi::in_place_t const,
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_all_gather_in_place_request(receive_buffer, communicator, environment))
+      : base_type{make_all_gather_in_place_request(receive_buffer, communicator, environment)}
     { }
 
     // neighbor all_gather
@@ -1217,7 +1217,7 @@ namespace yampi
       ::yampi::request_all_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::topology const& topology, ::yampi::environment const& environment)
-      : base_type(make_all_gather_request(send_buffer, first, topology, environment))
+      : base_type{make_all_gather_request(send_buffer, first, topology, environment)}
     { }
 
     template <typename SendValue, typename ReceiveValue>
@@ -1225,7 +1225,7 @@ namespace yampi
       ::yampi::request_all_gather_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::topology const& topology, ::yampi::environment const& environment)
-      : base_type(make_all_gather_request(send_buffer, receive_buffer, topology, environment))
+      : base_type{make_all_gather_request(send_buffer, receive_buffer, topology, environment)}
     { }
 
     // complete_exchange
@@ -1234,7 +1234,7 @@ namespace yampi
       ::yampi::request_complete_exchange_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_complete_exchange_request(send_buffer, receive_buffer, communicator, environment))
+      : base_type{make_complete_exchange_request(send_buffer, receive_buffer, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1243,7 +1243,7 @@ namespace yampi
       ::yampi::in_place_t const,
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_complete_exchange_in_place_request(receive_buffer, communicator, environment))
+      : base_type{make_complete_exchange_in_place_request(receive_buffer, communicator, environment)}
     { }
 
     // neighbor complete_exchange
@@ -1252,7 +1252,7 @@ namespace yampi
       ::yampi::request_complete_exchange_t const,
       ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::topology const& topology, ::yampi::environment const& environment)
-      : base_type(make_complete_exchange_request(send_buffer, receive_buffer, topology, environment))
+      : base_type{make_complete_exchange_request(send_buffer, receive_buffer, topology, environment)}
     { }
 
     // reduce
@@ -1262,7 +1262,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_request(send_buffer, first, operation, root, communicator, environment))
+      : base_type{make_reduce_request(send_buffer, first, operation, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1271,7 +1271,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_request(send_buffer, operation, root, communicator, environment))
+      : base_type{make_reduce_request(send_buffer, operation, root, communicator, environment)}
     { }
 
     template <typename SendValue>
@@ -1280,7 +1280,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_request(send_buffer, operation, root, communicator, environment))
+      : base_type{make_reduce_request(send_buffer, operation, root, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1290,7 +1290,7 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_in_place_request(receive_buffer, operation, root, communicator, environment))
+      : base_type{make_reduce_in_place_request(receive_buffer, operation, root, communicator, environment)}
     { }
 
     template <typename ReceiveValue>
@@ -1299,14 +1299,14 @@ namespace yampi
       ::yampi::buffer<ReceiveValue> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_request(receive_buffer, operation, communicator, environment))
+      : base_type{make_reduce_request(receive_buffer, operation, communicator, environment)}
     { }
 
     immediate_request(
       ::yampi::request_reduce_t const,
       ::yampi::binary_operation const& operation,
       ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_request(operation, communicator, environment))
+      : base_type{make_reduce_request(operation, communicator, environment)}
     { }
 
     // all_reduce
@@ -1316,7 +1316,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_all_reduce_request(send_buffer, first, operation, communicator, environment))
+      : base_type{make_all_reduce_request(send_buffer, first, operation, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1326,7 +1326,7 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_all_reduce_in_place_request(receive_buffer, operation, communicator, environment))
+      : base_type{make_all_reduce_in_place_request(receive_buffer, operation, communicator, environment)}
     { }
 
     // reduce_scatter
@@ -1336,7 +1336,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_scatter_request(send_buffer, first, operation, communicator, environment))
+      : base_type{make_reduce_scatter_request(send_buffer, first, operation, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1345,7 +1345,7 @@ namespace yampi
       ::yampi::buffer<Value> const send_buffer, ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_scatter_request(send_buffer, receive_buffer, operation, communicator, environment))
+      : base_type{make_reduce_scatter_request(send_buffer, receive_buffer, operation, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1355,7 +1355,7 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_reduce_scatter_in_place_request(receive_buffer, operation, communicator, environment))
+      : base_type{make_reduce_scatter_in_place_request(receive_buffer, operation, communicator, environment)}
     { }
 
     // inclusive_scan
@@ -1365,7 +1365,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_inclusive_scan_request(send_buffer, first, operation, communicator, environment))
+      : base_type{make_inclusive_scan_request(send_buffer, first, operation, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1375,7 +1375,7 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_inclusive_scan_in_place_request(receive_buffer, operation, communicator, environment))
+      : base_type{make_inclusive_scan_in_place_request(receive_buffer, operation, communicator, environment)}
     { }
 
     // exclusive_scan
@@ -1385,7 +1385,7 @@ namespace yampi
       ::yampi::buffer<SendValue> const send_buffer, ContiguousIterator const first,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_exclusive_scan_request(send_buffer, first, operation, communicator, environment))
+      : base_type{make_exclusive_scan_request(send_buffer, first, operation, communicator, environment)}
     { }
 
     template <typename Value>
@@ -1395,7 +1395,7 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::binary_operation const& operation,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : base_type(make_exclusive_scan_in_place_request(receive_buffer, operation, communicator, environment))
+      : base_type{make_exclusive_scan_in_place_request(receive_buffer, operation, communicator, environment)}
     { }
 
     // duplicate communicator
@@ -1404,7 +1404,7 @@ namespace yampi
       ::yampi::request_duplicate_communicator_t const,
       ::yampi::communicator_base const& old_communicator, ::yampi::communicator_base& new_communicator,
       ::yampi::environment const& environment)
-      : base_type(make_duplicate_communicator_request(old_communicator, new_communicator, environment))
+      : base_type{make_duplicate_communicator_request(old_communicator, new_communicator, environment)}
     { }
 # endif // MPI_VERSION >= 3
 

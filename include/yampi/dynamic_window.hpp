@@ -38,7 +38,7 @@ namespace yampi
 
    public:
     dynamic_window() noexcept(std::is_nothrow_copy_constructible<MPI_Win>::value)
-      : mpi_win_(MPI_WIN_NULL)
+      : mpi_win_{MPI_WIN_NULL}
     { }
 
     dynamic_window(dynamic_window const&) = delete;
@@ -48,7 +48,7 @@ namespace yampi
       noexcept(
         std::is_nothrow_move_constructible<MPI_Win>::value
         and std::is_nothrow_copy_assignable<MPI_Win>::value)
-      : mpi_win_(std::move(other.mpi_win_))
+      : mpi_win_{std::move(other.mpi_win_)}
     { other.mpi_win_ = MPI_WIN_NULL; }
 
     dynamic_window& operator=(dynamic_window&& other)
@@ -75,13 +75,13 @@ namespace yampi
     }
 
     dynamic_window(::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : mpi_win_(create(MPI_INFO_NULL, communicator, environment))
+      : mpi_win_{create(MPI_INFO_NULL, communicator, environment)}
     { }
 
     dynamic_window(
       ::yampi::information const& information,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
-      : mpi_win_(create(information.mpi_info(), communicator, environment))
+      : mpi_win_{create(information.mpi_info(), communicator, environment)}
     { }
 
    private:

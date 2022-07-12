@@ -47,24 +47,24 @@ namespace yampi
     int mpi_rank_;
 
    public:
-    constexpr rank() noexcept : mpi_rank_(0) { }
+    constexpr rank() noexcept : mpi_rank_{0} { }
 
-    explicit constexpr rank(int const mpi_rank) noexcept : mpi_rank_(mpi_rank) { }
+    explicit constexpr rank(int const mpi_rank) noexcept : mpi_rank_{mpi_rank} { }
 
     explicit constexpr rank(::yampi::any_source_t const) noexcept
-      : mpi_rank_(MPI_ANY_SOURCE)
+      : mpi_rank_{MPI_ANY_SOURCE}
     { }
 
     explicit constexpr rank(::yampi::null_process_t const) noexcept
-      : mpi_rank_(MPI_PROC_NULL)
+      : mpi_rank_{MPI_PROC_NULL}
     { }
 
     explicit rank(::yampi::host_process_t const, ::yampi::environment const& environment)
-      : mpi_rank_(inquire(MPI_HOST, environment))
+      : mpi_rank_{inquire(MPI_HOST, environment)}
     { }
 
     explicit rank(::yampi::io_process_t const, ::yampi::environment const& environment)
-      : mpi_rank_(inquire(MPI_IO, environment))
+      : mpi_rank_{inquire(MPI_IO, environment)}
     { }
 
    private:

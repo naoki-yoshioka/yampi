@@ -20,7 +20,7 @@ namespace yampi
   {
    public:
     unexpected_lock_status_error()
-      : std::runtime_error("Error occurred because of strange lock member variables")
+      : std::runtime_error{"Error occurred because of strange lock member variables"}
     { }
   };
 
@@ -48,17 +48,17 @@ namespace yampi
     ~lock_guard() noexcept { MPI_Win_unlock(rank_.mpi_rank(), window_.mpi_win()); }
 
     lock_guard(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : rank_(rank), window_(window)
+      : rank_{rank}, window_{window}
     { do_lock(0, environment); }
 
     lock_guard(
       ::yampi::rank const rank, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : rank_(rank), window_(window)
+      : rank_{rank}, window_{window}
     { do_lock(static_cast<int>(assertion), environment); }
 
     lock_guard(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
-      : rank_(rank), window_(window)
+      : rank_{rank}, window_{window}
     { }
 
    private:
@@ -80,13 +80,13 @@ namespace yampi
     bool owns_;
 
    public:
-    unique_lock() noexcept : rank_(), window_ptr_(nullptr), owns_(false) { }
+    unique_lock() noexcept : rank_{}, window_ptr_{nullptr}, owns_{false} { }
 
     unique_lock(unique_lock const&) = delete;
     unique_lock& operator=(unique_lock const&) = delete;
 
     unique_lock(unique_lock&& other)
-      : rank_(std::move(other.rank_)), window_ptr_(std::move(other.window_ptr_)), owns_(std::move(other.owns_))
+      : rank_{std::move(other.rank_)}, window_ptr_{std::move(other.window_ptr_)}, owns_{std::move(other.owns_)}
     { other.window_ptr_ = nullptr; other.owns_ = false; }
 
     unique_lock& operator=(unique_lock&& other)
@@ -111,25 +111,25 @@ namespace yampi
     }
 
     explicit unique_lock(::yampi::rank const rank)
-      : rank_(rank), window_ptr_(nullptr), owns_(false)
+      : rank_{rank}, window_ptr_{nullptr}, owns_{false}
     { }
 
     unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { lock(environment); }
 
     unique_lock(
       ::yampi::rank const rank, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { lock(assertion, environment); }
 
     unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { }
 
     unique_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(true)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{true}
     { }
 
     void lock(::yampi::environment const& environment) const
@@ -190,13 +190,13 @@ namespace yampi
     bool owns_;
 
    public:
-    shared_lock() noexcept : rank_(), window_ptr_(nullptr), owns_(false) { }
+    shared_lock() noexcept : rank_{}, window_ptr_{nullptr}, owns_{false} { }
 
     shared_lock(shared_lock const&) = delete;
     shared_lock& operator=(shared_lock const&) = delete;
 
     shared_lock(shared_lock&& other)
-      : rank_(std::move(other.rank_)), window_ptr_(std::move(other.window_ptr_)), owns_(std::move(other.owns_))
+      : rank_{std::move(other.rank_)}, window_ptr_{std::move(other.window_ptr_)}, owns_{std::move(other.owns_)}
     { other.window_ptr_ = nullptr; other.owns_ = false; }
 
     shared_lock& operator=(shared_lock&& other)
@@ -219,25 +219,25 @@ namespace yampi
     }
 
     explicit shared_lock(::yampi::rank const rank)
-      : rank_(rank), window_ptr_(nullptr), owns_(false)
+      : rank_{rank}, window_ptr_{nullptr}, owns_{false}
     { }
 
     shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { lock(environment); }
 
     shared_lock(
       ::yampi::rank const rank, ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window,
       ::yampi::environment const& environment)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { lock(assertion, environment); }
 
     shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(false)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{false}
     { }
 
     shared_lock(::yampi::rank const rank, ::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
-      : rank_(rank), window_ptr_(std::addressof(window)), owns_(true)
+      : rank_{rank}, window_ptr_{std::addressof(window)}, owns_{true}
     { }
 
     void lock(::yampi::environment const& environment) const
@@ -298,13 +298,13 @@ namespace yampi
     bool owns_;
 
    public:
-    all_shared_lock() noexcept : window_ptr_(nullptr), owns_(false) { }
+    all_shared_lock() noexcept : window_ptr_{nullptr}, owns_{false} { }
 
     all_shared_lock(all_shared_lock const&) = delete;
     all_shared_lock& operator=(all_shared_lock const&) = delete;
 
     all_shared_lock(all_shared_lock&& other)
-      : window_ptr_(std::move(other.window_ptr_)), owns_(std::move(other.owns_))
+      : window_ptr_{std::move(other.window_ptr_)}, owns_{std::move(other.owns_)}
     { other.window_ptr_ = nullptr; other.owns_ = false; }
 
     all_shared_lock& operator=(all_shared_lock&& other)
@@ -326,20 +326,20 @@ namespace yampi
     }
 
     all_shared_lock(::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { lock(environment); }
 
     all_shared_lock(
       ::yampi::assertion_mode const assertion, ::yampi::window_base<Window>& window, ::yampi::environment const& environment)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { lock(assertion, environment); }
 
     all_shared_lock(::yampi::window_base<Window>& window, ::yampi::defer_lock_t const)
-      : window_ptr_(std::addressof(window)), owns_(false)
+      : window_ptr_{std::addressof(window)}, owns_{false}
     { }
 
     all_shared_lock(::yampi::window_base<Window>& window, ::yampi::adopt_lock_t const)
-      : window_ptr_(std::addressof(window)), owns_(true)
+      : window_ptr_{std::addressof(window)}, owns_{true}
     { }
 
     void lock(::yampi::environment const& environment) const
