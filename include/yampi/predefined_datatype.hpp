@@ -96,9 +96,9 @@ namespace yampi
   class predefined_datatype
     : public ::yampi::datatype_base< ::yampi::predefined_datatype<T> >
   {
-    typedef ::yampi::datatype_base< ::yampi::predefined_datatype<T> > super_type;
+    typedef ::yampi::datatype_base< ::yampi::predefined_datatype<T> > base_type;
+    friend base_type;
 
-   public:
     constexpr bool do_is_null() const noexcept { return false; }
 
     MPI_Datatype do_mpi_datatype() const noexcept { return ::yampi::predefined_datatype_detail::mpi_datatype_of<T>::call(); }

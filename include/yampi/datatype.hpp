@@ -134,7 +134,7 @@ namespace yampi
   class datatype
     : public ::yampi::datatype_base< ::yampi::datatype >
   {
-    typedef ::yampi::datatype_base< ::yampi::datatype > super_type;
+    typedef ::yampi::datatype_base< ::yampi::datatype > base_type;
 
     MPI_Datatype mpi_datatype_;
 
@@ -611,12 +611,16 @@ namespace yampi
     bool operator==(datatype const& other) const noexcept
     { return mpi_datatype_ == other.mpi_datatype_; }
 
+   private:
+    friend base_type;
+
     bool do_is_null() const noexcept
     { return mpi_datatype_ == MPI_DATATYPE_NULL; }
 
     MPI_Datatype do_mpi_datatype() const noexcept
     { return mpi_datatype_; }
 
+   public:
     void free(::yampi::environment const& environment)
     {
       if (mpi_datatype_ == MPI_DATATYPE_NULL
