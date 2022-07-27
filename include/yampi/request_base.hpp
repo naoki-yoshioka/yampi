@@ -352,7 +352,7 @@ namespace yampi
     bool is_null() const noexcept(noexcept(*mpi_request_ptr_ == MPI_REQUEST_NULL))
     { return *mpi_request_ptr_ == MPI_REQUEST_NULL; }
 
-    bool operator==(request_cref_base const& other) const noexcept noexcept
+    bool operator==(request_cref_base const& other) const noexcept
     { return mpi_request_ptr_ == other.mpi_request_ptr_; }
 
     boost::optional< ::yampi::status > status(::yampi::environment const& environment) const

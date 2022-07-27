@@ -34,9 +34,9 @@ namespace yampi
   };
 
   class cartesian
-    : public ::yampi::topology
+    : public ::yampi::topology< ::yampi::cartesian >
   {
-    typedef ::yampi::topology base_type;
+    using base_type = ::yampi::topology< ::yampi::cartesian >;
 
    public:
     cartesian() = delete;
@@ -106,7 +106,7 @@ namespace yampi
       std::vector<int> my_is_periodic(is_periodic_first, is_periodic_first + (size_last - size_first));
 
       MPI_Comm result;
-      int const error_code
+      auto const error_code
         = MPI_Cart_create(
             old_communicator.mpi_comm(),
             size_last-size_first, std::addressof(*size_first),
@@ -134,7 +134,7 @@ namespace yampi
       std::vector<int> my_remains(remains_first, remains_last);
 
       MPI_Comm result;
-      int const error_code
+      auto const error_code
         = MPI_Cart_sub(
             other.communicator().mpi_comm(), std::addressof(my_remains.front()),
             std::addressof(result));
@@ -190,8 +190,7 @@ namespace yampi
     int dimension(::yampi::environment const& environment) const
     {
       int result;
-      int const error_code
-        = MPI_Cartdim_get(communicator_.mpi_comm(), std::addressof(result));
+      auto const error_code = MPI_Cartdim_get(communicator_.mpi_comm(), std::addressof(result));
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::cartesian::dimension", environment);
@@ -225,7 +224,7 @@ namespace yampi
 
       std::vector<int> my_is_periodic(size_out_last - size_out_first);
 
-      int const error_code
+      auto const error_code
         = MPI_Cart_get(
             communicator_.mpi_comm(),
             size_out_last - size_out_first, std::addressof(*size_out_first),
@@ -249,10 +248,7 @@ namespace yampi
         "Value type of ContiguousIterator1 must be the same to int");
 
       int mpi_rank;
-      int const error_code
-        = MPI_Cart_rank(
-            communicator_.mpi_comm(), std::addressof(*coordinates_first),
-            std::addressof(mpi_rank));
+      auto const error_code = MPI_Cart_rank(communicator_.mpi_comm(), std::addressof(*coordinates_first), std::addressof(mpi_rank));
       return error_code == MPI_SUCCESS
         ? ::yampi::rank(mpi_rank)
         : throw ::yampi::error(error_code, "yampi::cartesian::rank", environment);
@@ -271,13 +267,41 @@ namespace yampi
            int>::value),
         "Value type of ContiguousIterator1 must be the same to int");
 
-      int const error_code
+      auto const error_code
         = MPI_Cart_coords(
             communicator_.mpi_comm(), rank.mpi_rank(),
             coordinates_out_last - coordinates_out_first,
             std::addressof(*coordinates_out_first));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::cartesian::coordinates", environment);
+    }
+
+   private:
+    friend base_type;
+
+    int do_num_neighbors(::yampi::environment const& environment) const
+    {
+      auto result = int{0};
+
+      auto const dim = dimension(environment);
+      for (auto direction = decltype(dim){0}; direction < dim; ++direction)
+      {
+        int mpi_source;
+        int mpi_destination;
+        auto error_code = MPI_Cart_shift(communicator_.mpi_comm(), direction, +1, std::addressof(mpi_source), std::addressof(mpi_destination));
+        if (error_code != MPI_SUCCESS)
+          throw ::yampi::error(error_code, "yampi::cartesian::do_num_neighbors", environment);
+        if (mpi_source != MPI_PROC_NULL and mpi_destination != MPI_PROC_NULL)
+          ++result;
+
+        error_code = MPI_Cart_shift(communicator_.mpi_comm(), direction, -1, std::addressof(mpi_source), std::addressof(mpi_destination));
+        if (error_code != MPI_SUCCESS)
+          throw ::yampi::error(error_code, "yampi::cartesian::do_num_neighbors", environment);
+        if (mpi_source != MPI_PROC_NULL and mpi_destination != MPI_PROC_NULL)
+          ++result;
+      }
+
+      return result;
     }
   };
 

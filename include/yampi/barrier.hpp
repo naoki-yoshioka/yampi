@@ -12,7 +12,7 @@ namespace yampi
 {
   inline void barrier(::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
-    int const error_code = MPI_Barrier(communicator.mpi_comm());
+    auto const error_code = MPI_Barrier(communicator.mpi_comm());
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::barrier", environment);
   }

@@ -22,6 +22,7 @@
 
 namespace yampi
 {
+  template <typename Derived>
   class topology
   {
    protected:
@@ -59,9 +60,17 @@ namespace yampi
       using std::swap;
       swap(communicator_, other.communicator_);
     }
+
+    int num_neighbors(::yampi::environment const& environment) const
+    { return derived().do_num_neighbors(environment); }
+
+   protected:
+    Derived& derived() noexcept { return static_cast<Derived&>(*this); }
+    Derived const& derived() const noexcept { return static_cast<Derived const&>(*this); }
   };
 
-  inline void swap(::yampi::topology& lhs, ::yampi::topology& rhs) noexcept(noexcept(lhs.swap(rhs)))
+  template <typename Derived>
+  inline void swap(::yampi::topology<Derived>& lhs, ::yampi::topology<Derived>& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 }
 
