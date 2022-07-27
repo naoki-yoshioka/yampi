@@ -31,16 +31,16 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
-    assert(send_buffer.data() != std::addressof(*first));
+    assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count() <= send_buffer.data());
 
 # if MPI_VERSION >= 3
-    int const error_code
+    auto const error_code
       = MPI_Allreduce(
           send_buffer.data(), std::addressof(*first),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
-    int const error_code
+    auto const error_code
       = MPI_Allreduce(
           const_cast<SendValue*>(send_buffer.data()), std::addressof(*first),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -66,13 +66,13 @@ namespace yampi
   template <typename Value>
   inline void all_reduce(
     ::yampi::in_place_t const,
-    ::yampi::buffer<Value> receive_buffer, ::yampi::binary_operation const& operation,
+    ::yampi::buffer<Value> buffer, ::yampi::binary_operation const& operation,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
-    int const error_code
+    auto const error_code
       = MPI_Allreduce(
           MPI_IN_PLACE,
-          receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::all_reduce", environment);
