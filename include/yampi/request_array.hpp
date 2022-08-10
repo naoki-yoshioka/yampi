@@ -20,9 +20,76 @@
 
 namespace yampi
 {
-  // TODO: implement iterators
   namespace request_array_detail
   {
+    template <typename Request>
+    class request_array_const_iterator;
+
+    template <typename Request>
+    class request_array_iterator
+    {
+      friend class request_array_const_iterator<Request>;
+      MPI_Request* mpi_request_ptr_;
+
+     public:
+      using value_type = Request;
+      using pointer = MPI_Request*;
+      using reference = typename Request::reference;
+      using difference_type = std::ptrdiff_t;
+      using iterator_category = std::random_access_iterator_tag;
+
+      constexpr request_array_iterator() noexcept = default;
+      constexpr request_array_iterator(MPI_Request& mpi_request) noexcept : mpi_request_ptr_{std::addressof(mpi_request)} { }
+
+      constexpr bool operator==(request_array_iterator const& other) const noexcept { return mpi_request_ptr_ == other.mpi_request_ptr_; }
+      constexpr bool operator<(request_array_iterator const& other) const noexcept { return mpi_request_ptr_ < other.mpi_request_ptr_; }
+
+      constexpr reference operator*() const noexcept { return reference{*mpi_request_ptr_}; }
+      constexpr pointer operator->() const noexcept { return mpi_request_ptr_; }
+
+      constexpr request_array_iterator& operator++() noexcept { ++mpi_request_ptr_; return *this; }
+      constexpr request_array_iterator operator++(int) noexcept { auto result = *this; ++mpi_request_ptr_; return result; }
+      constexpr request_array_iterator& operator--() noexcept { --mpi_request_ptr_; return *this; }
+      constexpr request_array_iterator operator--(int) noexcept { auto result = *this; --mpi_request_ptr_; return result; }
+      constexpr request_array_iterator& operator+=(difference_type const n) noexcept { mpi_request_ptr_ += n; return *this; }
+      constexpr request_array_iterator& operator-=(difference_type const n) noexcept { mpi_request_ptr_ -= n; return *this; }
+      constexpr difference_type operator-(request_array_iterator const& other) noexcept { return mpi_request_ptr_ - other.mpi_request_ptr_; }
+      constexpr reference operator[](difference_type const n) const { return reference{mpi_request_ptr_[n]}; }
+    };
+
+    template <typename Request>
+    class request_array_const_iterator
+    {
+      MPI_Request const* mpi_request_ptr_;
+
+     public:
+      using value_type = Request;
+      using pointer = MPI_Request const*;
+      using reference = typename Request::const_reference;
+      using difference_type = std::ptrdiff_t;
+      using iterator_category = std::random_access_iterator_tag;
+
+      constexpr request_array_const_iterator() noexcept = default;
+      constexpr request_array_const_iterator(MPI_Request const& mpi_request) noexcept : mpi_request_ptr_{std::addressof(mpi_request)} { }
+      constexpr request_array_const_iterator(request_array_iterator const& other) noexcept : mpi_request_ptr_{other.mpi_request_ptr_} { }
+
+      constexpr bool operator==(request_array_const_iterator const& other) const noexcept { return mpi_request_ptr_ == other.mpi_request_ptr_; }
+      constexpr bool operator<(request_array_const_iterator const& other) const noexcept { return mpi_request_ptr_ < other.mpi_request_ptr_; }
+
+      constexpr reference operator*() const noexcept { return reference{*mpi_request_ptr_}; }
+      constexpr pointer operator->() const noexcept { return mpi_request_ptr_; }
+
+      constexpr request_array_const_iterator& operator++() noexcept { ++mpi_request_ptr_; return *this; }
+      constexpr request_array_const_iterator operator++(int) noexcept { auto result = *this; ++mpi_request_ptr_; return result; }
+      constexpr request_array_const_iterator& operator--() noexcept { --mpi_request_ptr_; return *this; }
+      constexpr request_array_const_iterator operator--(int) noexcept { auto result = *this; --mpi_request_ptr_; return result; }
+      constexpr request_array_const_iterator& operator+=(difference_type const n) noexcept { mpi_request_ptr_ += n; return *this; }
+      constexpr request_array_const_iterator& operator-=(difference_type const n) noexcept { mpi_request_ptr_ -= n; return *this; }
+      constexpr difference_type operator-(request_array_const_iterator const& other) noexcept { return mpi_request_ptr_ - other.mpi_request_ptr_; }
+      constexpr difference_type operator-(request_array_iterator const& other) noexcept { return mpi_request_ptr_ - other.mpi_request_ptr_; }
+      constexpr reference operator[](difference_type const n) const { return reference{mpi_request_ptr_[n]}; }
+    };
+
     template <typename Request, std::size_t N>
     class request_array_base
     {
@@ -30,42 +97,59 @@ namespace yampi
       MPI_Request data_[N];
 
      public:
-      typedef Request value_type;
-      typedef std::size_t size_type;
-      typedef std::ptrdiff_t difference_type;
-      typedef typename Request::reference reference;
-      typedef typename Request::const_reference const_reference;
-      typedef MPI_Request* pointer;
-      typedef MPI_Request const* const_pointer;
+      using value_type = Request;
+      using size_type = std::size_t;
+      using difference_type = std::ptrdiff_t;
+      using reference = typename Request::reference;
+      using const_reference = typename Request::const_reference;
+      using pointer = MPI_Request*;
+      using const_pointer = MPI_Request const*;
+      using iterator = ::yampi::request_array_detail::request_array_iterator<Request>;
+      using const_iterator = ::yampi::request_array_detail::request_array_const_iterator<Request>;
+      using reverse_iterator = std::reverse_iterator<iterator>;
+      using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
       bool operator==(request_array_base const& other) { return std::equal(data_, data_ + N, other.data_); }
 
-      reference at(size_type const position)
+      constexpr reference at(size_type const position)
       {
         if (position >= N)
           throw std::out_of_range("out of range");
         return reference(data_[position]);
       }
 
-      const_reference at(size_type const position) const
+      constexpr const_reference at(size_type const position) const
       {
         if (position >= N)
           throw std::out_of_range("out of range");
         return const_reference(data_[position]);
       }
 
-      reference operator[](size_type const position)
+      constexpr reference operator[](size_type const position)
       { assert(position < N); return reference(data_[position]); }
 
-      const_reference operator[](size_type const position) const
+      constexpr const_reference operator[](size_type const position) const
       { assert(position < N); return const_reference(data_[position]); }
 
-      reference front() { return reference(data_[0u]); }
-      const_reference front() const { return const_reference(data_[0u]); }
-      reference back() { return reference(data_[N - 1u]); }
-      const_reference back() const { return const_reference(data_[N - 1u]); }
-      pointer data() noexcept { return data_; }
-      const_pointer data() const noexcept { return data_; }
+      constexpr reference front() { return reference(data_[0u]); }
+      constexpr const_reference front() const { return const_reference(data_[0u]); }
+      constexpr reference back() { return reference(data_[N - 1u]); }
+      constexpr const_reference back() const { return const_reference(data_[N - 1u]); }
+      constexpr pointer data() noexcept { return data_; }
+      constexpr const_pointer data() const noexcept { return data_; }
+
+      constexpr iterator begin() noexcept { return {data_}; }
+      constexpr const_iterator begin() const noexcept { return {data_}; }
+      constexpr const_iterator cbegin() const noexcept { return {data_}; }
+      constexpr iterator end() noexcept { return {data_ + N}; }
+      constexpr const_iterator end() const noexcept { return {data_ + N}; }
+      constexpr const_iterator cend() const noexcept { return {data_ + N}; }
+      constexpr reverse_iterator rbegin() noexcept { return {this->end()}; }
+      constexpr const_reverse_iterator rbegin() const noexcept { return {this->end()}; }
+      constexpr const_reverse_iterator crbegin() const noexcept { return {this->cend()}; }
+      constexpr reverse_iterator rend() noexcept { return {this->begin()}; }
+      constexpr const_reverse_iterator rend() const noexcept { return {this->begin()}; }
+      constexpr const_reverse_iterator crend() const noexcept { return {this->cbegin()}; }
 
       constexpr bool empty() const noexcept { return false; }
       constexpr size_type size() const noexcept { return N; }
