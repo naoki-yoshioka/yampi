@@ -113,7 +113,9 @@ namespace yampi
 
     ~environment() noexcept
     {
-      if (::yampi::is_finalized())
+      int is_finalized;
+      int const error_code = MPI_Finalized(&is_finalized);
+      if (error_code != MPI_SUCCESS or static_cast<bool>(is_finalized))
         return;
 
       MPI_Finalize();
