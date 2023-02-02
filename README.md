@@ -14,11 +14,12 @@
 
 int main(int argc, char* argv[])
 {
-  yampi::environment env(argc, argv);
+  yampi::environment env{argc, argv};
+  auto comm = yampi::communicator{yampi::tags::world_communicator};
 
-  std::cout << "I am " << yampi::world_communicator.rank(env) << " of " << yampi::world_communicator.size(env) << std::endl;
-
-  return EXIT_SUCCESS;
+  std::cout << "I am " << comm.rank(env) << " of " << comm.size(env) << std::endl;
+  // For C++17 or later
+  // std::cout << "I am " << yampi::world_communicator.rank(env) << " of " << yampi::world_communicator.size(env) << std::endl;
 }
 ```
 

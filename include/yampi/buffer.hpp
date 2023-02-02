@@ -8,7 +8,7 @@
 # if __cplusplus < 201703L
 #   include <boost/type_traits/is_nothrow_swappable.hpp>
 # endif
-#   include <memory>
+# include <memory>
 
 # include <mpi.h>
 
