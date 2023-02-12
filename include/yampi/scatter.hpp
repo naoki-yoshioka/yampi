@@ -20,8 +20,6 @@
 
 namespace yampi
 {
-  // TODO: implement MPI_Scatterv
-
   // only for intracommunicators
   template <typename ContiguousIterator, typename ReceiveValue>
   inline void scatter(
@@ -33,7 +31,7 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          ReceiveValue>::value),
       "value_type of ContiguousIterator must be the same to ReceiveValue");
-    assert(std::addressof(*first) + receive_buffer.count() * communicator.size(environment) <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= std::addressof(*first));
+    assert(communicator.rank(environment) != root or (std::addressof(*first) + receive_buffer.count() * communicator.size(environment) <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= std::addressof(*first)));
 
     auto const error_code
       = MPI_Scatter(
@@ -49,7 +47,7 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const root,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
-    assert(send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data());
+    assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data()));
 
     auto const size = communicator.size(environment);
     auto const send_count = send_buffer.count() / size;

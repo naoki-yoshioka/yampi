@@ -9,8 +9,8 @@
 # include <mpi.h>
 
 # include <yampi/buffer.hpp>
-# include <yampi/communicator_base.hpp>
 # include <yampi/communicator.hpp>
+# include <yampi/intercommunicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/in_place.hpp>
 # if MPI_VERSION >= 3
@@ -22,8 +22,6 @@
 
 namespace yampi
 {
-  // TODO: implement MPI_Alltoallv, MPI_Alltoallw
-
   // only for intracommunicators
   template <typename SendValue, typename ContiguousIterator>
   inline void complete_exchange(
