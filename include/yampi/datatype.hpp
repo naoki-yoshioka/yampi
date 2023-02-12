@@ -18,6 +18,7 @@
 # include <yampi/bounds.hpp>
 # include <yampi/extent.hpp>
 # include <yampi/datatype_base.hpp>
+# include <yampi/predefined_datatype.hpp>
 
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
@@ -177,6 +178,11 @@ namespace yampi
 
       MPI_Type_free(std::addressof(mpi_datatype_));
     }
+
+    template <typename T>
+    explicit datatype(::yampi::predefined_datatype<T> const predefined_datatype)
+      : mpi_datatype_{predefined_datatype.mpi_datatype()}
+    { }
 
     explicit datatype(MPI_Datatype const& mpi_datatype)
       noexcept(std::is_nothrow_copy_constructible<MPI_Datatype>::value)

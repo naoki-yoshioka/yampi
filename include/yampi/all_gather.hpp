@@ -22,8 +22,6 @@
 
 namespace yampi
 {
-  // TODO: implement MPI_Allgatherv
-
   // only for intracommunicators
   template <typename SendValue, typename ContiguousIterator>
   inline void all_gather(
