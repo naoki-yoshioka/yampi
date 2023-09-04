@@ -42,8 +42,8 @@ namespace yampi
       ContiguousIterator3 const displacement_first,
       ::yampi::datatype const& datatype)
       : data_{std::addressof(*first)},
-        count_first_{std::addressof(*count_first)},
-        displacement_first_{std::addressof(*displacement_first)},
+        count_first_{const_cast<int*>(std::addressof(*count_first))},
+        displacement_first_{const_cast<int*>(std::addressof(*displacement_first))},
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     {
       static_assert(std::is_convertible<typename std::iterator_traits<ContiguousIterator1>::value_type, T>::value);
@@ -93,8 +93,8 @@ namespace yampi
       ContiguousIterator1 const first, ContiguousIterator2 const count_first,
       ContiguousIterator3 const displacement_first)
       : data_{std::addressof(*first)},
-        count_first_{std::addressof(*count_first)},
-        displacement_first_{std::addressof(*displacement_first)}
+        count_first_{const_cast<int*>(std::addressof(*count_first))},
+        displacement_first_{const_cast<int*>(std::addressof(*displacement_first))}
     {
       static_assert(std::is_convertible<typename std::iterator_traits<ContiguousIterator1>::value_type, T>::value);
       static_assert(std::is_convertible<typename std::iterator_traits<ContiguousIterator2>::value_type, int>::value);
@@ -142,9 +142,9 @@ namespace yampi
       ContiguousIterator1 const first, ContiguousIterator2 const count_first,
       ContiguousIterator3 const displacement_first, ContiguousIterator4 const datatype_first)
       : data_{std::addressof(*first)},
-        count_first_{std::addressof(*count_first)},
-        displacement_first_{std::addressof(*displacement_first)},
-        datatype_first_{std::addressof(*datatype_first)}
+        count_first_{const_cast<int*>(std::addressof(*count_first))},
+        displacement_first_{const_cast<int*>(std::addressof(*displacement_first))},
+        datatype_first_{const_cast< ::yampi::datatype* >(std::addressof(*datatype_first))}
     {
       static_assert(std::is_convertible<typename std::iterator_traits<ContiguousIterator1>::value_type, T>::value);
       static_assert(std::is_convertible<typename std::iterator_traits<ContiguousIterator2>::value_type, int>::value);
@@ -213,7 +213,7 @@ namespace yampi
   make_noncontiguous_buffer(
     ContiguousIterator1 const first, ContiguousIterator2 const count_first,
     ContiguousIterator3 const displacement_first,
-    ::yampi::predefined_datatype<typename std::remove_cv<typename std::iterator_traits<ContiguouIterator1>::value_type>::type> const&)
+    ::yampi::predefined_datatype<typename std::remove_cv<typename std::iterator_traits<ContiguousIterator1>::value_type>::type> const&)
   { return {first, count_first, displacement_first}; }
 
   template <typename ContiguousIterator1, typename ContiguousIterator2, typename ContiguousIterator3>
