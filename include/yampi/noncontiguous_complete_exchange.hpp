@@ -97,14 +97,14 @@ namespace yampi
 # if MPI_VERSION >= 3
     auto const error_code
       = MPI_Alltoallw(
-          MPI_IN_PLACE, nullptr, nullptr, MPI_DATATYPE_NULL,
+          MPI_IN_PLACE, nullptr, nullptr, nullptr,
           receive_buffer.data(), receive_buffer.count_first(),
           receive_buffer.displacement_first(), reinterpret_cast<MPI_Datatype const*>(receive_buffer.datatype_first()),
           communicator.mpi_comm());
 # else // MPI_VERSION >= 3
     auto const error_code
       = MPI_Alltoallw(
-          MPI_IN_PLACE, nullptr, nullptr, MPI_DATATYPE_NULL,
+          MPI_IN_PLACE, nullptr, nullptr, nullptr,
           receive_buffer.data(), receive_buffer.count_first(),
           receive_buffer.displacement_first(), reinterpret_cast<MPI_Datatype*>(receive_buffer.datatype_first()),
           communicator.mpi_comm());
