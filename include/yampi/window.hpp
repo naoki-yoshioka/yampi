@@ -63,12 +63,21 @@ namespace yampi
 
       using value_type = typename std::remove_cv<typename std::iterator_traits<ContiguousIterator>::value_type>::type;
       MPI_Win result;
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Win_create_c(
+            std::addressof(*first),
+            (::yampi::addressof(*last, environment) - ::yampi::addressof(*first, environment)).mpi_byte_displacement(),
+            static_cast<MPI_Aint>(sizeof(value_type)), mpi_info, communicator.mpi_comm(),
+            std::addressof(result));
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Win_create(
             std::addressof(*first),
             (::yampi::addressof(*last, environment) - ::yampi::addressof(*first, environment)).mpi_byte_displacement(),
             sizeof(value_type), mpi_info, communicator.mpi_comm(),
             std::addressof(result));
+# endif // MPI_VERSION >= 4
       return error_code == MPI_SUCCESS
         ? result
         : throw ::yampi::error(error_code, "yampi::window::create", environment);

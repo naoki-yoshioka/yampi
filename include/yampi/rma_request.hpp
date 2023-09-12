@@ -109,11 +109,19 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rput_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            window.mpi_win(), std::addressof(mpi_request));
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rput(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
             window.mpi_win(), std::addressof(mpi_request));
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_put", environment);
     }
@@ -136,11 +144,19 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rget_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            window.mpi_win(), std::addressof(mpi_request));
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rget(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             window.mpi_win(), std::addressof(mpi_request));
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_get", environment);
     }
@@ -164,11 +180,19 @@ namespace yampi
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Raccumulate_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Raccumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_accumulate", environment);
     }
@@ -195,12 +219,21 @@ namespace yampi
     {
       assert(origin_buffer.data() != result_buffer.data());
 
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rget_accumulate_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            result_buffer.data(), result_buffer.count().mpi_count(), result_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rget_accumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), window.mpi_win(), std::addressof(mpi_request));
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request::do_fetch_accumulate", environment);
     }
@@ -371,11 +404,19 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rput_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            window.mpi_win(), mpi_request_ptr_);
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rput(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             window.mpi_win(), mpi_request_ptr_);
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request_ref::put", environment);
     }
@@ -386,11 +427,19 @@ namespace yampi
       ::yampi::rank const target, ::yampi::target_buffer<TargetValue> const target_buffer,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rget_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            window.mpi_win(), mpi_request_ptr_);
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rget(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             window.mpi_win(), mpi_request_ptr_);
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request_ref::get", environment);
     }
@@ -402,11 +451,19 @@ namespace yampi
       ::yampi::binary_operation const& operation,
       ::yampi::window_base<Window> const& window, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Raccumulate_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Raccumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request_ref::accumulate", environment);
     }
@@ -420,12 +477,21 @@ namespace yampi
     {
       assert(origin_buffer.data() != result_buffer.data());
 
+# if MPI_VERSION >= 4
+      int const error_code
+        = MPI_Rget_accumulate_c(
+            origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+            result_buffer.data(), result_buffer.count().mpi_count(), result_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+            operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
+# else // MPI_VERSION >= 4
       int const error_code
         = MPI_Rget_accumulate(
             origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
             result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-            target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+            target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
             operation.mpi_op(), window.mpi_win(), mpi_request_ptr_);
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::rma_request_ref::fetch_accumulate", environment);
     }

@@ -34,7 +34,13 @@ namespace yampi
       "value_type of ContiguousIterator must be the same to SendValue");
     assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count() * communicator.size(environment) <= send_buffer.data()));
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          std::addressof(*first), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Gather(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -62,7 +68,13 @@ namespace yampi
     auto const receive_count = receive_buffer.count() / size;
     assert(receive_count * size == receive_buffer.count());
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          receive_buffer.data(), receive_count.mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Gather(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -87,7 +99,13 @@ namespace yampi
     if (communicator.rank(environment) == root)
       throw ::yampi::nonroot_call_on_root_error("yampi::gather");
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          nullptr, MPI_Count{0}, MPI_DATATYPE_NULL,
+          root.mpi_rank(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Gather(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -117,11 +135,19 @@ namespace yampi
     auto const receive_count = receive_buffer.count() / size;
     assert(receive_count * size == receive_buffer.count());
 
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          MPI_IN_PLACE, MPI_Count{0}, MPI_DATATYPE_NULL,
+          receive_buffer.data(), receive_count.mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          root.mpi_rank(), communicator.mpi_comm());
+# else // MPI_VERSION >= 4
     auto const error_code
       = MPI_Gather(
           MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
           receive_buffer.data(), receive_count, receive_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
+# endif // MPI_VERSION >= 4
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::gather", environment);
   }
@@ -132,7 +158,13 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::rank const root,
     ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
   {
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          nullptr, MPI_Count{0}, MPI_DATATYPE_NULL,
+          root.mpi_rank(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Gather(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -158,11 +190,19 @@ namespace yampi
     auto const receive_count = receive_buffer.count() / remote_size;
     assert(receive_count * remote_size == receive_buffer.count());
 
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          nullptr, MPI_Count{0}, MPI_DATATYPE_NULL,
+          receive_buffer.data(), receive_count.mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          MPI_ROOT, communicator.mpi_comm());
+# else // MPI_VERSION >= 4
     auto const error_code
       = MPI_Gather(
           nullptr, 0, MPI_DATATYPE_NULL,
           receive_buffer.data(), receive_count, receive_buffer.datatype().mpi_datatype(),
           MPI_ROOT, communicator.mpi_comm());
+# endif // MPI_VERSION >= 4
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::gather", environment);
   }
@@ -170,10 +210,17 @@ namespace yampi
   template <typename ReceiveValue>
   inline void gather(::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Gather_c(
+          nullptr, MPI_Count{0}, MPI_DATATYPE_NULL, nullptr, MPI_Count{0}, MPI_DATATYPE_NULL,
+          MPI_PROC_NULL, communicator.mpi_comm());
+# else // MPI_VERSION >= 4
     auto const error_code
       = MPI_Gather(
           nullptr, 0, MPI_DATATYPE_NULL, nullptr, 0, MPI_DATATYPE_NULL,
           MPI_PROC_NULL, communicator.mpi_comm());
+# endif // MPI_VERSION >= 4
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::gather", environment);
   }

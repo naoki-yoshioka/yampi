@@ -187,6 +187,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::request_base::exists_status", environment);
     }
 
+    [[deprecated]]
     void cancel(::yampi::environment const& environment) const
     {
       int const error_code
@@ -308,6 +309,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::request_ref_base::exists_status", environment);
     }
 
+    [[deprecated]]
     void cancel(::yampi::environment const& environment) const
     {
       int const error_code
@@ -380,6 +382,7 @@ namespace yampi
         : throw ::yampi::error(error_code, "yampi::request_cref_base::exists_status", environment);
     }
 
+    [[deprecated]]
     void cancel(::yampi::environment const& environment) const
     {
       int const error_code
