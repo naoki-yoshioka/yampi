@@ -35,14 +35,15 @@ namespace yampi
     ~count() noexcept = default;
 
 # if MPI_VERSION >= 3
-    constexpr count(int const mpi_count) noexcept
-      : mpi_count_{static_cast<MPI_Count>(mpi_count)}
-    { }
-
     explicit constexpr count(MPI_Count const& mpi_count)
       noexcept(std::is_nothrow_copy_constructible<MPI_Count>::value)
       : mpi_count_{mpi_count}
     { }
+
+    template <typename Integer>
+    explicit constexpr count(Integer const mpi_count)
+      : mpi_count_{static_cast<MPI_Count>(mpi_count)}
+    { static_assert(std::is_integral<Integer>::value, "Integer must be an integral type"); }
 
     constexpr MPI_Count const& mpi_count() const noexcept { return mpi_count_; }
     constexpr int int_mpi_count() const noexcept { return static_cast<int>(mpi_count_); }
@@ -56,6 +57,11 @@ namespace yampi
     constexpr count(int const mpi_count) noexcept
       : mpi_count_(mpi_count)
     { }
+
+    template <typename Integer>
+    explicit constexpr count(Integer const mpi_count)
+      : mpi_count_{static_cast<int>(mpi_count)}
+    { static_assert(std::is_integral<Integer>::value, "Integer must be an integral type"); }
 
     constexpr int const& mpi_count() const noexcept { return mpi_count_; }
     constexpr int int_mpi_count() const noexcept { return mpi_count_; }
