@@ -17,6 +17,9 @@
 # include <yampi/datatype.hpp>
 # include <yampi/predefined_datatype.hpp>
 # include <yampi/has_predefined_datatype.hpp>
+# if MPI_VERSION >= 4
+#   include <yampi/count.hpp>
+# endif
 
 # if __cplusplus >= 201703L
 #   define YAMPI_is_nothrow_swappable std::is_nothrow_swappable
@@ -31,7 +34,11 @@ namespace yampi
   class buffer
   {
     T* data_;
+# if MPI_VERSION >= 4
+    ::yampi::count count_;
+# else // MPI_VERSION >= 4
     int count_;
+# endif
     ::yampi::datatype* datatype_ptr_;
 
    public:
@@ -45,13 +52,14 @@ namespace yampi
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     { }
 
+# if MPI_VERSION >= 4
     template <typename ContiguousIterator>
     buffer(
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype const& datatype)
       noexcept(noexcept(*first) and noexcept(last-first))
       : data_{std::addressof(*first)},
-        count_{last-first},
+        count_{static_cast<MPI_Count>(last-first)},
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     {
       static_assert(
@@ -62,13 +70,36 @@ namespace yampi
         "T must be tha same to value_type of ContiguousIterator");
       assert(last >= first);
     }
+# else // MPI_VERSION >= 4
+    template <typename ContiguousIterator>
+    buffer(
+      ContiguousIterator const first, ContiguousIterator const last,
+      ::yampi::datatype const& datatype)
+      noexcept(noexcept(*first) and noexcept(last-first))
+      : data_{std::addressof(*first)},
+        count_{static_cast<int>(last-first)},
+        datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
+    {
+      static_assert(
+        (std::is_same<
+           typename std::remove_cv<
+             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+           T>::value),
+        "T must be tha same to value_type of ContiguousIterator");
+      assert(last >= first);
+    }
+# endif // MPI_VERSION >= 4
 
     bool operator==(buffer const& other) const noexcept
     { return data_ == other.data_ and count_ == other.count_ and *datatype_ptr_ == *other.datatype_ptr_; }
 
     T* data() noexcept { return data_; }
     T const* data() const noexcept { return data_; }
+# if MPI_VERSION >= 4
+    ::yampi::count const& count() const noexcept { return count_; }
+# else // MPI_VERSION >= 4
     int const& count() const noexcept { return count_; }
+# endif
     ::yampi::datatype const& datatype() const noexcept { return *datatype_ptr_; }
 
     void swap(buffer& other) noexcept
@@ -84,7 +115,11 @@ namespace yampi
   class buffer<T, typename std::enable_if< ::yampi::has_predefined_datatype<T>::value >::type>
   {
     T* data_;
+# if MPI_VERSION >= 4
+    ::yampi::count count_;
+# else // MPI_VERSION >= 4
     int count_;
+# endif
 
    public:
     explicit buffer(T& value) noexcept
@@ -95,6 +130,22 @@ namespace yampi
       : data_{const_cast<T*>(std::addressof(value))}, count_{1}
     { }
 
+# if MPI_VERSION >= 4
+    template <typename ContiguousIterator>
+    buffer(ContiguousIterator const first, ContiguousIterator const last)
+      noexcept(noexcept(*first) and noexcept(last-first))
+      : data_{std::addressof(*first)},
+        count_{static_cast<MPI_Count>(last-first)}
+    {
+      static_assert(
+        (std::is_same<
+           typename std::remove_cv<
+             typename std::iterator_traits<ContiguousIterator>::value_type>::type,
+           T>::value),
+        "T must be tha same to value_type of ContiguousIterator");
+      assert(last >= first);
+    }
+# else // MPI_VERSION >= 4
     template <typename ContiguousIterator>
     buffer(ContiguousIterator const first, ContiguousIterator const last)
       noexcept(noexcept(*first) and noexcept(last-first))
@@ -109,13 +160,18 @@ namespace yampi
         "T must be tha same to value_type of ContiguousIterator");
       assert(last >= first);
     }
+# endif // MPI_VERSION >= 4
 
     bool operator==(buffer const& other) const noexcept
     { return data_ == other.data_ and count_ == other.count_; }
 
     T* data() noexcept { return data_; }
     T const* data() const noexcept { return data_; }
+# if MPI_VERSION >= 4
+    ::yampi::count const& count() const noexcept { return count_; }
+# else // MPI_VERSION >= 4
     int const& count() const noexcept { return count_; }
+# endif
     ::yampi::predefined_datatype<T> datatype() const noexcept { return ::yampi::predefined_datatype<T>(); }
 
     void swap(buffer& other) noexcept

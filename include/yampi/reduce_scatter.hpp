@@ -33,7 +33,12 @@ namespace yampi
     assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count() == communicator.size(environment));
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Reduce_scatter_block_c(
+          send_buffer.data(), std::addressof(*first), MPI_Count{1}, send_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Reduce_scatter_block(
           send_buffer.data(), std::addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
@@ -58,7 +63,12 @@ namespace yampi
     assert(send_buffer.count() == communicator.size(environment) * receive_buffer.count());
     assert(send_buffer.datatype() == receive_buffer.datatype());
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Reduce_scatter_block_c(
+          send_buffer.data(), receive_buffer.data(), receive_buffer.count().mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Reduce_scatter_block(
           send_buffer.data(), receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
@@ -84,7 +94,12 @@ namespace yampi
     auto const receive_count = buffer.count() / size;
     assert(receive_count * size == buffer.count());
 
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    auto const error_code
+      = MPI_Reduce_scatter_block_c(
+          MPI_IN_PLACE, buffer.data(), receive_count.mpi_count(), buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), communicator.mpi_comm());
+# elif MPI_VERSION >= 3
     auto const error_code
       = MPI_Reduce_scatter_block(
           MPI_IN_PLACE, buffer.data(), receive_count, buffer.datatype().mpi_datatype(),

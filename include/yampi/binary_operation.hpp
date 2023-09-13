@@ -149,13 +149,37 @@ namespace yampi
 # undef YAMPI_DEFINE_OPERATION_CONSTRUCTOR
 
     // TODO: Implement something like yampi::function and constructor using it
+# if MPI_VERSION >= 4
+    binary_operation(
+      MPI_User_function_c* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment)
+      : mpi_op_{create(mpi_user_function, is_commutative, environment)}
+    { }
+# else // MPI_VERSION >= 4
     binary_operation(
       MPI_User_function* mpi_user_function, bool const is_commutative,
       ::yampi::environment const& environment)
       : mpi_op_{create(mpi_user_function, is_commutative, environment)}
     { }
+# endif // MPI_VERSION >= 4
 
    private:
+# if MPI_VERSION >= 4
+    MPI_Op create(
+      MPI_User_function_c* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment) const
+    {
+      MPI_Op result;
+      int const error_code
+        = MPI_Op_create_c(
+            mpi_user_function, static_cast<int>(is_commutative),
+            std::addressof(result));
+      return error_code == MPI_SUCCESS
+        ? result
+        : throw ::yampi::error(
+            error_code, "yampi::binary_operation::create", environment);
+    }
+# else // MPI_VERSION >= 4
     MPI_Op create(
       MPI_User_function* mpi_user_function, bool const is_commutative,
       ::yampi::environment const& environment) const
@@ -170,6 +194,7 @@ namespace yampi
         : throw ::yampi::error(
             error_code, "yampi::binary_operation::create", environment);
     }
+# endif // MPI_VERSION >= 4
 
    public:
     void reset(::yampi::environment const& environment)

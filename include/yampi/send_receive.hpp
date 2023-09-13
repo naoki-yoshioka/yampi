@@ -24,7 +24,15 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Status stat;
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    int const error_code
+      = MPI_Sendrecv_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), send_tag.mpi_tag(),
+          receive_buffer.data(), receive_buffer.count().mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          source.mpi_rank(), receive_tag.mpi_tag(),
+          communicator.mpi_comm(), std::addressof(stat));
+# elif MPI_VERSION >= 3
     int const error_code
       = MPI_Sendrecv(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -32,7 +40,7 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), std::addressof(stat));
-# else // MPI_VERSION >= 3
+# else // MPI_VERSION
     int const error_code
       = MPI_Sendrecv(
           const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -40,7 +48,7 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), std::addressof(stat));
-# endif // MPI_VERSION >= 3
+# endif // MPI_VERSION
 
     return error_code == MPI_SUCCESS
       ? ::yampi::status(stat)
@@ -69,12 +77,21 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     MPI_Status stat;
+# if MPI_VERSION >= 4
+    int const error_code
+      = MPI_Sendrecv_replace_c(
+          buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), send_tag.mpi_tag(),
+          source.mpi_rank(), receive_tag.mpi_tag(),
+          communicator.mpi_comm(), std::addressof(stat));
+# else // MPI_VERSION >= 4
     int const error_code
       = MPI_Sendrecv_replace(
           buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), std::addressof(stat));
+# endif // MPI_VERSION >= 4
 
     return error_code == MPI_SUCCESS
       ? ::yampi::status(stat)
@@ -102,7 +119,15 @@ namespace yampi
     ::yampi::buffer<ReceiveValue> receive_buffer, ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+    int const error_code
+      = MPI_Sendrecv_c(
+          send_buffer.data(), send_buffer.count().mpi_count(), send_buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), send_tag.mpi_tag(),
+          receive_buffer.data(), receive_buffer.count().mpi_count(), receive_buffer.datatype().mpi_datatype(),
+          source.mpi_rank(), receive_tag.mpi_tag(),
+          communicator.mpi_comm(), MPI_STATUS_IGNORE);
+# elif MPI_VERSION >= 3
     int const error_code
       = MPI_Sendrecv(
           send_buffer.data(), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -110,7 +135,7 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
-# else // MPI_VERSION >= 3
+# else // MPI_VERSION
     int const error_code
       = MPI_Sendrecv(
           const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
@@ -118,7 +143,7 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
-# endif // MPI_VERSION >= 3
+# endif // MPI_VERSION
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }
@@ -147,12 +172,21 @@ namespace yampi
     ::yampi::rank const source, ::yampi::tag const receive_tag,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    int const error_code
+      = MPI_Sendrecv_replace_c(
+          buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), send_tag.mpi_tag(),
+          source.mpi_rank(), receive_tag.mpi_tag(),
+          communicator.mpi_comm(), MPI_STATUS_IGNORE);
+# else // MPI_VERSION >= 4
     int const error_code
       = MPI_Sendrecv_replace(
           buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
+# endif // MPI_VERSION >= 4
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::send_receive", environment);
   }

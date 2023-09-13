@@ -167,44 +167,71 @@ namespace yampi
     boost::optional<std::string> at(
       std::string const& key, ::yampi::environment const& environment) const
     {
-      int value_length;
+# if MPI_VERSION >= 4
+      auto buffer_length = 0;
       int flag;
-# if MPI_VERSION >= 3
       int error_code
-        = MPI_Info_get_valuelen(
+        = MPI_Info_get_string(
             mpi_info_, key.c_str(),
-            std::addressof(value_length), std::addressof(flag));
-# else
-      int error_code
-        = MPI_Info_get_valuelen(
-            mpi_info_, const_cast<char*>(key.c_str()),
-            std::addressof(value_length), std::addressof(flag));
-# endif
+            std::addressof(buffer_length), nullptr, std::addressof(flag));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::information::get", environment);
+        throw ::yampi::error(error_code, "yampi::information::at", environment);
 
       if (flag == false)
         return boost::none;
 
-      std::string result(value_length, ' ');
-# if MPI_VERSION >= 3
+      std::string result(buffer_length - 1, ' ');
       error_code
-        = MPI_Info_get(
+        = MPI_Info_get_string(
             mpi_info_, key.c_str(),
-            value_length, const_cast<char*>(result.c_str()), std::addressof(flag));
-# else
-      error_code
-        = MPI_Info_get(
-            mpi_info_, const_cast<char*>(key.c_str()),
-            value_length, const_cast<char*>(result.c_str()), std::addressof(flag));
-# endif
+            buffer_length, const_cast<char*>(result.c_str()), std::addressof(flag));
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::information::get", environment);
+        throw ::yampi::error(error_code, "yampi::information::at", environment);
 
       if (flag == false)
         return boost::none;
 
       return boost::make_optional(result);
+# else // MPI_VERSION >= 4
+      int value_length;
+      int flag;
+#   if MPI_VERSION >= 3
+      int error_code
+        = MPI_Info_get_valuelen(
+            mpi_info_, key.c_str(),
+            std::addressof(value_length), std::addressof(flag));
+#   else
+      int error_code
+        = MPI_Info_get_valuelen(
+            mpi_info_, const_cast<char*>(key.c_str()),
+            std::addressof(value_length), std::addressof(flag));
+#   endif
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::information::at", environment);
+
+      if (flag == false)
+        return boost::none;
+
+      std::string result(value_length, ' ');
+#   if MPI_VERSION >= 3
+      error_code
+        = MPI_Info_get(
+            mpi_info_, key.c_str(),
+            value_length, const_cast<char*>(result.c_str()), std::addressof(flag));
+#   else
+      error_code
+        = MPI_Info_get(
+            mpi_info_, const_cast<char*>(key.c_str()),
+            value_length, const_cast<char*>(result.c_str()), std::addressof(flag));
+#   endif
+      if (error_code != MPI_SUCCESS)
+        throw ::yampi::error(error_code, "yampi::information::at", environment);
+
+      if (flag == false)
+        return boost::none;
+
+      return boost::make_optional(result);
+# endif // MPI_VERSION >= 4
     }
 
     int num_keys(::yampi::environment const& environment) const

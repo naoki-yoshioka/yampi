@@ -28,12 +28,21 @@ namespace yampi
   {
     assert(origin_buffer.data() != result_buffer.data());
 
+# if MPI_VERSION >= 4
+    int const error_code
+      = MPI_Get_accumulate_c(
+          origin_buffer.data(), origin_buffer.count().mpi_count(), origin_buffer.datatype().mpi_datatype(),
+          result_buffer.data(), result_buffer.count().mpi_count(), result_buffer.datatype().mpi_datatype(),
+          target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count().mpi_count(), target_buffer.datatype().mpi_datatype(),
+          operation.mpi_op(), window.mpi_win());
+# else // MPI_VERSION >= 4
     int const error_code
       = MPI_Get_accumulate(
           origin_buffer.data(), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
           result_buffer.data(), result_buffer.count(), result_buffer.datatype().mpi_datatype(),
-          target.mpi_rank(), target_buffer.mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
+          target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), window.mpi_win());
+# endif // MPI_VERSION >= 4
     if (error_code != MPI_SUCCESS)
       throw ::yampi::error(error_code, "yampi::fetch_accumulate", environment);
   }

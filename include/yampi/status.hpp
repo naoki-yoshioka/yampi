@@ -71,27 +71,37 @@ namespace yampi
     ::yampi::count message_length(
       ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
+# if MPI_VERSION >= 4
+      MPI_Count result;
+      int const error_code
+        = MPI_Get_count_c(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
+# else // MPI_VERSION >= 4
       int result;
-# if MPI_VERSION >= 3
+#   if MPI_VERSION >= 3
       int const error_code
         = MPI_Get_count(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
-# else // MPI_VERSION >= 3
+#   else // MPI_VERSION >= 3
       int const error_code
         = MPI_Get_count(const_cast<MPI_Status*>(std::addressof(mpi_status_)), datatype.mpi_datatype(), &result);
-# endif // MPI_VERSION >= 3
+#   endif // MPI_VERSION >= 3
+# endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::status::message_length", environment);
       if (result == MPI_UNDEFINED)
         throw ::yampi::count_value_undefined_error();
 
-      return ::yampi::count(result);
+      return ::yampi::count{result};
     }
 
     template <typename Datatype>
     ::yampi::count num_basic_elements(
       ::yampi::datatype_base<Datatype> const& datatype, ::yampi::environment const& environment) const
     {
-# if MPI_VERSION >= 3
+# if MPI_VERSION >= 4
+      MPI_Count result;
+      int const error_code
+        = MPI_Get_elements_c(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
+# elif MPI_VERSION >= 3
       MPI_Count result;
       int const error_code
         = MPI_Get_elements_x(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
