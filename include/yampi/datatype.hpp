@@ -203,12 +203,12 @@ namespace yampi
     constexpr displacement_type const* displacement_end() const noexcept { return displacement_first_ + count_.mpi_count(); }
 
     constexpr length_type const& length_front() const noexcept { return *length_begin(); }
-    constexpr length_type const& length_back() const noexcept { return *std::prev(length_end()); }
+    constexpr length_type const& length_back() const noexcept { return *(length_end() - 1); } //{ return *std::prev(length_end()); }
     constexpr displacement_type const& displacement_front() const noexcept { return *displacement_begin(); }
-    constexpr displacement_type const& displacement_back() const noexcept { return *std::prev(displacement_end()); }
+    constexpr displacement_type const& displacement_back() const noexcept { return *(displacement_end() - 1); } //{ return *std::prev(displacement_end()); }
 
-    constexpr length_type const& length(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(length_begin() + n); }
-    constexpr displacement_type const& displacement(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(displacement_begin() + n); }
+    constexpr length_type const& length(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(length_begin() + n); }
+    constexpr displacement_type const& displacement(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(displacement_begin() + n); }
 
     length_type const& length_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::length_at)"}; return *(length_begin() + n); }
     displacement_type const& displacement_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::displacement_at)"}; return *(displacement_begin() + n); }
@@ -298,12 +298,12 @@ namespace yampi
     constexpr displacement_type const* displacement_end() const noexcept { return displacement_first_ + count_.mpi_count(); }
 
     constexpr length_type const& length_front() const noexcept { return *length_begin(); }
-    constexpr length_type const& length_back() const noexcept { return *std::prev(length_end()); }
+    constexpr length_type const& length_back() const noexcept { return *(length_end() - 1); } //{ return *std::prev(length_end()); }
     constexpr displacement_type const& displacement_front() const noexcept { return *displacement_begin(); }
-    constexpr displacement_type const& displacement_back() const noexcept { return *std::prev(displacement_end()); }
+    constexpr displacement_type const& displacement_back() const noexcept { return *(displacement_end() - 1); } //{ return *std::prev(displacement_end()); }
 
-    constexpr length_type const& length(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(length_begin() + n); }
-    constexpr displacement_type const& displacement(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(displacement_begin() + n); }
+    constexpr length_type const& length(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(length_begin() + n); }
+    constexpr displacement_type const& displacement(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(displacement_begin() + n); }
 
     length_type const& length_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::length_at)"}; return *(length_begin() + n); }
     displacement_type const& displacement_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::displacement_at)"}; return *(displacement_begin() + n); }
@@ -384,9 +384,9 @@ namespace yampi
     constexpr displacement_type const* displacement_end() const noexcept { return displacement_first_ + count_.mpi_count(); }
 
     constexpr displacement_type const& displacement_front() const noexcept { return *displacement_begin(); }
-    constexpr displacement_type const& displacement_back() const noexcept { return *std::prev(displacement_end()); }
+    constexpr displacement_type const& displacement_back() const noexcept { return *(displacement_end() - 1); } //{ return *std::prev(displacement_end()); }
 
-    constexpr displacement_type const& displacement(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(displacement_begin() + n); }
+    constexpr displacement_type const& displacement(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(displacement_begin() + n); }
 
     displacement_type const& displacement_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::displacement_at)"}; return *(displacement_begin() + n); }
 
@@ -462,9 +462,9 @@ namespace yampi
     constexpr displacement_type const* displacement_end() const noexcept { return displacement_first_ + count_.mpi_count(); }
 
     constexpr displacement_type const& displacement_front() const noexcept { return *displacement_begin(); }
-    constexpr displacement_type const& displacement_back() const noexcept { return *std::prev(displacement_end()); }
+    constexpr displacement_type const& displacement_back() const noexcept { return *(displacement_end() - 1); } //{ return *std::prev(displacement_end()); }
 
-    constexpr displacement_type const& displacement(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(displacement_begin() + n); }
+    constexpr displacement_type const& displacement(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(displacement_begin() + n); }
 
     displacement_type const& displacement_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::displacement_at)"}; return *(displacement_begin() + n); }
 
@@ -567,15 +567,15 @@ namespace yampi
     constexpr Datatype const* datatype_end() const noexcept { return datatype_first_ + count_.mpi_count(); }
 
     constexpr length_type const& length_front() const noexcept { return *length_begin(); }
-    constexpr length_type const& length_back() const noexcept { return *std::prev(length_end()); }
+    constexpr length_type const& length_back() const noexcept { return *(length_end() - 1); } //{ return *std::prev(length_end()); }
     constexpr displacement_type const& displacement_front() const noexcept { return *displacement_begin(); }
-    constexpr displacement_type const& displacement_back() const noexcept { return *std::prev(displacement_end()); }
+    constexpr displacement_type const& displacement_back() const noexcept { return *(displacement_end() - 1); } //{ return *std::prev(displacement_end()); }
     constexpr Datatype const& datatype_front() const noexcept { return *datatype_begin(); }
-    constexpr Datatype const& datatype_back() const noexcept { return *std::prev(datatype_end()); }
+    constexpr Datatype const& datatype_back() const noexcept { return *(datatype_end() - 1); } //{ return *std::prev(datatype_end()); }
 
-    constexpr length_type const& length(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(length_begin() + n); }
-    constexpr displacement_type const& displacement(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(displacement_begin() + n); }
-    constexpr Datatype const& datatype(int const n) const noexcept { assert(n >= 0 and n < count_.int_mpi_count()); return *(datatype_begin() + n); }
+    constexpr length_type const& length(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(length_begin() + n); }
+    constexpr displacement_type const& displacement(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(displacement_begin() + n); }
+    constexpr Datatype const& datatype(int const n) const noexcept { /*assert(n >= 0 and n < count_.int_mpi_count());*/ return *(datatype_begin() + n); }
 
     length_type const& length_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::length_at)"}; return *(length_begin() + n); }
     displacement_type const& displacement_at(int const n) const { if (n >= 0 and n < count_.int_mpi_count()) throw std::out_of_range{"out of range (flexible_blocks::displacement_at)"}; return *(displacement_begin() + n); }
