@@ -165,7 +165,12 @@ namespace yampi
       UnaryFunction unary_function,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().int_mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > transform_buffer(buffer_size);
       ::yampi::algorithm::transform(
         ignore_status, send_buffer, receive_buffer, unary_function, transform_buffer.begin(), message_envelope, environment);
     }
