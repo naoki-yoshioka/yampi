@@ -184,7 +184,7 @@ namespace yampi
       error_code
         = MPI_Info_get_string(
             mpi_info_, key.c_str(),
-            buffer_length, const_cast<char*>(result.c_str()), std::addressof(flag));
+            std::addressof(buffer_length), const_cast<char*>(result.c_str()), std::addressof(flag));
       if (error_code != MPI_SUCCESS)
         throw ::yampi::error(error_code, "yampi::information::at", environment);
 

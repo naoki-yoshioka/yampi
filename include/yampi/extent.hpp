@@ -35,6 +35,7 @@ namespace yampi
     ~extent() noexcept = default;
 
 # if MPI_VERSION >= 3
+    template <std::enable_if<not std::is_same<MPI_Aint, MPI_Count>::value, bool>::type = true>
     explicit constexpr extent(MPI_Aint const& mpi_extent) noexcept
       : mpi_extent_{static_cast<MPI_Count>(mpi_extent)}
     { }
