@@ -126,7 +126,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Send_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             std::addressof(mpi_request));
 # elif MPI_VERSION >= 3
@@ -165,7 +165,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Bsend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             std::addressof(mpi_request));
 # elif MPI_VERSION >= 3
@@ -204,7 +204,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Ssend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             std::addressof(mpi_request));
 # elif MPI_VERSION >= 3
@@ -243,7 +243,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Rsend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             std::addressof(mpi_request));
 # elif MPI_VERSION >= 3
@@ -283,7 +283,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Recv_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             std::addressof(mpi_request));
 # else // MPI_VERSION >= 4
@@ -522,7 +522,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Send_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
 # elif MPI_VERSION >= 3
@@ -551,7 +551,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Bsend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
 # elif MPI_VERSION >= 3
@@ -580,7 +580,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Ssend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
 # elif MPI_VERSION >= 3
@@ -609,7 +609,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Rsend_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
 # elif MPI_VERSION >= 3
@@ -638,7 +638,7 @@ namespace yampi
 # if MPI_VERSION >= 4
       int const error_code
         = MPI_Recv_init_c(
-            buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
+            buffer.data(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
             source.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
             mpi_request_ptr_);
 # else // MPI_VERSION >= 4
