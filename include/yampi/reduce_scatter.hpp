@@ -30,8 +30,13 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to Value");
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
+    assert(send_buffer.count().mpi_count() == communicator.size(environment));
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count() == communicator.size(environment));
+# endif // MPI_VERSION >= 4
 
 # if MPI_VERSION >= 4
     auto const error_code
@@ -59,8 +64,13 @@ namespace yampi
     ::yampi::binary_operation const& operation,
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count().mpi_count() <= send_buffer.data());
+    assert(send_buffer.count().mpi_count() == communicator.size(environment) * receive_buffer.count().mpi_count());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data());
     assert(send_buffer.count() == communicator.size(environment) * receive_buffer.count());
+# endif // MPI_VERSION >= 4
     assert(send_buffer.datatype() == receive_buffer.datatype());
 
 # if MPI_VERSION >= 4

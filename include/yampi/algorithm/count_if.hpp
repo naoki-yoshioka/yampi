@@ -31,8 +31,13 @@ namespace yampi
       UnaryPredicate unary_predicate, ::yampi::rank const root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
-      count_type result = std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate);
+      count_type result = std::count_if(buffer.data(), buffer.data() + buffer_size, unary_predicate);
 
       if (communicator.rank(environment) == root)
       {
@@ -55,9 +60,14 @@ namespace yampi
       UnaryPredicate unary_predicate,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       return ::yampi::all_reduce(
         ::yampi::make_buffer(
-          std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate)),
+          std::count_if(buffer.data(), buffer.data() + buffer_size, unary_predicate)),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
@@ -73,9 +83,14 @@ namespace yampi
       UnaryPredicate unary_predicate, ::yampi::rank const& root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
-        = std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate);
+        = std::count_if(buffer.data(), buffer.data() + buffer_size, unary_predicate);
 
       ::yampi::reduce const reducer(root, communicator);
 
@@ -103,9 +118,14 @@ namespace yampi
       UnaryPredicate unary_predicate,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       return ::yampi::all_reduce(
         request,
-        ::yampi::make_buffer(std::count_if(buffer.data(), buffer.data() + buffer.count_if(), unary_predicate)),
+        ::yampi::make_buffer(std::count_if(buffer.data(), buffer.data() + buffer_size, unary_predicate)),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }

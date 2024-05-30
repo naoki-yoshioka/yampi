@@ -33,7 +33,11 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.size(environment) <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count() * communicator.size(environment) <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
 # if MPI_VERSION >= 4
     auto const error_code
@@ -63,7 +67,11 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count().mpi_count() <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
     auto const size = communicator.size(environment);
     auto const receive_count = receive_buffer.count() / size;
@@ -130,7 +138,11 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.remote_size(environment) <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count() * communicator.remote_size(environment) <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
 # if MPI_VERSION >= 4
     auto const error_code
@@ -160,7 +172,11 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
     ::yampi::intercommunicator const& communicator, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count().mpi_count() <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
     auto const remote_size = communicator.remote_size(environment);
     auto const receive_count = receive_buffer.count() / remote_size;
@@ -201,7 +217,11 @@ namespace yampi
          typename std::iterator_traits<ContiguousIterator>::value_type,
          SendValue>::value),
       "value_type of ContiguousIterator must be the same to SendValue");
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * topology.num_neighbors(environment) <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count() * topology.num_neighbors(environment) <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
 # if MPI_VERSION >= 4
     auto const error_code
@@ -225,7 +245,11 @@ namespace yampi
     ::yampi::buffer<SendValue> const send_buffer, ::yampi::buffer<ReceiveValue> receive_buffer,
     ::yampi::topology<Topology> const& topology, ::yampi::environment const& environment)
   {
+# if MPI_VERSION >= 4
+    assert(send_buffer.data() + send_buffer.count().mpi_count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count().mpi_count() <= send_buffer.data());
+# else // MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count() <= receive_buffer.data() or receive_buffer.data() + receive_buffer.count() <= send_buffer.data());
+# endif // MPI_VERSION >= 4
 
     auto const num_neighbors = topology.num_neighbors(environment);
     auto const receive_count = receive_buffer.count() / num_neighbors;

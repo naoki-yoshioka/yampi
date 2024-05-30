@@ -32,7 +32,11 @@ namespace yampi
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
+# if MPI_VERSION >= 4
+      assert(n >= 0 and n < send_buffer.count().mpi_count());
+# else // MPI_VERSION >= 4
       assert(n >= 0 and n < send_buffer.count());
+# endif // MPI_VERSION >= 4
 
       if (message_envelope.source() == message_envelope.destination())
         return boost::none;
@@ -46,13 +50,18 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::rotate_copy(
-          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + buffer_size,
           rotate_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            rotate_copy_buffer_first, rotate_copy_buffer_first + send_buffer.count(),
+            rotate_copy_buffer_first, rotate_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -68,7 +77,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(buffer_size);
       return ::yampi::algorithm::rotate_copy(
         send_buffer, receive_buffer,
         rotate_copy_buffer.begin(), message_envelope, environment);
@@ -84,7 +98,11 @@ namespace yampi
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
+# if MPI_VERSION >= 4
+      assert(n >= 0 and n < send_buffer.count().mpi_count());
+# else // MPI_VERSION >= 4
       assert(n >= 0 and n < send_buffer.count());
+# endif // MPI_VERSION >= 4
 
       if (message_envelope.source() == message_envelope.destination())
         return boost::none;
@@ -98,14 +116,19 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::rotate_copy(
-          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + buffer_size,
           rotate_copy_buffer_first);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            rotate_copy_buffer_first, rotate_copy_buffer_first + send_buffer.count(),
+            rotate_copy_buffer_first, rotate_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -122,7 +145,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(buffer_size);
       return ::yampi::algorithm::rotate_copy(
         std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer,
@@ -139,7 +167,11 @@ namespace yampi
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
+# if MPI_VERSION >= 4
+      assert(n >= 0 and n < send_buffer.count().mpi_count());
+# else // MPI_VERSION >= 4
       assert(n >= 0 and n < send_buffer.count());
+# endif // MPI_VERSION >= 4
 
       if (message_envelope.source() == message_envelope.destination())
         return;
@@ -153,13 +185,18 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::rotate_copy(
-          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + buffer_size,
           rotate_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            rotate_copy_buffer_first, rotate_copy_buffer_first + send_buffer.count(),
+            rotate_copy_buffer_first, rotate_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -173,7 +210,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(buffer_size);
       ::yampi::algorithm::rotate_copy(
         ignore_status,
         send_buffer, receive_buffer,
@@ -190,7 +232,11 @@ namespace yampi
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
       assert(send_buffer.count() == receive_buffer.count());
+# if MPI_VERSION >= 4
+      assert(n >= 0 and n < send_buffer.count().mpi_count());
+# else // MPI_VERSION >= 4
       assert(n >= 0 and n < send_buffer.count());
+# endif // MPI_VERSION >= 4
 
       if (message_envelope.source() == message_envelope.destination())
         return;
@@ -204,14 +250,19 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::rotate_copy(
-          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + n, send_buffer.data() + buffer_size,
           rotate_copy_buffer_first);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            rotate_copy_buffer_first, rotate_copy_buffer_first + send_buffer.count(),
+            rotate_copy_buffer_first, rotate_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -226,7 +277,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > rotate_copy_buffer(buffer_size);
       ::yampi::algorithm::rotate_copy(
         ignore_status, std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer,

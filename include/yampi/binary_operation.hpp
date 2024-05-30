@@ -238,6 +238,15 @@ namespace yampi
 # undef YAMPI_DEFINE_OPERATION_RESET
 
     // TODO: Implement something like yampi::function
+# if MPI_VERSION >= 4
+    void reset(
+      MPI_User_function_c* mpi_user_function, bool const is_commutative,
+      ::yampi::environment const& environment)
+    {
+      free(environment);
+      mpi_op_ = create(mpi_user_function, is_commutative, environment);
+    }
+# else // MPI_VERSION >= 4
     void reset(
       MPI_User_function* mpi_user_function, bool const is_commutative,
       ::yampi::environment const& environment)
@@ -245,6 +254,7 @@ namespace yampi
       free(environment);
       mpi_op_ = create(mpi_user_function, is_commutative, environment);
     }
+# endif // MPI_VERSION >= 4
 
     void free(::yampi::environment const& environment)
     {

@@ -45,13 +45,18 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::reverse_copy(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -67,7 +72,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(buffer_size);
       return ::yampi::algorithm::reverse_copy(
         send_buffer, receive_buffer,
         reverse_copy_buffer.begin(), message_envelope, environment);
@@ -96,14 +106,19 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::reverse_copy(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           reverse_copy_buffer_first);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -120,7 +135,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(buffer_size);
       return ::yampi::algorithm::reverse_copy(
         std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer,
@@ -150,13 +170,18 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::reverse_copy(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           reverse_copy_buffer_first);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -170,7 +195,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(buffer_size);
       ::yampi::algorithm::reverse_copy(
         ignore_status,
         send_buffer, receive_buffer,
@@ -200,14 +230,19 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::reverse_copy(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           reverse_copy_buffer_first);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            reverse_copy_buffer_first, reverse_copy_buffer_first + send_buffer.count(),
+            reverse_copy_buffer_first, reverse_copy_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -222,7 +257,12 @@ namespace yampi
       ::yampi::buffer<Value> receive_buffer,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > reverse_copy_buffer(buffer_size);
       ::yampi::algorithm::reverse_copy(
         ignore_status, std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer,

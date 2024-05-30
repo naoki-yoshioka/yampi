@@ -35,15 +35,21 @@ namespace yampi
     ~extent() noexcept = default;
 
 # if MPI_VERSION >= 3
-    explicit constexpr extent(MPI_Aint const& mpi_extent) noexcept
-      : mpi_extent_{static_cast<MPI_Count>(mpi_extent)}
+    template <typename Extent>
+    explicit constexpr extent(Extent const& mpi_extent) noexcept
+      : mpi_extent_{to_mpi_count<>::call(mpi_extent)}
     { }
 
-    explicit constexpr extent(MPI_Count const& mpi_extent)
-      noexcept(std::is_nothrow_copy_constructible<MPI_Count>::value)
-      : mpi_extent_{mpi_extent}
-    { }
+   private:
+    template <typename MpiAint = MPI_Aint, typename MpiCount = MPI_Count>
+    struct to_mpi_count
+    { static MpiCount call(MpiAint const& mpi_extent) { return static_cast<MpiCount>(mpi_extent); } };
 
+    template <typename MpiCount>
+    struct to_mpi_count<MpiCount, MpiCount>
+    { static MpiCount call(MpiCount const& mpi_extent) { return mpi_extent; } };
+
+   public:
     constexpr MPI_Count const& mpi_extent() const { return mpi_extent_; }
     constexpr MPI_Aint mpi_aint_mpi_extent() const { return static_cast<MPI_Aint>(mpi_extent_); }
 

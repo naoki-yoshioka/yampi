@@ -31,8 +31,13 @@ namespace yampi
       Value const& value, ::yampi::rank const root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
-      count_type result = std::count(buffer.data(), buffer.data() + buffer.count(), value);
+      count_type result = std::count(buffer.data(), buffer.data() + buffer_size, value);
 
       if (communicator.rank(environment) == root)
       {
@@ -55,9 +60,14 @@ namespace yampi
       Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       return ::yampi::all_reduce(
         ::yampi::make_buffer(
-          std::count(buffer.data(), buffer.data() + buffer.count(), value)),
+          std::count(buffer.data(), buffer.data() + buffer_size, value)),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }
@@ -73,9 +83,14 @@ namespace yampi
       Value const& value, ::yampi::rank const& root,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       typedef typename std::iterator_traits<Value const*>::difference_type count_type;
       count_type result
-        = std::count(buffer.data(), buffer.data() + buffer.count(), value);
+        = std::count(buffer.data(), buffer.data() + buffer_size, value);
 
       ::yampi::reduce const reducer(root, communicator);
 
@@ -103,9 +118,14 @@ namespace yampi
       Value const& value,
       ::yampi:communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       return ::yampi::all_reduce(
         request,
-        ::yampi::make_buffer(std::count(buffer.data(), buffer.data() + buffer.count(), value)),
+        ::yampi::make_buffer(std::count(buffer.data(), buffer.data() + buffer_size, value)),
         ::yampi::binary_operation(::yampi::plus_t()),
         communicator, environment);
     }

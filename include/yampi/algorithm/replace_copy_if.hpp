@@ -46,13 +46,18 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
+            replace_copy_if_buffer_first, replace_copy_if_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -69,7 +74,12 @@ namespace yampi
       UnaryPredicate predicate, Value const& new_value,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(buffer_size);
       return ::yampi::algorithm::replace_copy_if(
         send_buffer, receive_buffer, predicate, new_value,
         replace_copy_if_buffer.begin(), message_envelope, environment);
@@ -99,14 +109,19 @@ namespace yampi
             message_envelope.communicator(), environment));
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
+            replace_copy_if_buffer_first, replace_copy_if_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -124,7 +139,12 @@ namespace yampi
       UnaryPredicate predicate, Value const& new_value,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(buffer_size);
       return ::yampi::algorithm::replace_copy_if(
         std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer, predicate, new_value,
@@ -155,13 +175,18 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
           ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
+            replace_copy_if_buffer_first, replace_copy_if_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -176,7 +201,12 @@ namespace yampi
       UnaryPredicate predicate, Value const& new_value,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(buffer_size);
       ::yampi::algorithm::replace_copy_if(
         ignore_status,
         send_buffer, receive_buffer, predicate, new_value,
@@ -207,14 +237,19 @@ namespace yampi
           message_envelope.communicator(), environment);
       else if (present_rank == message_envelope.source())
       {
+# if MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+        auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
         std::replace_copy_if(
-          send_buffer.data(), send_buffer.data() + send_buffer.count(),
+          send_buffer.data(), send_buffer.data() + buffer_size,
           replace_copy_if_buffer_first, predicate, new_value);
 
         ::yampi::send(
           std::forward<CommunicationMode>(communication_mode),
           ::yampi::make_buffer(
-            replace_copy_if_buffer_first, replace_copy_if_buffer_first + send_buffer.count(),
+            replace_copy_if_buffer_first, replace_copy_if_buffer_first + buffer_size,
             send_buffer.datatype()),
           message_envelope.destination(), message_envelope.tag(),
           message_envelope.communicator(), environment);
@@ -230,7 +265,12 @@ namespace yampi
       UnaryPredicate predicate, Value const& new_value,
       ::yampi::message_envelope const message_envelope, ::yampi::environment const& environment)
     {
-      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(send_buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = send_buffer.count();
+# endif // MPI_VERSION >= 4
+      std::vector<Value, ::yampi::allocator<Value> > replace_copy_if_buffer(buffer_size);
       ::yampi::algorithm::replace_copy_if(
         ignore_status, std::forward<CommunicationMode>(communication_mode),
         send_buffer, receive_buffer, predicate, new_value,

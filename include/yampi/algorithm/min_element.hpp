@@ -40,7 +40,12 @@ namespace yampi
       ::yampi::datatype const& value_int_datatype,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      Value const* min_value_ptr = std::min_element(buffer.data(), buffer.data() + buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
+      Value const* min_value_ptr = std::min_element(buffer.data(), buffer.data() + buffer_size);
       ::yampi::rank const present_rank = communicator.rank(environment);
 
       std::pair<Value, int> value_rank = std::make_pair(*min_value_ptr, present_rank.mpi_rank());
@@ -76,7 +81,12 @@ namespace yampi
       ::yampi::buffer<Value> const buffer, ::yampi::rank const root,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
-      Value const* min_value_ptr = std::min_element(buffer.data(), buffer.data() + buffer.count());
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
+      Value const* min_value_ptr = std::min_element(buffer.data(), buffer.data() + buffer_size);
       ::yampi::rank const present_rank = communicator.rank(environment);
 
       std::pair<Value, int> value_rank = std::make_pair(*min_value_ptr, present_rank.mpi_rank());
@@ -131,8 +141,13 @@ namespace yampi
       ::yampi::buffer<Value> const buffer, ::yampi::datatype const& value_int_datatype,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       Value const* min_value_ptr
-        = std::min_element(buffer.data(), buffer.data() + buffer.count());
+        = std::min_element(buffer.data(), buffer.data() + buffer_size);
       ::yampi::rank const present_rank = communicator.rank(environment);
 
       std::pair<Value, int> value_rank
@@ -158,8 +173,13 @@ namespace yampi
       ::yampi::buffer<Value> const buffer,
       ::yampi::communicator const& communicator, ::yampi::environment const& environment)
     {
+# if MPI_VERSION >= 4
+      auto const buffer_size = buffer.count().mpi_count();
+# else // MPI_VERSION >= 4
+      auto const buffer_size = buffer.count();
+# endif // MPI_VERSION >= 4
       Value const* min_value_ptr
-        = std::min_element(buffer.data(), buffer.data() + buffer.count());
+        = std::min_element(buffer.data(), buffer.data() + buffer_size);
       ::yampi::rank const present_rank = communicator.rank(environment);
 
       std::pair<Value, int> value_rank
