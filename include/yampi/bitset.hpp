@@ -351,17 +351,7 @@ namespace yampi
 
     template <
       typename Character = char, typename CharacterTraits = std::char_traits<Character>,
-      typename Allocator = std::allocator<Character> >
-    std::basic_string<Character, CharacterTraits, Allocator> to_string(
-      Character const zero = Character('0'), Character const one = Character('1')) const
-    {
-      std::basic_string<Character, CharacterTraits, Allocator> result(N, zero);
-      for (std::size_t position_plus_one = N; position_plus_one > static_cast<std::size_t>(0u); --position_plus_one)
-        if (unsafe_test(position_plus_one - static_cast<std::size_t>(1u)))
-          CharacterTraits::assign(result[N - position_plus_one], one);
-    }
-
-    template <typename Character, typename CharacterTraits, typename Allocator>
+      typename Allocator = std::allocator<Character>>
     std::basic_string<Character, CharacterTraits, Allocator> to_string(
       Character const zero = Character('0'), Character const one = Character('1')) const
     {
@@ -372,20 +362,6 @@ namespace yampi
 
       return result;
     }
-
-    template <typename Character, typename CharacterTraits>
-    std::basic_string<Character, CharacterTraits, std::allocator<Character> > to_string(
-      Character const zero = Character('0'), Character const one = Character('1')) const
-    { return to_string<Character, CharacterTraits, std::allocator<Character> >(); }
-
-    template <typename Character>
-    std::basic_string<Character, std::char_traits<Character>, std::allocator<Character> > to_string(
-      Character const zero = Character('0'), Character const one = Character('1')) const
-    { return to_string<Character, std::char_traits<Character>, std::allocator<Character> >(zero, one); }
-
-    std::basic_string<char, std::char_traits<char>, std::allocator<char> > to_string(
-      char const zero = '0', char const one = '1') const
-    { return to_string<char, std::char_traits<char>, std::allocator<char> >(zero, one); }
 
     unsigned long to_ulong() const { return to_unsigned_integer<unsigned long>(); }
     unsigned long to_ullong() const { return to_unsigned_integer<unsigned long long>(); }
