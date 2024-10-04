@@ -76,10 +76,17 @@ namespace yampi
     YAMPI_MAKE_MPI_DATATYPE_OF(std::complex<double>, CXX_DOUBLE_COMPLEX)
     YAMPI_MAKE_MPI_DATATYPE_OF(std::complex<long double>, CXX_LONG_DOUBLE_COMPLEX)
 # elif MPI_VERSION >= 2
-    YAMPI_MAKE_MPI_DATATYPE_OF(bool, MPI::BOOL)
-    YAMPI_MAKE_MPI_DATATYPE_OF(std::complex<float>, MPI::COMPLEX)
-    YAMPI_MAKE_MPI_DATATYPE_OF(std::complex<double>, MPI::DOUBLE_COMPLEX)
-    YAMPI_MAKE_MPI_DATATYPE_OF(std::complex<long double>, MPI::LONG_DOUBLE_COMPLEX)
+#   define YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(type, mpitype) \
+    template <>\
+    struct mpi_datatype_of< type >\
+    {\
+      static MPI_Datatype call() { return MPI:: ## mpitype; }\
+    };
+    YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(bool, BOOL)
+    YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(std::complex<float>, COMPLEX)
+    YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(std::complex<double>, DOUBLE_COMPLEX)
+    YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(std::complex<long double>, LONG_DOUBLE_COMPLEX)
+#   undef YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX
 # endif
 
     YAMPI_MAKE_MPI_DATATYPE_OF(short_int_type, SHORT_INT)

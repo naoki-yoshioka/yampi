@@ -54,7 +54,7 @@ namespace yampi
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator++()
     {
-      MPI_Get_address(static_cast<char*>(mpi_address_) + static_cast<MPI_Aint>(1), &mpi_address_);
+      MPI_Get_address(reinterpret_cast<char*>(mpi_address_) + static_cast<MPI_Aint>(1), &mpi_address_);
       return *this;
     }
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
@@ -62,13 +62,13 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator--() noexcept
     {
-      mpi_address_ = MPI_Aint_diff(mpi_address_, static_cast<MPI_Aint>(1));
+      mpi_address_ = MPI_Aint_add(mpi_address_, static_cast<MPI_Aint>(-1));
       return *this;
     }
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator--()
     {
-      MPI_Get_address(static_cast<char*>(mpi_address_) - static_cast<MPI_Aint>(1), &mpi_address_);
+      MPI_Get_address(reinterpret_cast<char*>(mpi_address_) - static_cast<MPI_Aint>(1), &mpi_address_);
       return *this;
     }
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
@@ -82,7 +82,7 @@ namespace yampi
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator+=(::yampi::byte_displacement const& displacement)
     {
-      MPI_Get_address(static_cast<char*>(mpi_address_) + displacement.mpi_byte_displacement(), &mpi_address_);
+      MPI_Get_address(reinterpret_cast<char*>(mpi_address_) + displacement.mpi_byte_displacement(), &mpi_address_);
       return *this;
     }
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
@@ -90,13 +90,13 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator-=(::yampi::byte_displacement const& displacement) noexcept
     {
-      mpi_address_ = MPI_Aint_diff(mpi_address_, displacement.mpi_byte_displacement());
+      mpi_address_ = MPI_Aint_add(mpi_address_, displacement.mpi_byte_displacement());
       return *this;
     }
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator-=(::yampi::byte_displacement const& displacement)
     {
-      MPI_Get_address(static_cast<char*>(mpi_address_) - displacement.mpi_byte_displacement(), &mpi_address_);
+      MPI_Get_address(reinterpret_cast<char*>(mpi_address_) - displacement.mpi_byte_displacement(), &mpi_address_);
       return *this;
     }
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
@@ -156,7 +156,13 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     noexcept
 # endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
-  { return ::yampi::byte_displacement(lhs.mpi_address() - rhs.mpi_address()); }
+  {
+# if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+    return ::yampi::byte_displacement{MPI_Aint_diff(lhs.mpi_address(), rhs.mpi_address())};
+# else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+    return ::yampi::byte_displacement{static_cast<MPI_Aint>(reinterpret_cast<char*>(lhs.mpi_address()) - reinterpret_cast<char*>(rhs.mpi_address()))};
+# endif // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
+  }
 
   inline void swap(::yampi::address& lhs, ::yampi::address& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
