@@ -90,7 +90,7 @@ namespace yampi
 # if (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
     address& operator-=(::yampi::byte_displacement const& displacement) noexcept
     {
-      mpi_address_ = MPI_Aint_add(mpi_address_, displacement.mpi_byte_displacement());
+      mpi_address_ = MPI_Aint_add(mpi_address_, -displacement.mpi_byte_displacement());
       return *this;
     }
 # else // (MPI_VERSION > 3) || (MPI_VERSION == 3 && MPI_SUBVERSION >= 1)
