@@ -80,7 +80,7 @@ namespace yampi
     template <>\
     struct mpi_datatype_of< type >\
     {\
-      static MPI_Datatype call() { return MPI:: ## mpitype; }\
+      static MPI_Datatype call() { return MPI:: mpitype; }\
     };
     YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(bool, BOOL)
     YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(std::complex<float>, COMPLEX)
