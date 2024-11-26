@@ -55,16 +55,16 @@ namespace yampi
 
     ::yampi::rank source() const
       noexcept(std::is_nothrow_copy_constructible< ::yampi::rank >::value)
-    { return ::yampi::rank(mpi_status_.MPI_SOURCE); }
+    { return ::yampi::rank{mpi_status_.MPI_SOURCE}; }
 
     ::yampi::tag tag() const
       noexcept(std::is_nothrow_copy_constructible< ::yampi::tag >::value)
-    { return ::yampi::tag(mpi_status_.MPI_TAG); }
+    { return ::yampi::tag{mpi_status_.MPI_TAG}; }
 
     void test_error(::yampi::environment const& environment) const
     {
       if (mpi_status_.MPI_ERROR != MPI_SUCCESS)
-        throw ::yampi::error(mpi_status_.MPI_ERROR, "yampi::status::test_error", environment);
+        throw ::yampi::error{mpi_status_.MPI_ERROR, "yampi::status::test_error", environment};
     }
 
     template <typename Datatype>
@@ -73,22 +73,22 @@ namespace yampi
     {
 # if MPI_VERSION >= 4
       MPI_Count result;
-      int const error_code
+      auto const error_code
         = MPI_Get_count_c(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
 # else // MPI_VERSION >= 4
       int result;
 #   if MPI_VERSION >= 3
-      int const error_code
+      auto const error_code
         = MPI_Get_count(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
 #   else // MPI_VERSION >= 3
-      int const error_code
+      auto const error_code
         = MPI_Get_count(const_cast<MPI_Status*>(std::addressof(mpi_status_)), datatype.mpi_datatype(), &result);
 #   endif // MPI_VERSION >= 3
 # endif // MPI_VERSION >= 4
       if (error_code != MPI_SUCCESS)
-        throw ::yampi::error(error_code, "yampi::status::message_length", environment);
+        throw ::yampi::error{error_code, "yampi::status::message_length", environment};
       if (result == MPI_UNDEFINED)
-        throw ::yampi::count_value_undefined_error();
+        throw ::yampi::count_value_undefined_error{};
 
       return ::yampi::count{result};
     }
@@ -99,21 +99,21 @@ namespace yampi
     {
 # if MPI_VERSION >= 4
       MPI_Count result;
-      int const error_code
+      auto const error_code
         = MPI_Get_elements_c(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
 # elif MPI_VERSION >= 3
       MPI_Count result;
-      int const error_code
+      auto const error_code
         = MPI_Get_elements_x(std::addressof(mpi_status_), datatype.mpi_datatype(), &result);
 # else
       int result;
-      int const error_code
+      auto const error_code
         = MPI_Get_elements(const_cast<MPI_Status*>(std::addressof(mpi_status_)), datatype.mpi_datatype(), &result);
 # endif
 
       return error_code == MPI_SUCCESS
-        ? ::yampi::count(result)
-        : throw ::yampi::error(error_code, "yampi::status::num_basic_elements", environment);
+        ? ::yampi::count{result}
+        : throw ::yampi::error{error_code, "yampi::status::num_basic_elements", environment};
     }
 
     bool empty() const

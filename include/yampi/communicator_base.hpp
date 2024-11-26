@@ -381,7 +381,7 @@ namespace yampi
   inline bool is_valid_rank(
     ::yampi::rank const& rank, ::yampi::communicator_base const& communicator,
     ::yampi::environment const& environment)
-  { return rank >= ::yampi::rank{0} and rank < ::yampi::rank{communicator.size(environment)}; }
+  { using namespace ::yampi::literals::rank_literals; return rank >= 0_r and rank < ::yampi::rank{communicator.size(environment)}; }
 } // namespace yampi
 
 
