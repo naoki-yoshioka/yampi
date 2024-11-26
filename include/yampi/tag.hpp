@@ -61,12 +61,12 @@ namespace yampi
     {
       // don't check flag because users cannnot delete the attribute MPI_TAG_UB
       int result, flag;
-      int const error_code
+      auto const error_code
         = MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &result, &flag);
 
       return error_code == MPI_SUCCESS
         ? result
-        : throw ::yampi::error(error_code, "yampi::tag::inquire_upper_bound", environment);
+        : throw ::yampi::error{error_code, "yampi::tag::inquire_upper_bound", environment};
     }
 
    public:
@@ -102,9 +102,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      tag&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, tag&>
     operator+=(Integer const n) noexcept
     {
       assert(mpi_tag_ >= 0);
@@ -114,9 +112,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      tag&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, tag&>
     operator-=(Integer const n) noexcept
     {
       assert(mpi_tag_ >= 0);
@@ -126,9 +122,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      tag&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, tag&>
     operator*=(Integer const n) noexcept
     {
       assert(mpi_tag_ >= 0);
@@ -139,9 +133,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      tag&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, tag&>
     operator/=(Integer const n) noexcept
     {
       assert(mpi_tag_ >= 0);
@@ -152,9 +144,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      tag&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, tag&>
     operator%=(Integer const n) noexcept
     {
       assert(mpi_tag_ >= 0);
@@ -168,7 +158,7 @@ namespace yampi
     {
       assert(mpi_tag_ >= 0);
       assert(other.mpi_tag_ >= 0);
-      return mpi_tag_-other.mpi_tag_;
+      return mpi_tag_ - other.mpi_tag_;
     }
 
     constexpr int const& mpi_tag() const noexcept { return mpi_tag_; }
@@ -180,6 +170,15 @@ namespace yampi
       swap(mpi_tag_, other.mpi_tag_);
     }
   };
+
+  namespace literals
+  {
+    inline namespace tag_literals
+    {
+      inline constexpr ::yampi::tag operator"" _t(unsigned long long int const value) noexcept
+      { return ::yampi::tag{static_cast<int>(value)}; }
+    }
+  }
 
   inline constexpr bool operator!=(::yampi::tag const& lhs, ::yampi::tag const& rhs) noexcept
   { return not (lhs == rhs); }
@@ -194,10 +193,10 @@ namespace yampi
   { return not (rhs < lhs); }
 
   inline ::yampi::tag operator++(::yampi::tag& lhs, int) noexcept
-  { ::yampi::tag result = lhs; ++lhs; return result; }
+  { auto result = lhs; ++lhs; return result; }
 
   inline ::yampi::tag operator--(::yampi::tag& lhs, int) noexcept
-  { ::yampi::tag result = lhs; --lhs; return result; }
+  { auto result = lhs; --lhs; return result; }
 
   template <typename Integer>
   inline ::yampi::tag operator+(::yampi::tag lhs, Integer const rhs) noexcept
@@ -221,23 +220,23 @@ namespace yampi
 
   template <typename Integer>
   inline ::yampi::tag operator+(Integer const lhs, ::yampi::tag const& rhs) noexcept
-  { return rhs+lhs; }
+  { return rhs + lhs; }
 
   template <typename Integer>
   inline ::yampi::tag operator*(Integer const lhs, ::yampi::tag const& rhs) noexcept
-  { return rhs*lhs; }
+  { return rhs * lhs; }
 
   inline void swap(::yampi::tag& lhs, ::yampi::tag& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
 
 
   inline ::yampi::tag tag_upper_bound(::yampi::environment const& environment)
-  { return ::yampi::tag(::yampi::tag_upper_bound_t(), environment); }
+  { return ::yampi::tag(::yampi::tag_upper_bound_t{}, environment); }
 
   inline bool is_valid_tag(::yampi::tag const& self, ::yampi::environment const& environment)
   {
-    constexpr ::yampi::tag tag_lower_bound(0);
-    return self >= tag_lower_bound and self <= ::yampi::tag_upper_bound(environment);
+    using namespace ::yampi::literals::tag_literals;
+    return self >= 0_t and self <= ::yampi::tag_upper_bound(environment);
   }
 
 # if __cplusplus >= 201703L

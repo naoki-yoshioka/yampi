@@ -73,7 +73,7 @@ namespace yampi
       // don't check flag because users cannnot delete the attribute MPI_HOST
       int* result;
       int flag;
-      int const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
+      auto const error_code = MPI_Comm_get_attr(MPI_COMM_WORLD, key_value, &result, &flag);
 
       return error_code == MPI_SUCCESS
         ? *result
@@ -117,9 +117,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      rank&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, rank&>
     operator+=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
@@ -129,9 +127,7 @@ namespace yampi
     }
 
     template <typename Integer>
-    typename std::enable_if<
-      std::is_integral<Integer>::value,
-      rank&>::type
+    std::enable_if_t<std::is_integral<Integer>::value, rank&>
     operator-=(Integer const n) noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
@@ -182,8 +178,7 @@ namespace yampi
     int operator-(rank const& other) const noexcept
     {
       assert(mpi_rank_ != MPI_ANY_SOURCE and mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
-      assert(
-        other.mpi_rank_ != MPI_ANY_SOURCE and other.mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
+      assert(other.mpi_rank_ != MPI_ANY_SOURCE and other.mpi_rank_ != MPI_PROC_NULL and mpi_rank_ >= 0);
       return mpi_rank_-other.mpi_rank_;
     }
 
@@ -196,6 +191,15 @@ namespace yampi
       swap(mpi_rank_, other.mpi_rank_);
     }
   };
+
+  namespace literals
+  {
+    inline namespace rank_literals
+    {
+      inline constexpr ::yampi::rank operator"" _r(unsigned long long int const value) noexcept
+      { return ::yampi::rank{static_cast<int>(value)}; }
+    }
+  }
 
   inline constexpr bool operator!=(::yampi::rank const& lhs, ::yampi::rank const& rhs) noexcept
   { return not (lhs == rhs); }
@@ -210,10 +214,10 @@ namespace yampi
   { return not (rhs < lhs); }
 
   inline ::yampi::rank operator++(::yampi::rank& lhs, int) noexcept
-  { ::yampi::rank result = lhs; ++lhs; return result; }
+  { auto result = lhs; ++lhs; return result; }
 
   inline ::yampi::rank operator--(::yampi::rank& lhs, int) noexcept
-  { ::yampi::rank result = lhs; --lhs; return result; }
+  { auto result = lhs; --lhs; return result; }
 
   template <typename Integer>
   inline ::yampi::rank operator+(::yampi::rank lhs, Integer const rhs) noexcept
@@ -237,11 +241,11 @@ namespace yampi
 
   template <typename Integer>
   inline ::yampi::rank operator+(Integer const lhs, ::yampi::rank const& rhs) noexcept
-  { return rhs+lhs; }
+  { return rhs + lhs; }
 
   template <typename Integer>
   inline ::yampi::rank operator*(Integer const lhs, ::yampi::rank const& rhs) noexcept
-  { return rhs*lhs; }
+  { return rhs * lhs; }
 
   inline void swap(::yampi::rank& lhs, ::yampi::rank& rhs) noexcept(noexcept(lhs.swap(rhs)))
   { lhs.swap(rhs); }
@@ -257,10 +261,10 @@ namespace yampi
 
 
   inline ::yampi::rank host_process(::yampi::environment const& environment)
-  { return ::yampi::rank(::yampi::host_process_t(), environment); }
+  { return ::yampi::rank{::yampi::host_process_t(), environment}; }
 
   inline ::yampi::rank io_process(::yampi::environment const& environment)
-  { return ::yampi::rank(::yampi::io_process_t(), environment); }
+  { return ::yampi::rank{::yampi::io_process_t(), environment}; }
 
 
   inline bool exists_host_process(::yampi::environment const& environment)
@@ -274,7 +278,7 @@ namespace yampi
 
   inline bool is_io_process(::yampi::rank const& self, ::yampi::environment const& environment)
   {
-    ::yampi::rank const io = ::yampi::io_process(environment);
+    auto const io = ::yampi::io_process(environment);
     return io == ::yampi::any_source or self == io;
   }
 }
