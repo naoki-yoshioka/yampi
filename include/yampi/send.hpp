@@ -16,6 +16,11 @@
 # include <yampi/communication_mode.hpp>
 # include <yampi/immediate_request.hpp>
 # include <yampi/persistent_request.hpp>
+# if MPI_VERSION >= 4
+#   include <yampi/partitioned_request.hpp>
+#   include <yampi/partitioned_buffer.hpp>
+#   include <yampi/information.hpp>
+# endif // MPI_VERSION >= 4
 
 
 namespace yampi
@@ -109,6 +114,45 @@ namespace yampi
       throw ::yampi::error{error_code, "yampi::send", environment};
     request.reset(mpi_request, environment);
   }
+# if MPI_VERSION >= 4
+
+  // Partitioned send
+  template <typename Value>
+  inline void send(
+    ::yampi::partitioned_request& request,
+    ::yampi::partitioned_buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::information const& information,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    auto const error_code
+      = MPI_Psend_init(
+          buffer.data(), buffer.num_partitions(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), information.mpi_info(),
+          std::addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error{error_code, "yampi::send", environment};
+    request.reset(mpi_request, environment);
+  }
+
+  // information omitted
+  template <typename Value>
+  inline void send(
+    ::yampi::partitioned_request& request,
+    ::yampi::partitioned_buffer<Value> const buffer, ::yampi::rank const destination, ::yampi::tag const tag,
+    ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
+  {
+    MPI_Request mpi_request;
+    auto const error_code
+      = MPI_Psend_init(
+          buffer.data(), buffer.num_partitions(), buffer.count().mpi_count(), buffer.datatype().mpi_datatype(),
+          destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(), MPI_INFO_NULL,
+          std::addressof(mpi_request));
+    if (error_code != MPI_SUCCESS)
+      throw ::yampi::error{error_code, "yampi::send", environment};
+    request.reset(mpi_request, environment);
+  }
+# endif // MPI_VERSION >= 4
 
   namespace send_detail
   {
