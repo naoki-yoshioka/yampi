@@ -13,7 +13,6 @@
 # include <yampi/error.hpp>
 # include <yampi/group.hpp>
 # include <yampi/tag.hpp>
-# include <yampi/information.hpp>
 # include <yampi/color.hpp>
 # include <yampi/split_type.hpp>
 
