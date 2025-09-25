@@ -158,6 +158,15 @@ namespace yampi
     }
   };
 
+  namespace literals
+  {
+    inline namespace color_literals
+    {
+      inline constexpr ::yampi::color operator"" _c(unsigned long long int const value) noexcept
+      { return ::yampi::color{static_cast<int>(value)}; }
+    }
+  }
+
   inline constexpr bool operator!=(::yampi::color const& lhs, ::yampi::color const& rhs) noexcept
   { return not (lhs == rhs); }
 

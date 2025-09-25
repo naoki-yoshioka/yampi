@@ -94,6 +94,20 @@ namespace yampi
     count& operator%=(Integer const scalar) noexcept { mpi_count_ %= scalar; return *this; }
   };
 
+  namespace literals
+  {
+    inline namespace count_literals
+    {
+# if MPI_VERSION >= 3
+      inline constexpr ::yampi::count operator"" _n(unsigned long long int const value) noexcept
+      { return ::yampi::count{static_cast<MPI_Count>(value)}; }
+# else // MPI_VERSION >= 3
+      inline constexpr ::yampi::count operator"" _n(unsigned long long int const value) noexcept
+      { return ::yampi::count{static_cast<int>(value)}; }
+# endif // MPI_VERSION >= 3
+    }
+  }
+
   inline constexpr bool operator!=(::yampi::count const& lhs, ::yampi::count const& rhs) noexcept
   { return not (lhs == rhs); }
 
