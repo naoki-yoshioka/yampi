@@ -32,7 +32,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
@@ -136,7 +136,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
@@ -234,7 +234,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count().mpi_count() == communicator.size(environment));
@@ -301,7 +301,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count().mpi_count() == communicator.size(environment));
