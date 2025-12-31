@@ -39,6 +39,12 @@ namespace yampi
     struct mpi_datatype_of< type >\
     {\
       static MPI_Datatype call() { return MPI_ ## mpitype; }\
+    };\
+\
+    template <>\
+    struct mpi_datatype_of< type const>\
+    {\
+      static MPI_Datatype call() { return MPI_ ## mpitype; }\
     };
 
     YAMPI_MAKE_MPI_DATATYPE_OF(char, CHAR)
@@ -79,6 +85,11 @@ namespace yampi
 #   define YAMPI_MAKE_MPI_DATATYPE_OF_FOR_MPI2CXX(type, mpitype) \
     template <>\
     struct mpi_datatype_of< type >\
+    {\
+      static MPI_Datatype call() { return MPI:: mpitype; }\
+    };\
+    template <>\
+    struct mpi_datatype_of< type const>\
     {\
       static MPI_Datatype call() { return MPI:: mpitype; }\
     };
