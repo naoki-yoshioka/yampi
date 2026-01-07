@@ -1,6 +1,7 @@
 #ifndef YAMPI_PUT_HPP
 # define YAMPI_PUT_HPP
 
+# include <type_traits>
 # include <memory>
 
 # include <mpi.h>
@@ -35,9 +36,10 @@ namespace yampi
           target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
           window.mpi_win());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<OriginValue>::type;
     auto const error_code
       = MPI_Put(
-          const_cast<OriginValue*>(origin_buffer.data()), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(origin_buffer.data()), origin_buffer.count(), origin_buffer.datatype().mpi_datatype(),
           target.mpi_rank(), target_buffer.displacement().mpi_displacement(), target_buffer.count(), target_buffer.datatype().mpi_datatype(),
           window.mpi_win());
 # endif // MPI_VERSION >= 3

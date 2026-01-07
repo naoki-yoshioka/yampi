@@ -33,7 +33,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() <= send_buffer.data());
@@ -54,9 +54,10 @@ namespace yampi
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Allreduce(
-          const_cast<SendValue*>(send_buffer.data()), std::addressof(*first),
+          const_cast<value_type*>(send_buffer.data()), std::addressof(*first),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
@@ -76,7 +77,7 @@ namespace yampi
     assert(send_buffer.count() == 1);
 # endif // MPI_VERSION >= 4
 
-    SendValue result;
+    typename std::remove_cv<SendValue>::type result;
     ::yampi::all_reduce(send_buffer, std::addressof(result), operation, communicator, environment);
     return result;
   }
@@ -113,7 +114,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() <= send_buffer.data());
@@ -176,7 +177,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() <= send_buffer.data());
 
@@ -219,7 +220,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() <= send_buffer.data());
 

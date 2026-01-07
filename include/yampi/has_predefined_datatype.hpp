@@ -31,7 +31,10 @@ namespace yampi
 
 # define YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(type) \
   template <>\
-  struct has_predefined_datatype< type > : std::true_type { };
+  struct has_predefined_datatype< type > : std::true_type { };\
+\
+  template <>\
+  struct has_predefined_datatype< type const> : std::true_type { };
 
 
   YAMPI_MAKE_HAS_PREDEFINED_DATATYPE(char)

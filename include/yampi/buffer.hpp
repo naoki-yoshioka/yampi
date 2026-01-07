@@ -33,7 +33,20 @@ namespace yampi
   template <typename T, typename Enable = void>
   class buffer
   {
-    T* data_;
+   public:
+    using element_type = T;
+    using value_type = typename std::remove_cv<T>::type;
+    using pointer = T*;
+    using const_pointer = T const*;
+    using reference = T&;
+    using const_reference = T const&;
+    using iterator = T*;
+    using const_iterator = T const*;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+   private:
+    value_type* data_;
 # if MPI_VERSION >= 4
     ::yampi::count count_;
 # else // MPI_VERSION >= 4
@@ -43,12 +56,7 @@ namespace yampi
 
    public:
     buffer(T& value, ::yampi::datatype const& datatype) noexcept
-      : data_{std::addressof(value)}, count_{1},
-        datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
-    { }
-
-    buffer(T const& value, ::yampi::datatype const& datatype) noexcept
-      : data_{const_cast<T*>(std::addressof(value))}, count_{1},
+      : data_{const_cast<value_type*>(std::addressof(value))}, count_{1},
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     { }
 
@@ -58,7 +66,7 @@ namespace yampi
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype const& datatype)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_{std::addressof(*first)},
+      : data_{const_cast<value_type*>(std::addressof(*first))},
         count_{static_cast<MPI_Count>(last-first)},
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     {
@@ -66,8 +74,8 @@ namespace yampi
         (std::is_same<
            typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
+           value_type>::value),
+        "CV-removed T should be tha same to cv-removed value_type of ContiguousIterator");
       assert(last >= first);
     }
 # else // MPI_VERSION >= 4
@@ -76,7 +84,7 @@ namespace yampi
       ContiguousIterator const first, ContiguousIterator const last,
       ::yampi::datatype const& datatype)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_{std::addressof(*first)},
+      : data_{const_cast<T*>(std::addressof(*first))},
         count_{static_cast<int>(last-first)},
         datatype_ptr_{const_cast< ::yampi::datatype* >(std::addressof(datatype))}
     {
@@ -84,8 +92,8 @@ namespace yampi
         (std::is_same<
            typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
+           value_type>::value),
+        "CV-removed T should be tha same to cv-removed value_type of ContiguousIterator");
       assert(last >= first);
     }
 # endif // MPI_VERSION >= 4
@@ -93,8 +101,8 @@ namespace yampi
     bool operator==(buffer const& other) const noexcept
     { return data_ == other.data_ and count_ == other.count_ and *datatype_ptr_ == *other.datatype_ptr_; }
 
-    T* data() noexcept { return data_; }
-    T const* data() const noexcept { return data_; }
+    pointer data() noexcept { return data_; }
+    const_pointer data() const noexcept { return data_; }
 # if MPI_VERSION >= 4
     ::yampi::count const& count() const noexcept { return count_; }
 # else // MPI_VERSION >= 4
@@ -114,7 +122,20 @@ namespace yampi
   template <typename T>
   class buffer<T, typename std::enable_if< ::yampi::has_predefined_datatype<T>::value >::type>
   {
-    T* data_;
+   public:
+    using element_type = T;
+    using value_type = typename std::remove_cv<T>::type;
+    using pointer = T*;
+    using const_pointer = T const*;
+    using reference = T&;
+    using const_reference = T const&;
+    using iterator = T*;
+    using const_iterator = T const*;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+   private:
+    value_type* data_;
 # if MPI_VERSION >= 4
     ::yampi::count count_;
 # else // MPI_VERSION >= 4
@@ -123,41 +144,37 @@ namespace yampi
 
    public:
     explicit buffer(T& value) noexcept
-      : data_{std::addressof(value)}, count_{1}
-    { }
-
-    explicit buffer(T const& value) noexcept
-      : data_{const_cast<T*>(std::addressof(value))}, count_{1}
+      : data_{const_cast<value_type*>(std::addressof(value))}, count_{1}
     { }
 
 # if MPI_VERSION >= 4
     template <typename ContiguousIterator>
     buffer(ContiguousIterator const first, ContiguousIterator const last)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_{std::addressof(*first)},
+      : data_{const_cast<T*>(std::addressof(*first))},
         count_{static_cast<MPI_Count>(last-first)}
     {
       static_assert(
         (std::is_same<
            typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
+           value_type>::value),
+        "CV-removed T should be tha same to cv-removed value_type of ContiguousIterator");
       assert(last >= first);
     }
 # else // MPI_VERSION >= 4
     template <typename ContiguousIterator>
     buffer(ContiguousIterator const first, ContiguousIterator const last)
       noexcept(noexcept(*first) and noexcept(last-first))
-      : data_{std::addressof(*first)},
+      : data_{const_cast<T*>(std::addressof(*first))},
         count_{static_cast<int>(last-first)}
     {
       static_assert(
         (std::is_same<
            typename std::remove_cv<
              typename std::iterator_traits<ContiguousIterator>::value_type>::type,
-           T>::value),
-        "T must be tha same to value_type of ContiguousIterator");
+           value_type>::value),
+        "CV-removed T should be tha same to cv-removed value_type of ContiguousIterator");
       assert(last >= first);
     }
 # endif // MPI_VERSION >= 4
@@ -165,8 +182,8 @@ namespace yampi
     bool operator==(buffer const& other) const noexcept
     { return data_ == other.data_ and count_ == other.count_; }
 
-    T* data() noexcept { return data_; }
-    T const* data() const noexcept { return data_; }
+    pointer data() noexcept { return data_; }
+    const_pointer data() const noexcept { return data_; }
 # if MPI_VERSION >= 4
     ::yampi::count const& count() const noexcept { return count_; }
 # else // MPI_VERSION >= 4
@@ -197,18 +214,7 @@ namespace yampi
   { return ::yampi::buffer<T>(value); }
 
   template <typename T>
-  inline
-  typename std::enable_if< ::yampi::has_predefined_datatype<T>::value, ::yampi::buffer<T> >::type make_buffer(T const& value)
-    noexcept(noexcept(::yampi::buffer<T>(value)))
-  { return ::yampi::buffer<T>(value); }
-
-  template <typename T>
   inline ::yampi::buffer<T> make_buffer(T& value, ::yampi::predefined_datatype<T> const&)
-    noexcept(noexcept(::yampi::buffer<T>(value)))
-  { return ::yampi::buffer<T>(value); }
-
-  template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T const& value, ::yampi::predefined_datatype<T> const&)
     noexcept(noexcept(::yampi::buffer<T>(value)))
   { return ::yampi::buffer<T>(value); }
 
@@ -217,76 +223,51 @@ namespace yampi
     noexcept(noexcept(::yampi::buffer<T>(value, datatype)))
   { return ::yampi::buffer<T>(value, datatype); }
 
-  template <typename T>
-  inline ::yampi::buffer<T> make_buffer(T const& value, ::yampi::datatype const& datatype)
-    noexcept(noexcept(::yampi::buffer<T>(value, datatype)))
-  { return ::yampi::buffer<T>(value, datatype); }
-
   template <typename ContiguousIterator>
   inline
   typename std::enable_if<
-    ::yampi::has_predefined_datatype<
-      typename std::remove_cv<
-        typename std::iterator_traits<ContiguousIterator>::value_type>::type>::value,
-    ::yampi::buffer<
-      typename std::remove_cv<
-        typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+    ::yampi::has_predefined_datatype<typename std::iterator_traits<ContiguousIterator>::value_type>::value,
+    ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
   >::type make_buffer(ContiguousIterator const first, ContiguousIterator const last)
     noexcept(
       noexcept(
-        ::yampi::buffer<
-          typename std::remove_cv<
-            typename std::iterator_traits<ContiguousIterator>::value_type>::type>(
+        ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>(
           first, last)))
   {
     typedef
-      ::yampi::buffer<
-        typename std::remove_cv<
-          typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+      ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
       result_type;
     return result_type(first, last);
   }
 
   template <typename ContiguousIterator>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+  ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
   make_buffer(
     ContiguousIterator const first, ContiguousIterator const last,
-    ::yampi::predefined_datatype<typename std::remove_cv<typename std::iterator_traits<ContiguousIterator>::value_type>::type> const&)
+    ::yampi::predefined_datatype<typename std::iterator_traits<ContiguousIterator>::value_type> const&)
     noexcept(
       noexcept(
-        ::yampi::buffer<
-          typename std::remove_cv<
-            typename std::iterator_traits<ContiguousIterator>::value_type>::type>(
+        ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>(
           first, last)))
   {
     typedef
-      ::yampi::buffer<
-        typename std::remove_cv<
-          typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+      ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
       result_type;
     return result_type(first, last);
   }
 
   template <typename ContiguousIterator>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+  ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
   make_buffer(ContiguousIterator const first, ContiguousIterator const last, ::yampi::datatype const& datatype)
     noexcept(
       noexcept(
-        ::yampi::buffer<
-          typename std::remove_cv<
-            typename std::iterator_traits<ContiguousIterator>::value_type>::type>(
+        ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>(
           first, last, datatype)))
   {
     typedef
-      ::yampi::buffer<
-        typename std::remove_cv<
-          typename std::iterator_traits<ContiguousIterator>::value_type>::type>
+      ::yampi::buffer<typename std::iterator_traits<ContiguousIterator>::value_type>
       result_type;
     return result_type(first, last, datatype);
   }
@@ -294,12 +275,8 @@ namespace yampi
   template <typename ContiguousRange>
   inline
   typename std::enable_if<
-    ::yampi::has_predefined_datatype<
-      typename std::remove_cv<
-        typename boost::range_value<ContiguousRange>::type>::type>::value,
-    ::yampi::buffer<
-      typename std::remove_cv<
-        typename boost::range_value<ContiguousRange>::type>::type>
+    ::yampi::has_predefined_datatype<typename boost::range_value<ContiguousRange>::type>::value,
+    ::yampi::buffer<typename boost::range_value<ContiguousRange>::type>
   >::type range_to_buffer(ContiguousRange& range)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range))))
   { return ::yampi::make_buffer(std::begin(range), std::end(range)); }
@@ -307,52 +284,40 @@ namespace yampi
   template <typename ContiguousRange>
   inline
   typename std::enable_if<
-    ::yampi::has_predefined_datatype<
-      typename std::remove_cv<
-        typename boost::range_value<ContiguousRange const>::type>::type>::value,
-    ::yampi::buffer<
-      typename std::remove_cv<
-        typename boost::range_value<ContiguousRange const>::type>::type>
+    ::yampi::has_predefined_datatype<typename boost::range_value<ContiguousRange const>::type>::value,
+    ::yampi::buffer<typename boost::range_value<ContiguousRange const>::type>
   >::type range_to_buffer(ContiguousRange const& range)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range))))
   { return ::yampi::make_buffer(std::begin(range), std::end(range)); }
 
   template <typename ContiguousRange>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename boost::range_value<ContiguousRange>::type>::type>
+  ::yampi::buffer<typename boost::range_value<ContiguousRange>::type>
   range_to_buffer(
     ContiguousRange& range,
-    ::yampi::predefined_datatype<typename std::remove_cv<typename boost::range_value<ContiguousRange>::type>::type> const&)
+    ::yampi::predefined_datatype<typename boost::range_value<ContiguousRange>::type> const&)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range))))
   { return ::yampi::make_buffer(std::begin(range), std::end(range)); }
 
   template <typename ContiguousRange>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename boost::range_value<ContiguousRange const>::type>::type>
+  ::yampi::buffer<typename boost::range_value<ContiguousRange const>::type>
   range_to_buffer(
     ContiguousRange const& range,
-    ::yampi::predefined_datatype<typename std::remove_cv<typename boost::range_value<ContiguousRange const>::type>::type> const&)
+    ::yampi::predefined_datatype<typename boost::range_value<ContiguousRange const>::type> const&)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range))))
   { return ::yampi::make_buffer(std::begin(range), std::end(range)); }
 
   template <typename ContiguousRange>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename boost::range_value<ContiguousRange>::type>::type>
+  ::yampi::buffer<typename boost::range_value<ContiguousRange>::type>
   range_to_buffer(ContiguousRange& range, ::yampi::datatype const& datatype)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range), datatype)))
   { return ::yampi::make_buffer(std::begin(range), std::end(range), datatype); }
 
   template <typename ContiguousRange>
   inline
-  ::yampi::buffer<
-    typename std::remove_cv<
-      typename boost::range_value<ContiguousRange const>::type>::type>
+  ::yampi::buffer<typename boost::range_value<ContiguousRange const>::type>
   range_to_buffer(ContiguousRange const& range, ::yampi::datatype const& datatype)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range), datatype)))
   { return ::yampi::make_buffer(std::begin(range), std::end(range), datatype); }

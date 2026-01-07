@@ -34,7 +34,7 @@ namespace yampi
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
 # if MPI_VERSION >= 4
     assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.size(environment) <= send_buffer.data()));
@@ -55,9 +55,10 @@ namespace yampi
           std::addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Gather(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           std::addressof(*first), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
@@ -93,9 +94,10 @@ namespace yampi
           receive_buffer.data(), receive_count, receive_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Gather(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           receive_buffer.data(), receive_count, receive_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
@@ -124,9 +126,10 @@ namespace yampi
           nullptr, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Gather(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           nullptr, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
@@ -183,9 +186,10 @@ namespace yampi
           nullptr, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Gather(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           nullptr, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
@@ -246,7 +250,7 @@ namespace yampi
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
 # if MPI_VERSION >= 4
     assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.size(environment) <= send_buffer.data()));
@@ -457,7 +461,7 @@ namespace yampi
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
     assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.size(environment) <= send_buffer.data()));
 
@@ -604,7 +608,7 @@ namespace yampi
     ::yampi::communicator const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to SendValue");
     assert(communicator.rank(environment) != root or (send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + send_buffer.count().mpi_count() * communicator.size(environment) <= send_buffer.data()));
 

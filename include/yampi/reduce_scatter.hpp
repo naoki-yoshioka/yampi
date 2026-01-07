@@ -32,7 +32,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
@@ -53,9 +53,10 @@ namespace yampi
           send_buffer.data(), std::addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Reduce_scatter_block(
-          const_cast<SendValue*>(send_buffer.data()), std::addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), std::addressof(*first), 1, send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
@@ -88,9 +89,10 @@ namespace yampi
           send_buffer.data(), receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Reduce_scatter_block(
-          const_cast<SendValue*>(send_buffer.data()), receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
@@ -136,7 +138,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
 # if MPI_VERSION >= 4
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
@@ -234,7 +236,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count().mpi_count() == communicator.size(environment));
@@ -301,7 +303,7 @@ namespace yampi
     ::yampi::communicator_base const& communicator, ::yampi::environment const& environment)
   {
     static_assert(
-      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, SendValue>::value,
+      std::is_same<typename std::iterator_traits<ContiguousIterator>::value_type, typename std::remove_cv<SendValue>::type>::value,
       "value_type of ContiguousIterator must be the same to Value");
     assert(send_buffer.data() + send_buffer.count().mpi_count() <= std::addressof(*first) or std::addressof(*first) + 1 <= send_buffer.data());
     assert(send_buffer.count().mpi_count() == communicator.size(environment));
