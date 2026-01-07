@@ -1,6 +1,7 @@
 #ifndef YAMPI_SEND_RECEIVE_HPP
 # define YAMPI_SEND_RECEIVE_HPP
 
+# include <type_traits>
 # include <memory>
 
 # include <mpi.h>
@@ -43,9 +44,10 @@ namespace yampi
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), std::addressof(stat));
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
@@ -80,9 +82,10 @@ namespace yampi
           source.mpi_rank(), MPI_ANY_TAG,
           communicator.mpi_comm(), std::addressof(stat));
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), MPI_ANY_TAG,
@@ -117,9 +120,10 @@ namespace yampi
           MPI_ANY_SOURCE, receive_tag.mpi_tag(),
           communicator.mpi_comm(), std::addressof(stat));
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           MPI_ANY_SOURCE, receive_tag.mpi_tag(),
@@ -154,9 +158,10 @@ namespace yampi
           MPI_ANY_SOURCE, MPI_ANY_TAG,
           communicator.mpi_comm(), std::addressof(stat));
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           MPI_ANY_SOURCE, MPI_ANY_TAG,
@@ -300,9 +305,10 @@ namespace yampi
           source.mpi_rank(), receive_tag.mpi_tag(),
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), receive_tag.mpi_tag(),
@@ -336,9 +342,10 @@ namespace yampi
           source.mpi_rank(), MPI_ANY_TAG,
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           source.mpi_rank(), MPI_ANY_TAG,
@@ -372,9 +379,10 @@ namespace yampi
           MPI_ANY_SOURCE, receive_tag.mpi_tag(),
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           MPI_ANY_SOURCE, receive_tag.mpi_tag(),
@@ -408,9 +416,10 @@ namespace yampi
           MPI_ANY_SOURCE, MPI_ANY_TAG,
           communicator.mpi_comm(), MPI_STATUS_IGNORE);
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Sendrecv(
-          const_cast<SendValue*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(send_buffer.data()), send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), send_tag.mpi_tag(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           MPI_ANY_SOURCE, MPI_ANY_TAG,

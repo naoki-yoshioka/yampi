@@ -1,6 +1,7 @@
 #ifndef YAMPI_NONCONTIGUOUS_SCATTER_HPP
 # define YAMPI_NONCONTIGUOUS_SCATTER_HPP
 
+# include <type_traits>
 # include <memory>
 
 # include <mpi.h>
@@ -47,9 +48,10 @@ namespace yampi
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Scatterv(
-          const_cast<SendValue*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
+          const_cast<value_type*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
           const_cast<int*>(send_buffer.displacement_first()), send_buffer.datatype().mpi_datatype(),
           receive_buffer.data(), receive_buffer.count(), receive_buffer.datatype().mpi_datatype(),
           root.mpi_rank(), communicator.mpi_comm());
@@ -109,9 +111,10 @@ namespace yampi
           MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Scatterv(
-          const_cast<SendValue*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
+          const_cast<value_type*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
           const_cast<int*>(send_buffer.displacement_first()), send_buffer.datatype().mpi_datatype(),
           MPI_IN_PLACE, 0, MPI_DATATYPE_NULL,
           root.mpi_rank(), communicator.mpi_comm());
@@ -165,9 +168,10 @@ namespace yampi
           nullptr, 0, MPI_DATATYPE_NULL,
           MPI_ROOT, communicator.mpi_comm());
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Scatterv(
-          const_cast<SendValue*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
+          const_cast<value_type*>(send_buffer.data()), const_cast<int*>(send_buffer.count_first()),
           const_cast<int*>(send_buffer.displacement_first()), send_buffer.datatype().mpi_datatype(),
           nullptr, 0, MPI_DATATYPE_NULL,
           MPI_ROOT, communicator.mpi_comm());

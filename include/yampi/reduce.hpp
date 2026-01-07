@@ -56,9 +56,10 @@ namespace yampi
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # else //MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Reduce(
-          const_cast<SendValue*>(send_buffer.data()), std::addressof(*first),
+          const_cast<value_type*>(send_buffer.data()), std::addressof(*first),
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # endif //MPI_VERSION >= 3
@@ -88,9 +89,10 @@ namespace yampi
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # else //MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Reduce(
-          const_cast<SendValue*>(send_buffer.data()), nullptr,
+          const_cast<value_type*>(send_buffer.data()), nullptr,
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # endif //MPI_VERSION >= 3
@@ -147,9 +149,10 @@ namespace yampi
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # else //MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<SendValue>::type;
     auto const error_code
       = MPI_Reduce(
-          const_cast<SendValue*>(send_buffer.data()), nullptr,
+          const_cast<value_type*>(send_buffer.data()), nullptr,
           send_buffer.count(), send_buffer.datatype().mpi_datatype(),
           operation.mpi_op(), root.mpi_rank(), communicator.mpi_comm());
 # endif //MPI_VERSION >= 3

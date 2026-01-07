@@ -42,9 +42,10 @@ namespace yampi
           buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<Value>::type;
     auto const error_code
       = MPI_Send(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # endif // MPI_VERSION >= 3
     if (error_code != MPI_SUCCESS)
@@ -72,9 +73,10 @@ namespace yampi
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
           std::addressof(mpi_request));
 # else // MPI_VERSION
+    using value_type = typename std::remove_cv<Value>::type;
     auto const error_code
       = MPI_Isend(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
           std::addressof(mpi_request));
 # endif // MPI_VERSION
@@ -104,9 +106,10 @@ namespace yampi
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
           std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
+    using value_type = typename std::remove_cv<Value>::type;
     auto const error_code
       = MPI_Send_init(
-          const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+          const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
           destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
           std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
@@ -203,9 +206,10 @@ namespace yampi
               buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Bsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # endif // MPI_VERSION
         if (error_code != MPI_SUCCESS)
@@ -233,9 +237,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Ibsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION
@@ -265,9 +270,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Bsend_init(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
@@ -297,9 +303,10 @@ namespace yampi
               buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Ssend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # endif // MPI_VERSION
         if (error_code != MPI_SUCCESS)
@@ -327,9 +334,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Issend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION
@@ -359,9 +367,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Ssend_init(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
@@ -391,9 +400,10 @@ namespace yampi
               buffer.data(), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Rsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm());
 # endif // MPI_VERSION
         if (error_code != MPI_SUCCESS)
@@ -421,9 +431,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Irsend(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION
@@ -453,9 +464,10 @@ namespace yampi
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # else // MPI_VERSION >= 3
+        using value_type = typename std::remove_cv<Value>::type;
         auto const error_code
           = MPI_Rsend_init(
-              const_cast<Value*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
+              const_cast<value_type*>(buffer.data()), buffer.count(), buffer.datatype().mpi_datatype(),
               destination.mpi_rank(), tag.mpi_tag(), communicator.mpi_comm(),
               std::addressof(mpi_request));
 # endif // MPI_VERSION >= 3
