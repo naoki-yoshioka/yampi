@@ -9,6 +9,7 @@
 # include <yampi/buffer.hpp>
 # include <yampi/noncontiguous_buffer.hpp>
 # include <yampi/communicator.hpp>
+# include <yampi/intercommunicator.hpp>
 # include <yampi/rank.hpp>
 # include <yampi/in_place.hpp>
 # include <yampi/environment.hpp>
