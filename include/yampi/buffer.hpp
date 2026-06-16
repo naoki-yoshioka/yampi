@@ -14,6 +14,7 @@
 
 # include <boost/range/value_type.hpp>
 
+# include <yampi/datatype_base.hpp>
 # include <yampi/datatype.hpp>
 # include <yampi/predefined_datatype.hpp>
 # include <yampi/has_predefined_datatype.hpp>
@@ -223,6 +224,12 @@ namespace yampi
     noexcept(noexcept(::yampi::buffer<T>(value, datatype)))
   { return ::yampi::buffer<T>(value, datatype); }
 
+  template <typename T, typename DerivedDatatype>
+  inline auto make_buffer(T& value, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::make_buffer(value, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::make_buffer(value, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_buffer(value, static_cast<DerivedDatatype const&>(datatype)); }
+
   template <typename ContiguousIterator>
   inline
   typename std::enable_if<
@@ -271,6 +278,13 @@ namespace yampi
       result_type;
     return result_type(first, last, datatype);
   }
+
+  template <typename ContiguousIterator, typename DerivedDatatype>
+  inline auto
+  make_buffer(ContiguousIterator const first, ContiguousIterator const last, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::make_buffer(first, last, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::make_buffer(first, last, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_buffer(first, last, static_cast<DerivedDatatype const&>(datatype)); }
 
   template <typename ContiguousRange>
   inline
@@ -321,6 +335,18 @@ namespace yampi
   range_to_buffer(ContiguousRange const& range, ::yampi::datatype const& datatype)
     noexcept(noexcept(::yampi::make_buffer(std::begin(range), std::end(range), datatype)))
   { return ::yampi::make_buffer(std::begin(range), std::end(range), datatype); }
+
+  template <typename ContiguousRange, typename DerivedDatatype>
+  inline auto range_to_buffer(ContiguousRange& range, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype)); }
+
+  template <typename ContiguousRange, typename DerivedDatatype>
+  inline auto range_to_buffer(ContiguousRange const& range, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::range_to_buffer(range, static_cast<DerivedDatatype const&>(datatype)); }
 }
 
 

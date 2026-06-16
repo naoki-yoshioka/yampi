@@ -11,6 +11,7 @@
 
 # include <mpi.h>
 
+# include <yampi/datatype_base.hpp>
 # include <yampi/datatype.hpp>
 # include <yampi/predefined_datatype.hpp>
 # include <yampi/has_predefined_datatype.hpp>
@@ -157,6 +158,12 @@ namespace yampi
     noexcept(noexcept(::yampi::target_buffer<T>(displacement, datatype)))
   { return ::yampi::target_buffer<T>(displacement, datatype); }
 
+  template <typename T, typename DerivedDatatype>
+  inline auto make_target_buffer(::yampi::displacement const displacement, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::make_target_buffer(displacement, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::make_target_buffer(displacement, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_target_buffer(displacement, static_cast<DerivedDatatype const&>(datatype)); }
+
   template <typename T>
   inline
   typename std::enable_if< ::yampi::has_predefined_datatype<T>::value, ::yampi::target_buffer<T> >::type make_target_buffer(::yampi::displacement const displacement, int count)
@@ -172,6 +179,12 @@ namespace yampi
   inline ::yampi::target_buffer<T> make_target_buffer(::yampi::displacement const displacement, int count, ::yampi::datatype const& datatype)
     noexcept(noexcept(::yampi::target_buffer<T>(displacement, count, datatype)))
   { return ::yampi::target_buffer<T>(displacement, count, datatype); }
+
+  template <typename T, typename DerivedDatatype>
+  inline auto make_target_buffer(::yampi::displacement const displacement, int count, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::make_target_buffer(displacement, count, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::make_target_buffer(displacement, count, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_target_buffer(displacement, count, static_cast<DerivedDatatype const&>(datatype)); }
 }
 
 
