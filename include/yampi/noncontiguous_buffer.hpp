@@ -316,6 +316,13 @@ namespace yampi
     ContiguousIterator3 const displacement_first, ::yampi::datatype const& datatype)
   { return {first, count_first, displacement_first, datatype}; }
 
+  template <typename ContiguousIterator1, typename ContiguousIterator2, typename ContiguousIterator3, typename DerivedDatatype>
+  inline auto make_noncontiguous_buffer(
+    ContiguousIterator1 const first, ContiguousIterator2 const count_first,
+    ContiguousIterator3 const displacement_first, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+  -> decltype(::yampi::make_noncontiguous_buffer(first, count_first, displacement_first, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_noncontiguous_buffer(first, count_first, displacement_first, static_cast<DerivedDatatype const&>(datatype)); }
+
   template <typename ContiguousIterator1, typename ContiguousIterator2, typename ContiguousIterator3, typename ContiguousIterator4>
   inline ::yampi::noncontiguous_buffer<typename std::remove_cv<typename std::iterator_traits<ContiguousIterator1>::value_type>::type, true>
   make_noncontiguous_buffer(

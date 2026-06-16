@@ -171,6 +171,14 @@ namespace yampi
     return result_type{first, last, num_partitions, datatype};
   }
 
+  template <typename ContiguousIterator, typename DerivedDatatype>
+  inline auto make_partitioned_buffer(
+    ContiguousIterator const first, ContiguousIterator const last,
+    int const num_partitions, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+  noexcept(noexcept(::yampi::make_partitioned_buffer(first, last, num_partitions, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::make_partitioned_buffer(first, last, num_partitions, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::make_partitioned_buffer(first, last, num_partitions, static_cast<DerivedDatatype const&>(datatype)); }
+
   template <typename ContiguousRange>
   inline
   std::enable_if_t<
@@ -221,6 +229,18 @@ namespace yampi
   range_to_partitioned_buffer(ContiguousRange const& range, int const num_partitions, ::yampi::datatype const& datatype)
     noexcept(noexcept(::yampi::make_partitioned_buffer(std::begin(range), std::end(range), num_partitions, datatype)))
   { using std::begin; using std::end; return ::yampi::make_partitioned_buffer(begin(range), end(range), num_partitions, datatype); }
+
+  template <typename ContiguousRange, typename DerivedDatatype>
+  inline auto range_to_partitioned_buffer(ContiguousRange& range, int const num_partitions, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype)); }
+
+  template <typename ContiguousRange, typename DerivedDatatype>
+  inline auto range_to_partitioned_buffer(ContiguousRange const& range, int const num_partitions, ::yampi::datatype_base<DerivedDatatype> const& datatype)
+    noexcept(noexcept(::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype))))
+  -> decltype(::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype)))
+  { return ::yampi::range_to_partitioned_buffer(range, num_partitions, static_cast<DerivedDatatype const&>(datatype)); }
 }
 # endif // MPI_VERSION >= 4
 
