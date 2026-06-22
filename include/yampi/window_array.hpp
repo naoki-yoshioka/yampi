@@ -39,13 +39,13 @@ namespace yampi
           = MPI_Win_allocate_c(
               static_cast<MPI_Aint>(sizeof(T)) * static_cast<MPI_Aint>(num_elements),
               static_cast<MPI_Aint>(sizeof(T)), mpi_info, communicator.mpi_comm(),
-              result, std::addressof(mpi_win));
+              std::addressof(result), std::addressof(mpi_win));
 # else // MPI_VERSION >= 4
         int const error_code
           = MPI_Win_allocate(
               static_cast<MPI_Aint>(sizeof(T)) * static_cast<MPI_Aint>(num_elements),
               static_cast<int>(sizeof(T)), mpi_info, communicator.mpi_comm(),
-              result, std::addressof(mpi_win));
+              std::addressof(result), std::addressof(mpi_win));
 # endif // MPI_VERSION >= 4
         return error_code == MPI_SUCCESS
           ? result
@@ -66,13 +66,13 @@ namespace yampi
           = MPI_Win_allocate_shared_c(
               static_cast<MPI_Aint>(sizeof(T)) * static_cast<MPI_Aint>(num_elements),
               static_cast<MPI_Aint>(sizeof(T)), mpi_info, communicator.mpi_comm(),
-              result, std::addressof(mpi_win));
+              std::addressof(result), std::addressof(mpi_win));
 # else // MPI_VERSION >= 4
         int const error_code
           = MPI_Win_allocate_shared(
               static_cast<MPI_Aint>(sizeof(T)) * static_cast<MPI_Aint>(num_elements),
               static_cast<int>(sizeof(T)), mpi_info, communicator.mpi_comm(),
-              result, std::addressof(mpi_win));
+              std::addressof(result), std::addressof(mpi_win));
 # endif // MPI_VERSION >= 4
         return error_code == MPI_SUCCESS
           ? result
